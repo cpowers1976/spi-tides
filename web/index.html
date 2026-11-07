@@ -41,6 +41,8 @@
                border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   .sw:checked { background: var(--on); }
   .sw:checked::after { left: 27px; }
+  .row.off { opacity: .45; cursor: default; }
+  .row.off .sw { cursor: default; }
   .seg { display: flex; gap: 6px; }
   .seg button { font-size: 17px; padding: 8px 12px; }
   #done { width: 100%; margin-top: 18px; font-size: 20px; padding: 12px; }
@@ -86,7 +88,7 @@
     <label class="row"><span>24-hour clock<small>Show 19:17 instead of 7:17p</small></span><input type="checkbox" class="sw" data-set="clock24"></label>
     <label class="row"><span>Weather icons<small>Sunny, cloudy, rain, storms...</small></span><input type="checkbox" class="sw" data-set="showWx"></label>
     <label class="row"><span>Moon phase</span><input type="checkbox" class="sw" data-set="showMoon"></label>
-    <label class="row"><span>Show tides</span><input type="checkbox" class="sw" data-set="showTides"></label>
+    <label class="row" id="tiderow"><span>Show tides<small id="tidenote" hidden>No tides on lakes</small></span><input type="checkbox" class="sw" data-set="showTides"></label>
     <label class="row"><span>Show waves<small>Wave height, period and water temp</small></span><input type="checkbox" class="sw" data-set="showWaves"></label>
     <div class="row"><span>Text size</span>
       <div class="seg"><button data-size="s">Small</button><button data-size="m">Medium</button><button data-size="l">Large</button></div></div>
@@ -471,8 +473,9 @@ function chart(W, H, f, now, top, placeEnd) {
   const arrowY = dayBot + f * 1.1, pctY = arrowY + f * 1.35, tempY = pctY + f * 1.2;
   const pBot = H - f * 1.7, gap = f * 2.1;  // room for hour labels and panel titles
   const panels = [["wind", 1.3]];
-  if (state.showTides) panels.push(["tide", LOC.station ? 1 : .45]);   // lakes: short greyed-out panel
-  if (state.showWaves) panels.push(["wave", buoy ? .6 : 1]);
+  if (state.showTides && LOC.station) panels.push(["tide", 1]);   // lakes have no tides
+  const buoyOut = buoy && !(buoy.live && (buoy.waveFt != null || buoy.waterF != null));
+  if (state.showWaves) panels.push(["wave", buoyOut ? .22 : buoy ? .4 : 1]);   // buoy out: short strip
   let y = (hourly ? tempY : pctY) + f * .9;
   const totW = panels.reduce((a, p) => a + p[1], 0), avail = pBot - y - gap * panels.length;
   const box = {};
@@ -563,12 +566,7 @@ function chart(W, H, f, now, top, placeEnd) {
   if (hourly) text("rain / air", L - f * .5, (pctY + tempY) / 2, f * .7, T.gray, 1);
 
   // ---- tide chart ----
-  if (box.tide && !LOC.station) {   // lake: no tides, greyed out
-    const [tt, tb] = box.tide;
-    title("tide ft", L, tt, T.gray);
-    rect(L, tt, pw, tb - tt, [...T.gray.slice(0, 3), .14]);
-    text("No tides on lakes", (L + R) / 2, (tt + tb) / 2, f * 1.1, T.gray);
-  } else if (box.tide) {
+  if (box.tide) {
     const [tt, tb] = box.tide;
     title("tide ft", L, tt, T.tide);
     const pts = curve.filter(([t]) => t >= ts && t <= t1);
@@ -597,7 +595,7 @@ function chart(W, H, f, now, top, placeEnd) {
   if (box.wave && buoy) {
     const [vt, vb] = box.wave, my = (vt + vb) / 2;
     title("lake buoy", L, vt, T.wave);
-    if (buoy.live && (buoy.waveFt != null || buoy.waterF != null)) {
+    if (!buoyOut) {
       const parts = [];
       if (buoy.waveFt != null) parts.push([`waves ${buoy.waveFt.toFixed(1)} ft` + (buoy.period != null ? ` @ ${Math.round(buoy.period)}s` : ""), T.wave]);
       if (buoy.waterF != null) parts.push([`water ${Math.round(buoy.waterF)}°F`, T.water]);
@@ -608,11 +606,11 @@ function chart(W, H, f, now, top, placeEnd) {
       for (const [t, c] of parts) x += text(t, x, my - f * .5, sz, c, 0, true) + gapW;
       text(`Big Spirit Lake buoy, reading at ${hm(buoy.time)}`, (L + R) / 2, my + f * 1.2, f * .95, T.gray);
     } else {
-      text("Buoy data not available", (L + R) / 2, my - f * .55, f * 1.2, T.gray, .5, true);
+      rect(L, vt, pw, vb - vt, [...T.gray.slice(0, 3), .12]);
       const why = buoy.time
-        ? `Last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${hm(buoy.time)}. The buoy is taken out of the lake for winter.`
-        : "Couldn't reach the lake buoy. Will try again.";
-      text(why, (L + R) / 2, my + f * .8, fit(why, f * .95, pw * .95), T.gray);
+        ? `Buoy data not available. Last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${hm(buoy.time)}; the buoy is taken out of the lake for winter.`
+        : "Buoy data not available. Couldn't reach the lake buoy, will try again.";
+      text(why, (L + R) / 2, my, fit(why, f * 1.05, pw * .95), T.gray);
     }
   }
 
@@ -682,6 +680,10 @@ function applyTheme() {
   document.getElementById("past").classList.toggle("on", state.past);
   bar.querySelectorAll("[data-days]").forEach(b => b.classList.toggle("on", +b.dataset.days === state.days));
   dlg.querySelectorAll("[data-set]").forEach(c => c.checked = !!state[c.dataset.set]);
+  const lake = !LOC.station, tc = dlg.querySelector('[data-set="showTides"]');   // lakes: tides off and greyed out
+  tc.disabled = lake; if (lake) tc.checked = false;
+  document.getElementById("tiderow").classList.toggle("off", lake);
+  document.getElementById("tidenote").hidden = !lake;
   dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
   dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));
 }

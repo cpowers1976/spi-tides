@@ -9,33 +9,107 @@
 <link rel="apple-touch-icon" href="tides-icon-192.png">
 <meta name="theme-color" content="#0f1420">
 <style>
-  :root { --bg: #0f1420; --btn: #29334a; --btntext: #fff; --on: #4ade80; }
+  :root { --bg: #0f1420; --btn: #29334a; --btntext: #fff; --on: #4ade80; --gray: #99adc7; --red: #f76659; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden;
                font-family: system-ui, Roboto, sans-serif; }
   body { display: flex; flex-direction: column; }
   canvas { flex: 1; width: 100%; min-height: 0; display: block; }
   #bar { display: flex; gap: 10px; padding: 8px 16px 12px; align-items: center; }
-  #bar button { font: inherit; font-size: 16px; padding: 10px 18px; border: 0; border-radius: 8px;
-                background: var(--btn); color: var(--btntext); cursor: pointer; }
-  #bar button.on { background: var(--on); color: #fff; }
-  .sp { flex: 1; }
+  button { font: inherit; font-size: 18px; padding: 10px 18px; border: 0; border-radius: 8px;
+           background: var(--btn); color: var(--btntext); cursor: pointer; }
+  button.on { background: var(--on); color: #fff; }
+  #upd { flex: 1; text-align: center; font-size: 17px; color: var(--gray); white-space: nowrap;
+         overflow: hidden; text-overflow: ellipsis; }
+  #upd.old { color: var(--red); }
+  #gear { padding: 8px 12px; display: flex; align-items: center; }
+  #gear svg { width: 26px; height: 26px; }
+
+  /* settings window */
+  #settings { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.5); display: flex;
+              align-items: center; justify-content: center; }
+  #settings[hidden] { display: none; }
+  .panel { background: var(--bg); color: var(--btntext); border: 1px solid var(--btn); border-radius: 14px;
+           padding: 18px 24px 22px; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+           overflow-y: auto; box-sizing: border-box; box-shadow: 0 10px 40px rgba(0,0,0,.4); font-size: 20px; }
+  .panel h2 { margin: 0 0 8px; font-size: 24px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+         padding: 12px 0; border-bottom: 1px solid var(--btn); cursor: pointer; }
+  .row small { display: block; font-size: 15px; color: var(--gray); }
+  .sw { appearance: none; -webkit-appearance: none; width: 54px; height: 30px; border-radius: 15px; margin: 0;
+        background: var(--btn); position: relative; cursor: pointer; flex: none; transition: background .15s; }
+  .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+               border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .sw:checked { background: var(--on); }
+  .sw:checked::after { left: 27px; }
+  .row.off { opacity: .45; cursor: default; }
+  .row.off .sw { cursor: default; }
+  .seg { display: flex; gap: 6px; }
+  .seg button { font-size: 17px; padding: 8px 12px; }
+  #done { width: 100%; margin-top: 18px; font-size: 20px; padding: 12px; }
+
+  /* location picker (opened by tapping the place name) */
+  #locmenu { position: fixed; z-index: 5; background: var(--bg); color: var(--btntext); border: 1px solid var(--btn);
+             border-radius: 12px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.4); min-width: 280px; }
+  #locmenu[hidden], #hint[hidden] { display: none; }
+  #locmenu button { display: flex; width: 100%; align-items: center; gap: 12px; background: none; text-align: left;
+                    font-size: 21px; padding: 12px 14px; }
+  #locmenu button:hover { background: var(--btn); }
+  #locmenu .ck { width: 1.1em; color: var(--on); font-weight: bold; }
+  #locmenu small { display: block; font-size: 15px; color: var(--gray); }
+  #hint { position: fixed; z-index: 4; background: var(--on); color: #fff; font-size: 18px; font-weight: 600;
+          padding: 10px 16px; border-radius: 10px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.35);
+          animation: bob 1.6s ease-in-out infinite; }
+  #hint::before { content: ""; position: absolute; top: -8px; left: 28px; border: 8px solid transparent;
+                  border-top: 0; border-bottom-color: var(--on); }
+  @keyframes bob { 50% { transform: translateY(4px); } }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="bar">
   <button id="past">Past 24h</button>
-  <button id="light">Light mode</button>
-  <span class="sp"></span>
+  <span id="upd"></span>
+  <button data-days="1">24 hours</button>
   <button data-days="3">3 days</button>
   <button data-days="5">5 days</button>
   <button data-days="10">10 days</button>
+  <button id="gear" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</div>
+<div id="locmenu" hidden role="menu" aria-label="Choose location"></div>
+<div id="hint" hidden>Tap here to switch location</div>
+<div id="settings" hidden>
+  <div class="panel" role="dialog" aria-label="Settings">
+    <h2>Settings</h2>
+    <div class="row"><span>Location</span>
+      <div class="seg"><button data-loc="spi">South Padre</button><button data-loc="spirit">Big Spirit Lake</button></div></div>
+    <label class="row"><span>Light mode</span><input type="checkbox" class="sw" data-set="light"></label>
+    <label class="row"><span>24-hour clock<small>Show 19:17 instead of 7:17p</small></span><input type="checkbox" class="sw" data-set="clock24"></label>
+    <label class="row"><span>Weather icons<small>Sunny, cloudy, rain, storms...</small></span><input type="checkbox" class="sw" data-set="showWx"></label>
+    <label class="row"><span>Moon phase</span><input type="checkbox" class="sw" data-set="showMoon"></label>
+    <label class="row" id="tiderow"><span>Show tides<small id="tidenote" hidden>No tides on lakes</small></span><input type="checkbox" class="sw" data-set="showTides"></label>
+    <label class="row"><span>Show waves<small>Wave height, period and water temp</small></span><input type="checkbox" class="sw" data-set="showWaves"></label>
+    <div class="row"><span>Text size</span>
+      <div class="seg"><button data-size="s">Small</button><button data-size="m">Medium</button><button data-size="l">Large</button></div></div>
+    <button id="done">Done</button>
+  </div>
 </div>
 <script>
-const PLACE = "South Padre Island, Texas";
-const LAT = 26.07, LON = -97.17;          // wind and weather
-const SEA_LAT = 26.07, SEA_LON = -97.05;  // a few miles offshore, for waves
-const STATION = "8779749";                // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
+// Each location: where to get wind/weather, and where tides/waves/water temp come from.
+const LOCS = {
+  spi: { name: "South Padre Island, Texas", short: "South Padre Island", sub: "Tides, waves and water temp",
+         flag: "texas", lat: 26.07, lon: -97.17,
+         sea: [26.07, -97.05],             // a few miles offshore, for waves
+         station: "8779749" },             // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
+  spirit: { name: "Big Spirit Lake, Iowa", short: "Big Spirit Lake", sub: "Lake buoy waves and water temp",
+            flag: "iowa", lat: 43.467, lon: -95.10,
+            buoy: 2118 },                  // Big Spirit Lake research buoy (wqdatalive.com/public/470)
+};
+// The buoy site doesn't allow other websites to read it, so a small relay on our Cloudflare Pages site fetches it.
+const BUOY_API = /kiteboardokoboji\.com$|pages\.dev$/.test(location.hostname)
+  ? "/api/buoy" : "https://spi-tides-app.pages.dev/api/buoy";   // Android app and local copies
+let LOC = LOCS.spi;
 const KITE = 15;                          // bars turn green at this speed (mph)
 const STALE_MIN = 35;                     // "Updated" turns red if older than this
 
@@ -44,6 +118,7 @@ const DARK = {
   day: [.55,.7,.95,.16], night: [0,0,0,.45], past: [0,0,0,.3], gust: [1,1,1,.5], now: [1,1,1,.85],
   dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1],
   wave_fill: [.2,.8,.75,.3], wave: [.35,.9,.85,1], period: [.95,.6,.95,1], rain: [.45,.72,1,1],
+  water: [1,.62,.3,1],
   moon: [.96,.94,.82,1], moon_dark: [.22,.25,.32,1],
   light: [.4,.48,.6,1], breezy: [.98,.8,.3,1], kite: [.29,.87,.5,1], strong: [.97,.45,.3,1],
   btn: [.16,.2,.27,1], btntext: [1,1,1,1] };
@@ -52,6 +127,7 @@ const LIGHT = {
   day: [1,.9,.5,.3], night: [.25,.3,.45,.18], past: [1,1,1,.45], gust: [0,0,0,.45], now: [.1,.1,.1,.8],
   dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1],
   wave_fill: [.1,.6,.55,.25], wave: [.05,.5,.45,1], period: [.6,.2,.6,1], rain: [.1,.4,.8,1],
+  water: [.85,.4,.05,1],
   moon: [.98,.82,.3,1], moon_dark: [.3,.33,.4,1],
   light: [.55,.6,.68,1], breezy: [.9,.62,.05,1], kite: [.1,.65,.3,1], strong: [.88,.3,.15,1],
   btn: [.85,.87,.9,1], btntext: [.1,.12,.16,1] };
@@ -62,10 +138,19 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const state = { days: 3, past: false, light: false, data: null, updated: null, error: "" };
-try { Object.assign(state, JSON.parse(localStorage.getItem("spi-tides") || "{}")); } catch (e) {}
+const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize"];
+const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
+                textSize: "m", data: null, updated: null, error: "" };
+try {
+  const s = JSON.parse(localStorage.getItem("spi-tides") || "{}");
+  for (const k of SAVED) if (k in s) state[k] = s[k];
+} catch (e) {}
+const urlLoc = new URLSearchParams(location.search).get("loc");   // e.g. ?loc=spirit opens the lake
+if (urlLoc in LOCS) state.loc = urlLoc;
+if (!(state.loc in LOCS)) state.loc = "spi";
+LOC = LOCS[state.loc];
 function save() {
-  try { localStorage.setItem("spi-tides", JSON.stringify({ days: state.days, past: state.past, light: state.light })); } catch (e) {}
+  try { localStorage.setItem("spi-tides", JSON.stringify(Object.fromEntries(SAVED.map(k => [k, state[k]])))); } catch (e) {}
 }
 let T = state.light ? LIGHT : DARK;
 
@@ -83,9 +168,10 @@ function parse(s) {  // "2026-11-06 21:17" or "2026-11-06T21:00", local time
 }
 const h12 = d => d.getHours() % 12 || 12;
 const ap = d => d.getHours() < 12 ? "a" : "p";
-const hm = d => `${h12(d)}:${pad(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`;
-const short = d => `${h12(d)}:${pad(d.getMinutes())}${ap(d)}`;
-const hourLbl = d => `${h12(d)}${ap(d)}`;
+const hh24 = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const hm = d => state.clock24 ? hh24(d) : `${h12(d)}:${pad(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`;
+const short = d => state.clock24 ? hh24(d) : `${h12(d)}:${pad(d.getMinutes())}${ap(d)}`;
+const hourLbl = d => state.clock24 ? `${pad(d.getHours())}:00` : `${h12(d)}${ap(d)}`;
 const compass = d => DIRS[Math.round(d / 22.5) % 16];
 const windColor = s => s >= 25 ? T.strong : s >= KITE ? T.kite : s >= 10 ? T.breezy : T.light;
 function moonAge(d) {  // 0 = new, 0.5 = full
@@ -101,53 +187,80 @@ async function getJSON(url, params) {
   return r.json();
 }
 
+let loading = 0;
 async function load() {
+  const L = LOCS[state.loc], my = ++loading;   // a newer load (e.g. after switching location) wins
   try {
     const noaa = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter";
-    const q = { product: "predictions", station: STATION, begin_date: ymd(new Date(Date.now() - 86400e3)),
+    const q = { product: "predictions", station: L.station, begin_date: ymd(new Date(Date.now() - 86400e3)),
       range: 312, datum: "MLLW", units: "english", time_zone: "lst_ldt", format: "json", application: "casey_app" };
+    const none = { predictions: [] };
     const [curve, hilo, w] = await Promise.all([
-      getJSON(noaa, { ...q, interval: "30" }),
-      getJSON(noaa, { ...q, interval: "hilo" }),
+      L.station ? getJSON(noaa, { ...q, interval: "30" }) : none,
+      L.station ? getJSON(noaa, { ...q, interval: "hilo" }) : none,
       getJSON("https://api.open-meteo.com/v1/forecast", {
-        latitude: LAT, longitude: LON,
+        latitude: L.lat, longitude: L.lon,
         hourly: "temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,precipitation_probability",
         daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
         wind_speed_unit: "mph", temperature_unit: "fahrenheit", timezone: "America/Chicago",
         past_days: 1, forecast_days: 11 })]);
-    const waves = new Map();
-    try {  // wave forecast only goes about 7 days out
-      const m = (await getJSON("https://marine-api.open-meteo.com/v1/marine", {
-        latitude: SEA_LAT, longitude: SEA_LON, hourly: "wave_height,wave_period",
-        timezone: "America/Chicago", past_days: 1, forecast_days: 8 })).hourly;
+    const waves = new Map(), water = new Map();
+    if (L.sea) try {  // wave forecast only goes about 7 days out
+      const r = await getJSON("https://marine-api.open-meteo.com/v1/marine", {
+        latitude: L.sea[0], longitude: L.sea[1], hourly: "wave_height,wave_period,sea_surface_temperature",
+        timezone: "America/Chicago", past_days: 1, forecast_days: 8 });
+      const m = r.hourly, inF = /F/.test((r.hourly_units || {}).sea_surface_temperature || "");
       m.time.forEach((t, i) => {
-        const h = m.wave_height[i], p = m.wave_period[i];
+        const h = m.wave_height[i], p = m.wave_period[i], c = (m.sea_surface_temperature || [])[i];
         if (h != null && p != null) waves.set(t, [h * 3.281, p]);  // meters -> feet
+        if (c != null) water.set(t, inF ? c : c * 9 / 5 + 32);     // Celsius -> Fahrenheit
       });
     } catch (e) {}
+    let buoy = null;
+    if (L.buoy) try { buoy = readBuoy(await getJSON(BUOY_API, { site: L.buoy, v: 2 })   /* v: skip responses cached before the water temp backup */); } catch (e) { buoy = { error: true }; }
+    if (my !== loading) return;
     state.data = {
       curve: curve.predictions.map(p => [parse(p.t), +p.v]),
       hilo: hilo.predictions.map(p => [parse(p.t), +p.v, p.type]),
-      w, waves };
+      w, waves, water, buoy };
     state.updated = new Date();
     state.error = "";
   } catch (e) {
+    if (my !== loading) return;
     state.error = `Update failed ${hm(new Date())}, retrying`;
     setTimeout(load, 120e3);
   }
   draw();
 }
 
+// latest buoy reading -> { time, live, waveFt, period, waterF }; live = reported in the last 3 hours
+// lake = backup water temp (LakeMonster) for when the buoy is out
+function readBuoy(j) {
+  const lake = j && j.lake && j.lake.waterF != null ? j.lake : null;
+  if (!j || !j.time) return { error: true, lake };
+  const r = j.readings || {}, val = k => (r[k] || {}).value;
+  const time = new Date(j.time), hs = val("Hs Wave Height"), wt = val("Water Temperature at surface");
+  return { time, lake, live: Date.now() - time < 3 * 3600e3,
+           waveFt: hs == null ? null : (r["Hs Wave Height"].unit === "m" ? hs * 3.281 : hs),
+           period: val("Tp (DPD) Wave Period"), waterF: wt };
+}
+
 // ---------- drawing ----------
 const cv = document.getElementById("c"), ctx = cv.getContext("2d");
 
+function setFont(size, bold) { ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`; }
 function text(s, x, y, size, color, ax = .5, bold = false) {
-  ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`;
+  setFont(size, bold);
   ctx.fillStyle = rgba(color || T.text);
   ctx.textBaseline = "middle";
   const w = ctx.measureText(s).width;
   ctx.fillText(s, x - w * ax, y);
   return w;
+}
+function fit(s, size, maxW, bold) {  // largest font size (down to 70%) that fits in maxW
+  setFont(size, bold);
+  const w = ctx.measureText(s).width;
+  return w <= maxW ? size : Math.max(size * .7, size * maxW / w);
 }
 function line(pts, color, width = 1, dash) {
   ctx.strokeStyle = rgba(color); ctx.lineWidth = width; ctx.setLineDash(dash || []);
@@ -178,6 +291,74 @@ function arrow(cx, cy, deg, size, color) {
   ctx.stroke(); ctx.lineCap = "butt";
 }
 
+// ---------- weather icons (drawn, so they look the same on every device) ----------
+function wxKind(code) {
+  if (code >= 95) return "storm";
+  if (code >= 80) return "showers";
+  if (code >= 61) return "rain";
+  if (code >= 51) return "drizzle";
+  if (code >= 45) return "fog";
+  return ["sun", "mostly", "partly", "cloud"][code] || "cloud";
+}
+function sun(cx, cy, r) {
+  const c = rgba([.99, .78, .2, 1]);
+  ctx.strokeStyle = c; ctx.lineWidth = Math.max(1.5, r * .22); ctx.lineCap = "round";
+  ctx.beginPath();
+  for (let k = 0; k < 8; k++) {
+    const a = k * Math.PI / 4;
+    ctx.moveTo(cx + Math.cos(a) * r * 1.35, cy + Math.sin(a) * r * 1.35);
+    ctx.lineTo(cx + Math.cos(a) * r * 1.8, cy + Math.sin(a) * r * 1.8);
+  }
+  ctx.stroke(); ctx.lineCap = "butt";
+  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+}
+function cloud(cx, cy, w, dark) {  // w = width; centred on cx, cy
+  const h = w * .55, b = cy + h / 2;
+  ctx.fillStyle = rgba(dark ? (state.light ? [.45,.5,.58,1] : [.62,.67,.75,1])
+                            : (state.light ? [.7,.74,.8,1] : [.88,.9,.94,1]));
+  ctx.beginPath();
+  ctx.arc(cx - w * .24, b - h * .3, h * .3, 0, 7);
+  ctx.arc(cx + w * .02, b - h * .52, h * .45, 0, 7);
+  ctx.arc(cx + w * .25, b - h * .33, h * .33, 0, 7);
+  ctx.fill();
+  ctx.fillRect(cx - w * .24, b - h * .3, w * .49, h * .3);
+}
+function wxIcon(code, cx, cy, s) {  // s = icon height
+  const k = wxKind(code);
+  if (k === "sun") return sun(cx, cy, s * .27);
+  if (k === "mostly") { sun(cx - s * .12, cy - s * .08, s * .24); return cloud(cx + s * .22, cy + s * .18, s * .62); }
+  if (k === "partly") { sun(cx - s * .2, cy - s * .15, s * .22); return cloud(cx + s * .08, cy + s * .08, s * .95); }
+  if (k === "showers") sun(cx - s * .28, cy - s * .25, s * .18);
+  const wet = k !== "cloud" && k !== "fog";
+  cloud(cx, wet ? cy - s * .14 : cy, s * 1.05, wet);
+  const top = cy + s * .16;
+  if (k === "fog") {
+    line([cx - s * .45, cy + s * .32, cx + s * .45, cy + s * .32], T.gray, Math.max(1.5, s * .07));
+    line([cx - s * .35, cy + s * .46, cx + s * .35, cy + s * .46], T.gray, Math.max(1.5, s * .07));
+  } else if (k === "drizzle") {
+    for (const dx of [-.25, 0, .25]) dot(cx + dx * s, top + s * .2, Math.max(1.3, s * .05), T.rain);
+  } else if (k === "rain" || k === "showers") {
+    ctx.lineCap = "round";
+    for (const dx of [-.25, 0, .25]) line([cx + dx * s, top + s * .06, cx + dx * s - s * .08, top + s * .32], T.rain, Math.max(1.5, s * .08));
+    ctx.lineCap = "butt";
+  } else if (k === "storm") {
+    ctx.fillStyle = rgba([.99, .78, .2, 1]); ctx.beginPath();
+    for (const [x, y] of [[.06,0], [-.14,.24], [0,.24], [-.08,.42], [.16,.14], [.02,.14], [.1,0]]) ctx.lineTo(cx + x * s, top + y * s);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+// name of a day with its weather icon on the left and moon on the right, fitted to the column
+function dayTitle(name, mid, y, size, maxW, d, code, iconS, moonR) {
+  const ic = state.showWx && code != null ? iconS * 1.4 : 0, mn = state.showMoon ? moonR * 2 + size * .35 : 0;
+  const ns = fit(name, size, maxW - ic - mn, true);
+  setFont(ns, true);
+  const nw = ctx.measureText(name).width, x0 = mid - (ic + nw + mn) / 2;
+  if (ic) wxIcon(code, x0 + iconS * .65, y + iconS * .04, iconS);  // icon's art reaches ~.6 left of centre
+  text(name, x0 + ic, y, ns, T.text, 0, true);
+  if (mn) moon(x0 + ic + nw + size * .35 + moonR, y, moonR, moonAge(d));
+}
+
 function moon(cx, cy, r, age) {
   dot(cx, cy, r, T.moon_dark);
   const k = Math.cos(2 * Math.PI * age), side = age < .5 ? 1 : -1;  // lit on the right while waxing
@@ -202,26 +383,53 @@ function texasFlag(x, cy, h) {
   if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
 }
 
+function iowaFlag(x, cy, h) {
+  const w = h * 1.5, y = cy - h / 2;
+  ctx.fillStyle = "#002868"; ctx.fillRect(x, y, w / 3, h);
+  ctx.fillStyle = "#fff"; ctx.fillRect(x + w / 3, y, w / 3, h);
+  ctx.fillStyle = "#bf0a30"; ctx.fillRect(x + w * 2 / 3, y, w / 3, h);
+  ctx.fillStyle = "#1f3a7a"; ctx.beginPath();   // little eagle-ish wings on the white stripe
+  ctx.ellipse(x + w / 2, cy - h * .08, w * .14, h * .12, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = "#bf0a30"; ctx.font = `bold ${h * .2}px system-ui, sans-serif`; ctx.textBaseline = "middle";
+  const tw = ctx.measureText("IOWA").width; ctx.fillText("IOWA", x + w / 2 - tw / 2, cy + h * .25);
+  if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
+}
+function caret(cx, cy, s, color) {   // small "v" that says the title opens a menu
+  ctx.strokeStyle = rgba(color); ctx.lineWidth = Math.max(2, s * .22); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.beginPath(); ctx.moveTo(cx - s * .5, cy - s * .25); ctx.lineTo(cx, cy + s * .25); ctx.lineTo(cx + s * .5, cy - s * .25);
+  ctx.stroke(); ctx.lineCap = "butt"; ctx.lineJoin = "miter";
+}
+
+let titleBox = null;   // where the place name is drawn, for tapping
+const SCALE = { s: .88, m: 1, l: 1.14 };
 function draw() {
   const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   rect(0, 0, W, H, T.bg);
-  const f = Math.min(H / 55, W / 90), now = new Date(), top = f * 2.2;
-  const tw = text(PLACE, f * 1.5, top, f * 1.6, T.text, 0, true);
-  texasFlag(f * 2.3 + tw, top, f * 1.5);
+  const f = Math.min(H / 46, W / 76) * (SCALE[state.textSize] || 1), now = new Date(), top = f * 2.1;
+  const ps = fit(LOC.name, f * 1.5, W * .3, true);
+  const tw = text(LOC.name, f * 1.2, top, ps, T.text, 0, true);
+  (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, top, ps * .95);
+  const cx0 = f * 1.9 + tw + ps * 1.45 + ps * .65;
+  caret(cx0, top, ps * .55, T.gray);
+  const placeEnd = cx0 + ps * .45;
+  titleBox = { x: f * .4, y: top - ps * .9, w: placeEnd - f * .4 + f * .4, h: ps * 1.8 };
+  placeHint();
+
   const old = !state.updated || now - state.updated > STALE_MIN * 60e3;
-  const msg = state.error || (state.updated ? `Updated ${hm(state.updated)}` : "Loading...");
-  text(msg, W - f * 1.5, top, f * .9, (old || state.error) ? T.red : T.gray, 1);
-  if (state.data) chart(W, H, f, now, top);
+  const upd = document.getElementById("upd");
+  upd.textContent = state.error || (state.updated ? `Updated ${hm(state.updated)}` : "Loading...");
+  upd.classList.toggle("old", !!(old || state.error));
+  if (state.data) chart(W, H, f, now, top, placeEnd);
 }
 
-function chart(W, H, f, now, top) {
-  const { curve, hilo, w, waves } = state.data, hr = w.hourly, dy = w.daily;
+function chart(W, H, f, now, top, placeEnd) {
+  const { curve, hilo, w, waves, water, buoy } = state.data, hr = w.hourly, dy = w.daily;
   const times = hr.time.map(parse);
   const t0 = new Date(now); t0.setMinutes(0, 0, 0);
   const ts = state.past ? new Date(t0 - 24 * 3600e3) : t0;   // chart start
-  const t1 = addDays(t0, state.days + 1);
+  const t1 = state.days === 1 ? new Date(+t0 + 24 * 3600e3) : addDays(t0, state.days + 1);
   const inow = hr.time.indexOf(hourKey(t0)), i0 = hr.time.indexOf(hourKey(ts));
   if (inow < 0 || i0 < 0) { text("Waiting for new data...", W / 2, H / 2, f, T.gray); return; }
   const n = Math.round((t1 - ts) / 3600e3);
@@ -229,27 +437,59 @@ function chart(W, H, f, now, top) {
   const spd = hr.wind_speed_10m, gst = hr.wind_gusts_10m, dirs = hr.wind_direction_10m;
   const rainP = hr.precipitation_probability;
 
-  const L = f * 3.5, R = W - f * 3, pw = R - L, bw = pw / n, span = t1 - ts;
+  const L = f * 3.4, R = W - f * 3.2, pw = R - L, bw = pw / n, span = t1 - ts;
   const xt = t => L + (t - ts) / span * pw;
-  const step = n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
-  const P = fr => H - H * fr;                        // fraction of height, from the bottom
-  const wb = P(.50), wt = P(.70), vb = P(.28), vt = P(.45), tb = P(.07), tt = P(.23);
+  const hourly = n <= 50;                           // 24 hour view: show every hour
+  const step = n <= 30 ? 1 : n <= 50 ? 2 : n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
 
-  // current conditions in header
-  const s0 = spd[inow], cx = W * .40;
-  arrow(cx, top, dirs[inow], f * 1.8, windColor(s0));
-  let x = cx + f * 1.5;
-  x += text(`${Math.round(s0)} mph`, x, top, f * 2.2, windColor(s0), 0, true);
-  let extra = `   gusts ${Math.round(gst[inow])}   ${compass(dirs[inow])}   ${Math.round(hr.temperature_2m[inow])}°F`;
-  const wv0 = waves.get(hr.time[inow]);
+  // ---- current conditions in header ----
+  const s0 = spd[inow], wc = windColor(s0);
+  const mph = `${Math.round(s0)} mph`;
+  let extra = `gusts ${Math.round(gst[inow])}   ${compass(dirs[inow])}   ${Math.round(hr.temperature_2m[inow])}°F`;
+  let wv0 = waves.get(hr.time[inow]), wt0 = water.get(hr.time[inow]);
+  if (buoy && buoy.live) {
+    if (buoy.waveFt != null && buoy.period != null) wv0 = [buoy.waveFt, buoy.period];
+    if (buoy.waterF != null) wt0 = buoy.waterF;
+  }
+  if (buoy && wt0 == null && buoy.lake) wt0 = buoy.lake.waterF;
   if (wv0) extra += `   waves ${wv0[0].toFixed(1)} ft @ ${Math.round(wv0[1])}s`;
-  text(extra, x, top, f * 1.1, T.text, 0);
+  if (wt0 != null) extra += `   water ${Math.round(wt0)}°F`;
+  const mphW = (setFont(f * 2.3, true), ctx.measureText(mph).width);
+  let es = f * 1.45;
+  setFont(es); let ew = ctx.measureText(extra).width;
+  const need = () => f * 3.6 + mphW + f * 1.2 + ew;
+  let cx = Math.max(W * .36, placeEnd + f * 1.5);
+  if (cx + need() > W - f * 1.2) cx = Math.max(placeEnd + f * 1.5, W - f * 1.2 - need());
+  if (cx + need() > W - f * 1.2) { es = fit(extra, es, W - f * 1.2 - cx - f * 4.8 - mphW, false); setFont(es); ew = ctx.measureText(extra).width; }
+  arrow(cx + f, top, dirs[inow], f * 1.9, wc);
+  let x = cx + f * 2.4;
+  x += text(mph, x, top, f * 2.3, wc, 0, true) + f * 1.2;
+  text(extra, x, top, es, T.text, 0);
+
+  // ---- vertical layout ----
+  const fullCol = 86400e3 / span * pw;
+  const mode = fullCol > pw * .18 ? "wide" : fullCol > pw * .07 ? "mid" : "narrow";
+  const rh = f * 1.5, rows = mode === "wide" ? 3 : mode === "mid" ? 4 : 1;
+  const h0 = state.showWx ? rh * 1.4 : rh;  // taller name row so weather icons don't touch the next line
+  const dayTop = top + f * 2.2, dayBot = dayTop + h0 + (rows - 1) * rh;
+  const rowY = r => r ? dayTop + h0 + rh * (r - .5) : dayTop + h0 / 2;
+  const arrowY = dayBot + f * 1.1, pctY = arrowY + f * 1.35, tempY = pctY + f * 1.2;
+  const pBot = H - f * 1.7, gap = f * 2.1;  // room for hour labels and panel titles
+  const panels = [["wind", 1.3]];
+  if (state.showTides && LOC.station) panels.push(["tide", 1]);   // lakes have no tides
+  const buoyOut = buoy && !(buoy.live && (buoy.waveFt != null || buoy.waterF != null));
+  if (state.showWaves) panels.push(["wave", buoyOut ? .22 : buoy ? .4 : 1]);   // buoy out: short strip
+  let y = (hourly ? tempY : pctY) + f * .9;
+  const totW = panels.reduce((a, p) => a + p[1], 0), avail = pBot - y - gap * panels.length;
+  const box = {};
+  for (const [name, wgt] of panels) { y += gap; box[name] = [y, y + avail * wgt / totW]; y = box[name][1]; }
+  const [wt, wb] = box.wind;
 
   // day / night shading
   for (let k = 0; k < idx.length;) {
     const isDay = hr.is_day[idx[k]];
     let e = k; while (e < idx.length && hr.is_day[idx[e]] === isDay) e++;
-    rect(L + k * bw, wt, (e - k) * bw, tb - wt, isDay ? T.day : T.night);
+    rect(L + k * bw, wt, (e - k) * bw, pBot - wt, isDay ? T.day : T.night);
     k = e;
   }
 
@@ -257,8 +497,8 @@ function chart(W, H, f, now, top) {
   const today = midnight(now);
   for (let d = midnight(ts); d < t1; d = addDays(d, 1)) {
     const a = new Date(Math.max(ts, d)), b = new Date(Math.min(t1, addDays(d, 1)));
-    const xa = xt(a), xb = xt(b), mid = (xa + xb) / 2, colw = xb - xa;
-    if (a > ts) line([xa, tb, xa, P(.88)], T.sep, 1);
+    const xa = xt(a), xb = xt(b), mid = (xa + xb) / 2, colw = xb - xa, cw = colw * .92;
+    if (a > ts) line([xa, pBot, xa, dayTop - f * .3], T.sep, 1);
     const j = dy.time.indexOf(isoDate(d));
     if (j < 0) continue;
     const pp = dy.precipitation_probability_max[j] || 0;
@@ -267,32 +507,36 @@ function chart(W, H, f, now, top) {
     let name;
     if (d < today) name = "Yesterday";
     else if (+d === +today) name = now.getHours() >= 17 && !state.past ? "Tonight" : "Today";
-    else name = colw > pw * .18 ? d.toLocaleDateString("en-US", { weekday: "long" })
+    else name = mode === "wide" ? d.toLocaleDateString("en-US", { weekday: "long" })
                                 : `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getDate()}`;
-    if (colw > pw * .18) {
-      const nw = text(name, mid, P(.855), f * 1.15, T.text, .5, true);
-      moon(mid + nw / 2 + f * 1.2, P(.855), f * .7, moonAge(d));
-      text(cond, mid, P(.815), f * .95, T.gray);
-      text(`${temps}    rain ${Math.round(pp)}%`, mid, P(.78), f * .95);
-    } else if (colw > pw * .07) {
-      const nw = text(name, mid, P(.86), f * .95, T.text, .5, true);
-      moon(mid + nw / 2 + f * 1, P(.86), f * .55, moonAge(d));
-      text(cond, mid, P(.83), f * .75, T.gray);
-      text(temps, mid, P(.80), f * .8);
-      text(`rain ${Math.round(pp)}%`, mid, P(.775), f * .75, T.gray);
-    } else if (colw > f * 3) {
-      text(name.slice(0, 3), mid, P(.855), f * .85, T.text, .5, true);
+    const rain = `rain ${Math.round(pp)}%`;
+    if (mode === "wide" && colw > pw * .12) {
+      dayTitle(name, mid, rowY(0), f * 1.45, colw - f * 1.2, d, dy.weather_code[j], f * 1.8, f * .75);
+      text(cond, mid, rowY(1), fit(cond, f * 1.2, cw), T.gray);
+      const tr = `${temps}    ${rain}`;
+      text(tr, mid, rowY(2), fit(tr, f * 1.2, cw));
+    } else if (mode !== "narrow" && colw > fullCol * .55) {
+      dayTitle(name, mid, rowY(0), f * 1.2, colw - f * .8, d, dy.weather_code[j], f * 1.6, f * .6);
+      text(cond, mid, rowY(1), fit(cond, f * 1.05, cw), T.gray);
+      text(temps, mid, rowY(2), fit(temps, f * 1.1, cw));
+      text(rain, mid, rowY(3), fit(rain, f * 1.05, cw), pp >= 30 ? T.rain : T.gray);
+    } else if (colw > f * 2.5) {
+      const nm = mode === "narrow" ? name.slice(0, 3) : name.split(" ")[0];
+      text(nm, mid, rowY(0), fit(nm, f * 1.05, cw, true), T.text, .5, true);
     }
   }
 
-  // wind chart
-  const ymax = Math.max(30, Math.ceil(Math.max(...idx.map(i => gst[i])) / 10) * 10);
+  // panel titles
+  const title = (s, x, yb, color, ax = 0) => text(s, x, yb - f * 1.0, f * 1.05, color, ax);
+
+  // ---- wind chart ----
+  const ymax = Math.max(30, Math.ceil((Math.max(...idx.map(i => gst[i])) + 3) / 10) * 10);
   const wy = v => wb - v / ymax * (wb - wt);
   for (let v = 10; v <= ymax; v += 10) {
     line([L, wy(v), R, wy(v)], T.grid, 1);
-    text(String(v), L - f * .5, wy(v), f * .8, T.gray, 1);
+    text(String(v), L - f * .5, wy(v), f, T.gray, 1);
   }
-  text("wind mph", L - f * 3, wt - f * 1.2, f * .75, T.gray, 0);
+  title("wind mph", L, wt, T.gray);
   line([L, wy(KITE), R, wy(KITE)], [...T.kite.slice(0, 3), .6], 1, [6, 6]);
   const gpts = [], best = new Map();
   idx.forEach((i, k) => {
@@ -302,97 +546,208 @@ function chart(W, H, f, now, top) {
     const key = isoDate(times[i]);
     if (!best.has(key) || spd[i] > best.get(key)[0]) best.set(key, [spd[i], k, i]);
   });
-  line(gpts, T.gust, 1.3);
+  line(gpts, T.gust, 1.5);
   let lastX = -1e9;
-  for (const [s, k, i] of best.values()) {  // daily peak
+  if (hourly) idx.forEach((i, k) => {     // every hour's speed
+    if (k % step) return;
     const px = L + (k + .5) * bw;
-    if (px - lastX < f * 2.5) continue;
-    text(String(Math.round(s)), px, wy(gst[i]) - f * .7, f * .85, windColor(s), .5, true);
+    text(String(Math.round(spd[i])), px, wy(Math.max(spd[i], gst[i])) - f * .8, f * (step > 1 ? .9 : 1), windColor(spd[i]), .5, true);
+  });
+  else for (const [s, k, i] of best.values()) {  // daily peak
+    const px = Math.max(L + f * .9, L + (k + .5) * bw);
+    if (px - lastX < f * 3) continue;
+    text(String(Math.round(s)), px, wy(gst[i]) - f * .8, f * 1.05, windColor(s), .5, true);
     lastX = px;
   }
   idx.forEach((i, k) => {                  // direction arrows with rain chance
     if (k % step !== Math.floor(step / 2)) return;
     const ax = L + (k + .5) * bw, pr = rainP[i] || 0;
-    arrow(ax, P(.75), dirs[i], f * 1.3, windColor(spd[i]));
-    text(`${Math.round(pr)}%`, ax, P(.725), f * .65, pr >= 30 ? T.rain : T.gray, .5, pr >= 30);
+    arrow(ax, arrowY, dirs[i], f * 1.45, windColor(spd[i]));
+    text(`${Math.round(pr)}%`, ax, pctY, f * .85, pr >= 30 ? T.rain : T.gray, .5, pr >= 30);
+    if (hourly) text(`${Math.round(hr.temperature_2m[i])}°`, ax, tempY, f * .9, T.text);
   });
+  if (hourly) text("rain / air", L - f * .5, (pctY + tempY) / 2, f * .7, T.gray, 1);
 
-  // wave chart: height (filled, left axis ft) and period (line, right axis seconds)
-  const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
-  text("wave height ft", L, vt - f * .9, f * .75, T.wave, 0);
-  text("wave period sec", R, vt - f * .9, f * .75, T.period, 1);
-  if (wv.length) {
-    const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));
-    const pmax = Math.max(10, Math.ceil(Math.max(...wv.map(v => v[2])) / 5) * 5);
-    const hy = v => vb - v / hmax * (vb - vt), py = v => vb - v / pmax * (vb - vt);
-    const hstep = hmax <= 4 ? 1 : 2;
-    for (let v = hstep; v <= hmax; v += hstep) {
-      line([L, hy(v), R, hy(v)], T.grid, 1);
-      text(String(v), L - f * .5, hy(v), f * .8, T.gray, 1);
+  // ---- tide chart ----
+  if (box.tide) {
+    const [tt, tb] = box.tide;
+    title("tide ft", L, tt, T.tide);
+    const pts = curve.filter(([t]) => t >= ts && t <= t1);
+    if (pts.length) {
+      const vs = pts.map(p => p[1]);
+      const lo = Math.floor(Math.min(...vs) * 2) / 2 - .5, hi = Math.ceil(Math.max(...vs) * 2) / 2 + .6;
+      const ty = v => tb - (v - lo) / (hi - lo) * (tb - tt);
+      for (let v = Math.ceil(lo); v <= Math.floor(hi); v++) {
+        line([L, ty(v), R, ty(v)], T.grid, 1);
+        text(String(v), L - f * .5, ty(v), f, T.gray, 1);
+      }
+      const tl = pts.flatMap(([t, v]) => [xt(t), ty(v)]);
+      area(tl, tb, T.tide_fill);
+      line(tl, T.tide, 2.5);
+      for (const [t, v, typ] of hilo) {
+        if (t < ts || t > t1) continue;
+        const xx = xt(t), yy = ty(v);
+        dot(xx, yy, Math.max(4, f * .3), T.dot);
+        const lbl = n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1);
+        text(lbl, xx, yy + (typ === "H" ? -f * .95 : f * .95), f * (n <= 170 ? .95 : 1));
+      }
     }
-    for (let v = 5; v <= pmax; v += 5) text(String(v), R + f * .5, py(v), f * .8, T.period, 0);
-    const hl = [], pl = [];
-    for (const [t, h, p] of wv) { const xx = xt(t) + bw / 2; hl.push(xx, hy(h)); pl.push(xx, py(p)); }
-    area(hl, vb, T.wave_fill);
-    line(hl, T.wave, 2);
-    line(pl, T.period, 1.5);
-    const last = wv[wv.length - 1][0];
-    if (last < t1 - 6 * 3600e3)
-      text("no wave forecast past here", xt(last) + f * .5, (vb + vt) / 2, f * .75, T.gray, 0);
-  } else {
-    text("Wave data unavailable", (L + R) / 2, (vb + vt) / 2, f * .9, T.gray);
   }
 
-  // tide chart
-  const pts = curve.filter(([t]) => t >= ts && t <= t1);
-  if (pts.length) {
-    const vs = pts.map(p => p[1]);
-    const lo = Math.floor(Math.min(...vs) * 2) / 2 - .5, hi = Math.ceil(Math.max(...vs) * 2) / 2 + .5;
-    const ty = v => tb - (v - lo) / (hi - lo) * (tb - tt);
-    for (let v = Math.ceil(lo); v <= Math.floor(hi); v++) {
-      line([L, ty(v), R, ty(v)], T.grid, 1);
-      text(String(v), L - f * .5, ty(v), f * .8, T.gray, 1);
-    }
-    const tl = pts.flatMap(([t, v]) => [xt(t), ty(v)]);
-    area(tl, tb, T.tide_fill);
-    line(tl, T.tide, 2);
-    for (const [t, v, typ] of hilo) {
-      if (t < ts || t > t1) continue;
-      const xx = xt(t), yy = ty(v);
-      dot(xx, yy, 4, T.dot);
-      const lbl = n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1);
-      text(lbl, xx, yy + (typ === "H" ? -f * .9 : f * .9), f * .75);
+  // ---- lake buoy: latest wave and water reading ----
+  if (box.wave && buoy) {
+    const [vt, vb] = box.wave, my = (vt + vb) / 2;
+    title("lake buoy", L, vt, T.wave);
+    if (!buoyOut) {
+      const parts = [];
+      if (buoy.waveFt != null) parts.push([`waves ${buoy.waveFt.toFixed(1)} ft` + (buoy.period != null ? ` @ ${Math.round(buoy.period)}s` : ""), T.wave]);
+      if (buoy.waterF != null) parts.push([`water ${Math.round(buoy.waterF)}°F`, T.water]);
+      const sz = f * 1.6, gapW = f * 3;
+      setFont(sz, true);
+      const tot = parts.reduce((a, [t]) => a + ctx.measureText(t).width, 0) + gapW * (parts.length - 1);
+      let x = (L + R - tot) / 2;
+      for (const [t, c] of parts) x += text(t, x, my - f * .5, sz, c, 0, true) + gapW;
+      text(`Big Spirit Lake buoy, reading at ${hm(buoy.time)}`, (L + R) / 2, my + f * 1.2, f * .95, T.gray);
+    } else {
+      rect(L, vt, pw, vb - vt, [...T.gray.slice(0, 3), .12]);
+      const why = buoy.time
+        ? `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`
+        : "Buoy data not available (couldn't reach the lake buoy)";
+      let x = L + f;
+      if (buoy.lake) {   // backup water temp
+        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, my, f * 1.2, T.water, 0, true) + f * .6;
+        x += text(`LakeMonster, ${buoy.lake.updated}`, x, my, f * .9, T.gray, 0) + f * 2;
+      }
+      text(why, x, my, fit(why, f * 1.0, R - f - x), T.gray, 0);
     }
   }
-  text("tide ft", L, tt - f * .9, f * .75, T.tide, 0);
+
+  // ---- wave chart: height (filled, left axis ft), period (right axis sec), water temp (labelled line) ----
+  if (box.wave && !buoy) {
+    const [vt, vb] = box.wave;
+    const tw1 = title("wave height ft", L, vt, T.wave);
+    title("water °F", L + tw1 + f * 1.5, vt, T.water);
+    title("period sec", R, vt, T.period, 1);
+    const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
+    if (wv.length) {
+      const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));
+      const pmax = Math.max(10, Math.ceil(Math.max(...wv.map(v => v[2])) / 5) * 5);
+      const hy = v => vb - v / hmax * (vb - vt), py = v => vb - v / pmax * (vb - vt);
+      const hstep = hmax <= 4 ? 1 : 2;
+      for (let v = hstep; v <= hmax; v += hstep) {
+        line([L, hy(v), R, hy(v)], T.grid, 1);
+        text(String(v), L - f * .5, hy(v), f, T.gray, 1);
+      }
+      for (let v = 5; v <= pmax; v += 5) text(String(v), R + f * .5, py(v), f, T.period, 0);
+      const hl = [], pl = [];
+      for (const [t, h, p] of wv) { const xx = xt(t) + bw / 2; hl.push(xx, hy(h)); pl.push(xx, py(p)); }
+      area(hl, vb, T.wave_fill);
+      line(hl, T.wave, 2.5);
+      line(pl, T.period, 2);
+      const last = wv[wv.length - 1][0];
+      if (last < t1 - 6 * 3600e3)
+        text("no wave forecast past here", xt(last) + f * .5, (vb + vt) / 2, f * .95, T.gray, 0);
+    } else {
+      text("Wave data unavailable", (L + R) / 2, (vb + vt) / 2, f, T.gray);
+    }
+    // water temp: own scale in the upper part of the panel, values written on the line
+    const wtp = idx.filter(i => water.has(hr.time[i])).map(i => [times[i], water.get(hr.time[i])]);
+    if (wtp.length) {
+      const vs = wtp.map(v => v[1]), lo = Math.min(...vs) - 1, hi = Math.max(...vs) + 1;
+      const top2 = vt + (vb - vt) * .12, bot2 = vt + (vb - vt) * .55;
+      const wy2 = v => bot2 - (v - lo) / (hi - lo) * (bot2 - top2);
+      const pl = wtp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]);
+      line(pl, T.water, 2.5, [8, 5]);
+      let lx = -1e9;   // label the first point and each noon, if there is room
+      wtp.forEach(([t, v], k) => {
+        const xx = xt(t) + bw / 2;
+        if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
+        text(`${Math.round(v)}°`, k ? xx : xx + f * .3, wy2(v) - f * .8, f * .95, T.water, k ? .5 : 0, true);
+        lx = xx;
+      });
+    }
+  }
 
   // hour ticks, past dimming and "now" line
-  const tick = n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
-  idx.forEach((i, k) => { if (tick.includes(times[i].getHours())) text(hourLbl(times[i]), L + k * bw, tb + f * .9, f * .75, T.gray); });
+  const tick = n <= 30 ? [...Array(24).keys()] : n <= 50 ? [0, 3, 6, 9, 12, 15, 18, 21] : n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
+  idx.forEach((i, k) => { if (tick.includes(times[i].getHours())) text(hourLbl(times[i]), L + k * bw, pBot + f * .9, f * .9, T.gray); });
   const xn = xt(now);
-  if (state.past) rect(L, wt, xn - L, tb - wt, T.past);
-  line([xn, tb, xn, wt], T.now, 1.2);
+  if (state.past) rect(L, wt, xn - L, pBot - wt, T.past);
+  line([xn, pBot, xn, wt], T.now, 1.4);
 }
 
-// ---------- buttons, theme, screen ----------
-const bar = document.getElementById("bar");
+// ---------- buttons, settings, theme, screen ----------
+const bar = document.getElementById("bar"), dlg = document.getElementById("settings");
 function applyTheme() {
   T = state.light ? LIGHT : DARK;
   const s = document.documentElement.style;
   s.setProperty("--bg", rgba(T.bg)); s.setProperty("--btn", rgba(T.btn));
   s.setProperty("--btntext", rgba(T.btntext)); s.setProperty("--on", rgba(T.kite));
+  s.setProperty("--gray", rgba(T.gray)); s.setProperty("--red", rgba(T.red));
   document.querySelector('meta[name="theme-color"]').content = rgba(T.bg);
   document.getElementById("past").classList.toggle("on", state.past);
-  document.getElementById("light").classList.toggle("on", state.light);
   bar.querySelectorAll("[data-days]").forEach(b => b.classList.toggle("on", +b.dataset.days === state.days));
+  dlg.querySelectorAll("[data-set]").forEach(c => c.checked = !!state[c.dataset.set]);
+  const lake = !LOC.station, tc = dlg.querySelector('[data-set="showTides"]');   // lakes: tides off and greyed out
+  tc.disabled = lake; if (lake) tc.checked = false;
+  document.getElementById("tiderow").classList.toggle("off", lake);
+  document.getElementById("tidenote").hidden = !lake;
+  dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
+  dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));
 }
+function changed() { save(); applyTheme(); draw(); }
+
+const menu = document.getElementById("locmenu"), hint = document.getElementById("hint");
+function setLoc(k) {
+  menu.hidden = true;
+  if (k === state.loc || !(k in LOCS)) return;
+  state.loc = k; LOC = LOCS[k];
+  state.data = null; state.updated = null; state.error = "";
+  document.title = `${LOC.short} Wind${LOC.station ? " & Tides" : ""}`;
+  changed(); load();
+}
+function openMenu() {
+  state.hintSeen = true; save(); hint.hidden = true;
+  menu.innerHTML = Object.entries(LOCS).map(([k, l]) =>
+    `<button data-loc="${k}" role="menuitem"><span class="ck">${k === state.loc ? "✓" : ""}</span><span>${l.name}<small>${l.sub}</small></span></button>`).join("");
+  const r = cv.getBoundingClientRect();
+  menu.style.left = `${r.left + titleBox.x}px`; menu.style.top = `${r.top + titleBox.y + titleBox.h + 4}px`;
+  menu.hidden = false;
+}
+function placeHint() {   // first-time bubble pointing at the place name
+  if (state.hintSeen || !titleBox) { hint.hidden = true; return; }
+  const r = cv.getBoundingClientRect();
+  hint.style.left = `${r.left + titleBox.x + 4}px`; hint.style.top = `${r.top + titleBox.y + titleBox.h + 8}px`;
+  hint.hidden = false;
+}
+const inTitle = e => {
+  if (!titleBox) return false;
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  return x >= titleBox.x && x <= titleBox.x + titleBox.w && y >= titleBox.y && y <= titleBox.y + titleBox.h;
+};
+cv.addEventListener("click", e => { if (inTitle(e)) menu.hidden ? openMenu() : (menu.hidden = true); else menu.hidden = true; });
+cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) ? "pointer" : "");
+hint.addEventListener("click", openMenu);
+menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); if (b) setLoc(b.dataset.loc); });
 bar.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "gear") { dlg.hidden = false; return; }
   if (b.id === "past") state.past = !state.past;
-  else if (b.id === "light") state.light = !state.light;
   else state.days = +b.dataset.days;
-  save(); applyTheme(); draw();
+  changed();
 });
+dlg.addEventListener("change", e => {
+  const c = e.target.closest("[data-set]"); if (!c) return;
+  state[c.dataset.set] = c.checked; changed();
+});
+dlg.addEventListener("click", e => {
+  if (e.target === dlg || e.target.id === "done") { dlg.hidden = true; return; }
+  const b = e.target.closest("[data-size]");
+  if (b) { state.textSize = b.dataset.size; changed(); }
+  const l = e.target.closest("[data-loc]");
+  if (l) setLoc(l.dataset.loc);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") dlg.hidden = menu.hidden = true; });
 
 let wakeLock = null;  // keep the screen on while this page is showing
 async function keepAwake() {
@@ -406,6 +761,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("resize", draw);
+document.title = `${LOC.short} Wind${LOC.station ? " & Tides" : ""}`;
 applyTheme();
 draw();
 load();

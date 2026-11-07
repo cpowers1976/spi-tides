@@ -64,6 +64,8 @@
     <h2>Settings</h2>
     <label class="row"><span>Light mode</span><input type="checkbox" class="sw" data-set="light"></label>
     <label class="row"><span>24-hour clock<small>Show 19:17 instead of 7:17p</small></span><input type="checkbox" class="sw" data-set="clock24"></label>
+    <label class="row"><span>Weather icons<small>Sunny, cloudy, rain, storms...</small></span><input type="checkbox" class="sw" data-set="showWx"></label>
+    <label class="row"><span>Moon phase</span><input type="checkbox" class="sw" data-set="showMoon"></label>
     <label class="row"><span>Show tides</span><input type="checkbox" class="sw" data-set="showTides"></label>
     <label class="row"><span>Show waves<small>Wave height, period and water temp</small></span><input type="checkbox" class="sw" data-set="showWaves"></label>
     <div class="row"><span>Text size</span>
@@ -104,8 +106,8 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const SAVED = ["days", "past", "light", "clock24", "showTides", "showWaves", "textSize"];
-const state = { days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true,
+const SAVED = ["days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize"];
+const state = { days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", data: null, updated: null, error: "" };
 try {
   const s = JSON.parse(localStorage.getItem("spi-tides") || "{}");
@@ -234,6 +236,74 @@ function arrow(cx, cy, deg, size, color) {
   ctx.stroke(); ctx.lineCap = "butt";
 }
 
+// ---------- weather icons (drawn, so they look the same on every device) ----------
+function wxKind(code) {
+  if (code >= 95) return "storm";
+  if (code >= 80) return "showers";
+  if (code >= 61) return "rain";
+  if (code >= 51) return "drizzle";
+  if (code >= 45) return "fog";
+  return ["sun", "mostly", "partly", "cloud"][code] || "cloud";
+}
+function sun(cx, cy, r) {
+  const c = rgba([.99, .78, .2, 1]);
+  ctx.strokeStyle = c; ctx.lineWidth = Math.max(1.5, r * .22); ctx.lineCap = "round";
+  ctx.beginPath();
+  for (let k = 0; k < 8; k++) {
+    const a = k * Math.PI / 4;
+    ctx.moveTo(cx + Math.cos(a) * r * 1.35, cy + Math.sin(a) * r * 1.35);
+    ctx.lineTo(cx + Math.cos(a) * r * 1.8, cy + Math.sin(a) * r * 1.8);
+  }
+  ctx.stroke(); ctx.lineCap = "butt";
+  ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+}
+function cloud(cx, cy, w, dark) {  // w = width; centred on cx, cy
+  const h = w * .55, b = cy + h / 2;
+  ctx.fillStyle = rgba(dark ? (state.light ? [.45,.5,.58,1] : [.62,.67,.75,1])
+                            : (state.light ? [.7,.74,.8,1] : [.88,.9,.94,1]));
+  ctx.beginPath();
+  ctx.arc(cx - w * .24, b - h * .3, h * .3, 0, 7);
+  ctx.arc(cx + w * .02, b - h * .52, h * .45, 0, 7);
+  ctx.arc(cx + w * .25, b - h * .33, h * .33, 0, 7);
+  ctx.fill();
+  ctx.fillRect(cx - w * .24, b - h * .3, w * .49, h * .3);
+}
+function wxIcon(code, cx, cy, s) {  // s = icon height
+  const k = wxKind(code);
+  if (k === "sun") return sun(cx, cy, s * .27);
+  if (k === "mostly") { sun(cx - s * .12, cy - s * .08, s * .24); return cloud(cx + s * .22, cy + s * .18, s * .62); }
+  if (k === "partly") { sun(cx - s * .2, cy - s * .15, s * .22); return cloud(cx + s * .08, cy + s * .08, s * .95); }
+  if (k === "showers") sun(cx - s * .28, cy - s * .25, s * .18);
+  const wet = k !== "cloud" && k !== "fog";
+  cloud(cx, wet ? cy - s * .14 : cy, s * 1.05, wet);
+  const top = cy + s * .16;
+  if (k === "fog") {
+    line([cx - s * .45, cy + s * .32, cx + s * .45, cy + s * .32], T.gray, Math.max(1.5, s * .07));
+    line([cx - s * .35, cy + s * .46, cx + s * .35, cy + s * .46], T.gray, Math.max(1.5, s * .07));
+  } else if (k === "drizzle") {
+    for (const dx of [-.25, 0, .25]) dot(cx + dx * s, top + s * .2, Math.max(1.3, s * .05), T.rain);
+  } else if (k === "rain" || k === "showers") {
+    ctx.lineCap = "round";
+    for (const dx of [-.25, 0, .25]) line([cx + dx * s, top + s * .06, cx + dx * s - s * .08, top + s * .32], T.rain, Math.max(1.5, s * .08));
+    ctx.lineCap = "butt";
+  } else if (k === "storm") {
+    ctx.fillStyle = rgba([.99, .78, .2, 1]); ctx.beginPath();
+    for (const [x, y] of [[.06,0], [-.14,.24], [0,.24], [-.08,.42], [.16,.14], [.02,.14], [.1,0]]) ctx.lineTo(cx + x * s, top + y * s);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+// name of a day with its weather icon on the left and moon on the right, fitted to the column
+function dayTitle(name, mid, y, size, maxW, d, code, iconS, moonR) {
+  const ic = state.showWx && code != null ? iconS * 1.25 : 0, mn = state.showMoon ? moonR * 2 + size * .35 : 0;
+  const ns = fit(name, size, maxW - ic - mn, true);
+  setFont(ns, true);
+  const nw = ctx.measureText(name).width, x0 = mid - (ic + nw + mn) / 2;
+  if (ic) wxIcon(code, x0 + iconS * .5, y, iconS);
+  text(name, x0 + ic, y, ns, T.text, 0, true);
+  if (mn) moon(x0 + ic + nw + size * .35 + moonR, y, moonR, moonAge(d));
+}
+
 function moon(cx, cy, r, age) {
   dot(cx, cy, r, T.moon_dark);
   const k = Math.cos(2 * Math.PI * age), side = age < .5 ? 1 : -1;  // lit on the right while waxing
@@ -357,16 +427,12 @@ function chart(W, H, f, now, top, placeEnd) {
                                 : `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getDate()}`;
     const rain = `rain ${Math.round(pp)}%`;
     if (mode === "wide" && colw > pw * .12) {
-      const ns = fit(name, f * 1.45, cw - f * 2.5, true);
-      const nw = text(name, mid - f * 1.1, rowY(0), ns, T.text, .5, true);
-      moon(mid - f * 1.1 + nw / 2 + f * 1.3, rowY(0), f * .75, moonAge(d));
+      dayTitle(name, mid, rowY(0), f * 1.45, cw, d, dy.weather_code[j], f * 2.1, f * .75);
       text(cond, mid, rowY(1), fit(cond, f * 1.2, cw), T.gray);
       const tr = `${temps}    ${rain}`;
       text(tr, mid, rowY(2), fit(tr, f * 1.2, cw));
     } else if (mode !== "narrow" && colw > fullCol * .55) {
-      const ns = fit(name, f * 1.2, cw - f * 1.8, true);
-      const nw = text(name, mid - f * .8, rowY(0), ns, T.text, .5, true);
-      moon(mid - f * .8 + nw / 2 + f * 1.0, rowY(0), f * .6, moonAge(d));
+      dayTitle(name, mid, rowY(0), f * 1.2, cw, d, dy.weather_code[j], f * 1.75, f * .6);
       text(cond, mid, rowY(1), fit(cond, f * 1.05, cw), T.gray);
       text(temps, mid, rowY(2), fit(temps, f * 1.1, cw));
       text(rain, mid, rowY(3), fit(rain, f * 1.05, cw), pp >= 30 ? T.rain : T.gray);

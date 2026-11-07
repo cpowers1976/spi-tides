@@ -234,11 +234,13 @@ async function load() {
 }
 
 // latest buoy reading -> { time, live, waveFt, period, waterF }; live = reported in the last 3 hours
+// lake = backup water temp (LakeMonster) for when the buoy is out
 function readBuoy(j) {
-  if (!j || !j.time) return { error: true };
+  const lake = j && j.lake && j.lake.waterF != null ? j.lake : null;
+  if (!j || !j.time) return { error: true, lake };
   const r = j.readings || {}, val = k => (r[k] || {}).value;
   const time = new Date(j.time), hs = val("Hs Wave Height"), wt = val("Water Temperature at surface");
-  return { time, live: Date.now() - time < 3 * 3600e3,
+  return { time, lake, live: Date.now() - time < 3 * 3600e3,
            waveFt: hs == null ? null : (r["Hs Wave Height"].unit === "m" ? hs * 3.281 : hs),
            period: val("Tp (DPD) Wave Period"), waterF: wt };
 }
@@ -449,6 +451,7 @@ function chart(W, H, f, now, top, placeEnd) {
     if (buoy.waveFt != null && buoy.period != null) wv0 = [buoy.waveFt, buoy.period];
     if (buoy.waterF != null) wt0 = buoy.waterF;
   }
+  if (buoy && wt0 == null && buoy.lake) wt0 = buoy.lake.waterF;
   if (wv0) extra += `   waves ${wv0[0].toFixed(1)} ft @ ${Math.round(wv0[1])}s`;
   if (wt0 != null) extra += `   water ${Math.round(wt0)}°F`;
   const mphW = (setFont(f * 2.3, true), ctx.measureText(mph).width);
@@ -608,9 +611,14 @@ function chart(W, H, f, now, top, placeEnd) {
     } else {
       rect(L, vt, pw, vb - vt, [...T.gray.slice(0, 3), .12]);
       const why = buoy.time
-        ? `Buoy data not available. Last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${hm(buoy.time)}; the buoy is taken out of the lake for winter.`
-        : "Buoy data not available. Couldn't reach the lake buoy, will try again.";
-      text(why, (L + R) / 2, my, fit(why, f * 1.05, pw * .95), T.gray);
+        ? `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`
+        : "Buoy data not available (couldn't reach the lake buoy)";
+      let x = L + f;
+      if (buoy.lake) {   // backup water temp
+        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, my, f * 1.2, T.water, 0, true) + f * .6;
+        x += text(`LakeMonster, ${buoy.lake.updated}`, x, my, f * .9, T.gray, 0) + f * 2;
+      }
+      text(why, x, my, fit(why, f * 1.0, R - f - x), T.gray, 0);
     }
   }
 

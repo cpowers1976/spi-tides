@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SPI Tides &amp; Wind</title>
+<link rel="manifest" href="tides-manifest.json">
+<link rel="icon" href="tides-icon-192.png">
+<link rel="apple-touch-icon" href="tides-icon-192.png">
+<meta name="theme-color" content="#0f1420">
+<style>
+  :root { --bg: #0f1420; --btn: #29334a; --btntext: #fff; --on: #4ade80; }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden;
+               font-family: system-ui, Roboto, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  canvas { flex: 1; width: 100%; min-height: 0; display: block; }
+  #bar { display: flex; gap: 10px; padding: 8px 16px 12px; align-items: center; }
+  #bar button { font: inherit; font-size: 16px; padding: 10px 18px; border: 0; border-radius: 8px;
+                background: var(--btn); color: var(--btntext); cursor: pointer; }
+  #bar button.on { background: var(--on); color: #fff; }
+  .sp { flex: 1; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="bar">
+  <button id="past">Past 24h</button>
+  <button id="light">Light mode</button>
+  <span class="sp"></span>
+  <button data-days="3">3 days</button>
+  <button data-days="5">5 days</button>
+  <button data-days="10">10 days</button>
+</div>
+<script>
+const PLACE = "South Padre Island, Texas";
+const LAT = 26.07, LON = -97.17;          // wind and weather
+const SEA_LAT = 26.07, SEA_LON = -97.05;  // a few miles offshore, for waves
+const STATION = "8779770";                // NOAA Port Isabel
+const KITE = 15;                          // bars turn green at this speed (mph)
+const STALE_MIN = 35;                     // "Updated" turns red if older than this
+
+const DARK = {
+  bg: [.06,.08,.12,1], text: [1,1,1,1], gray: [.6,.68,.78,1], grid: [.2,.25,.32,1], sep: [.25,.3,.4,1],
+  day: [.55,.7,.95,.16], night: [0,0,0,.45], past: [0,0,0,.3], gust: [1,1,1,.5], now: [1,1,1,.85],
+  dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1],
+  wave_fill: [.2,.8,.75,.3], wave: [.35,.9,.85,1], period: [.95,.6,.95,1], rain: [.45,.72,1,1],
+  moon: [.96,.94,.82,1], moon_dark: [.22,.25,.32,1],
+  light: [.4,.48,.6,1], breezy: [.98,.8,.3,1], kite: [.29,.87,.5,1], strong: [.97,.45,.3,1],
+  btn: [.16,.2,.27,1], btntext: [1,1,1,1] };
+const LIGHT = {
+  bg: [.97,.97,.95,1], text: [.1,.12,.16,1], gray: [.38,.43,.5,1], grid: [.84,.86,.89,1], sep: [.68,.72,.78,1],
+  day: [1,.9,.5,.3], night: [.25,.3,.45,.18], past: [1,1,1,.45], gust: [0,0,0,.45], now: [.1,.1,.1,.8],
+  dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1],
+  wave_fill: [.1,.6,.55,.25], wave: [.05,.5,.45,1], period: [.6,.2,.6,1], rain: [.1,.4,.8,1],
+  moon: [.98,.82,.3,1], moon_dark: [.3,.33,.4,1],
+  light: [.55,.6,.68,1], breezy: [.9,.62,.05,1], kite: [.1,.65,.3,1], strong: [.88,.3,.15,1],
+  btn: [.85,.87,.9,1], btntext: [.1,.12,.16,1] };
+
+const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48:"Fog",51:"Drizzle",
+  53:"Drizzle",55:"Drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",80:"Showers",81:"Showers",
+  82:"Heavy showers",95:"T-storms",96:"T-storms",99:"T-storms"};
+const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
+
+// remembered settings
+const state = { days: 3, past: false, light: false, data: null, updated: null, error: "" };
+try { Object.assign(state, JSON.parse(localStorage.getItem("spi-tides") || "{}")); } catch (e) {}
+function save() {
+  try { localStorage.setItem("spi-tides", JSON.stringify({ days: state.days, past: state.past, light: state.light })); } catch (e) {}
+}
+let T = state.light ? LIGHT : DARK;
+
+// ---------- helpers ----------
+const rgba = a => `rgba(${Math.round(a[0]*255)},${Math.round(a[1]*255)},${Math.round(a[2]*255)},${a[3] ?? 1})`;
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hourKey = d => `${isoDate(d)}T${pad(d.getHours())}:00`;
+const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+function parse(s) {  // "2026-11-06 21:17" or "2026-11-06T21:00", local time
+  const m = s.match(/(\d+)-(\d+)-(\d+)[T ](\d+):(\d+)/);
+  return new Date(+m[1], m[2]-1, +m[3], +m[4], +m[5]);
+}
+const h12 = d => d.getHours() % 12 || 12;
+const ap = d => d.getHours() < 12 ? "a" : "p";
+const hm = d => `${h12(d)}:${pad(d.getMinutes())} ${d.getHours() < 12 ? "AM" : "PM"}`;
+const short = d => `${h12(d)}:${pad(d.getMinutes())}${ap(d)}`;
+const hourLbl = d => `${h12(d)}${ap(d)}`;
+const compass = d => DIRS[Math.round(d / 22.5) % 16];
+const windColor = s => s >= 25 ? T.strong : s >= KITE ? T.kite : s >= 10 ? T.breezy : T.light;
+function moonAge(d) {  // 0 = new, 0.5 = full
+  const ref = Date.UTC(2000, 0, 6, 18, 14), syn = 29.530589;
+  const days = (midnight(d).getTime() + 18 * 3600e3 - ref) / 86400e3;
+  return ((days % syn) + syn) % syn / syn;
+}
+
+// ---------- data ----------
+async function getJSON(url, params) {
+  const r = await fetch(url + "?" + new URLSearchParams(params));
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function load() {
+  try {
+    const noaa = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter";
+    const q = { product: "predictions", station: STATION, begin_date: ymd(new Date(Date.now() - 86400e3)),
+      range: 312, datum: "MLLW", units: "english", time_zone: "lst_ldt", format: "json", application: "casey_app" };
+    const [curve, hilo, w] = await Promise.all([
+      getJSON(noaa, { ...q, interval: "30" }),
+      getJSON(noaa, { ...q, interval: "hilo" }),
+      getJSON("https://api.open-meteo.com/v1/forecast", {
+        latitude: LAT, longitude: LON,
+        hourly: "temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,precipitation_probability",
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+        wind_speed_unit: "mph", temperature_unit: "fahrenheit", timezone: "America/Chicago",
+        past_days: 1, forecast_days: 11 })]);
+    const waves = new Map();
+    try {  // wave forecast only goes about 7 days out
+      const m = (await getJSON("https://marine-api.open-meteo.com/v1/marine", {
+        latitude: SEA_LAT, longitude: SEA_LON, hourly: "wave_height,wave_period",
+        timezone: "America/Chicago", past_days: 1, forecast_days: 8 })).hourly;
+      m.time.forEach((t, i) => {
+        const h = m.wave_height[i], p = m.wave_period[i];
+        if (h != null && p != null) waves.set(t, [h * 3.281, p]);  // meters -> feet
+      });
+    } catch (e) {}
+    state.data = {
+      curve: curve.predictions.map(p => [parse(p.t), +p.v]),
+      hilo: hilo.predictions.map(p => [parse(p.t), +p.v, p.type]),
+      w, waves };
+    state.updated = new Date();
+    state.error = "";
+  } catch (e) {
+    state.error = `Update failed ${hm(new Date())}, retrying`;
+    setTimeout(load, 120e3);
+  }
+  draw();
+}
+
+// ---------- drawing ----------
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+
+function text(s, x, y, size, color, ax = .5, bold = false) {
+  ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`;
+  ctx.fillStyle = rgba(color || T.text);
+  ctx.textBaseline = "middle";
+  const w = ctx.measureText(s).width;
+  ctx.fillText(s, x - w * ax, y);
+  return w;
+}
+function line(pts, color, width = 1, dash) {
+  ctx.strokeStyle = rgba(color); ctx.lineWidth = width; ctx.setLineDash(dash || []);
+  ctx.beginPath();
+  for (let i = 0; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i+1]);
+  ctx.stroke(); ctx.setLineDash([]);
+}
+function area(pts, base, color) {
+  if (pts.length < 4) return;
+  ctx.fillStyle = rgba(color);
+  ctx.beginPath(); ctx.moveTo(pts[0], base);
+  for (let i = 0; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i+1]);
+  ctx.lineTo(pts[pts.length-2], base); ctx.closePath(); ctx.fill();
+}
+function rect(x, y, w, h, color) { ctx.fillStyle = rgba(color); ctx.fillRect(x, y, w, h); }
+function dot(x, y, r, color) { ctx.fillStyle = rgba(color); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+
+function arrow(cx, cy, deg, size, color) {
+  const a = (deg + 180) * Math.PI / 180;  // direction the wind blows toward
+  const dx = Math.sin(a), dy = -Math.cos(a);
+  const x1 = cx + dx * size / 2, y1 = cy + dy * size / 2;
+  ctx.strokeStyle = rgba(color); ctx.lineWidth = Math.max(1.5, size / 14); ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(cx - dx * size / 2, cy - dy * size / 2); ctx.lineTo(x1, y1);
+  for (const s of [-1, 1]) {
+    const b = a + Math.PI + s * .5;
+    ctx.moveTo(x1, y1); ctx.lineTo(x1 + Math.sin(b) * size * .38, y1 - Math.cos(b) * size * .38);
+  }
+  ctx.stroke(); ctx.lineCap = "butt";
+}
+
+function moon(cx, cy, r, age) {
+  dot(cx, cy, r, T.moon_dark);
+  const k = Math.cos(2 * Math.PI * age), side = age < .5 ? 1 : -1;  // lit on the right while waxing
+  ctx.beginPath();
+  for (let s = 0; s <= 24; s++) { const y = -r + 2*r*s/24; ctx.lineTo(cx + side * Math.sqrt(Math.max(r*r - y*y, 0)), cy + y); }
+  for (let s = 24; s >= 0; s--) { const y = -r + 2*r*s/24; ctx.lineTo(cx + side * k * Math.sqrt(Math.max(r*r - y*y, 0)), cy + y); }
+  ctx.closePath(); ctx.fillStyle = rgba(T.moon); ctx.fill();
+}
+
+function texasFlag(x, cy, h) {
+  const w = h * 1.5, y = cy - h / 2;
+  ctx.fillStyle = "#fff"; ctx.fillRect(x, y, w, h / 2);
+  ctx.fillStyle = "#bf0a30"; ctx.fillRect(x, y + h / 2, w, h / 2);
+  ctx.fillStyle = "#002868"; ctx.fillRect(x, y, w / 3, h);
+  const sx = x + w / 6, r = h * .3;
+  ctx.beginPath();
+  for (let k = 0; k < 10; k++) {
+    const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .4 : r;
+    ctx.lineTo(sx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill();
+  if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
+}
+
+function draw() {
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  rect(0, 0, W, H, T.bg);
+  const f = Math.min(H / 55, W / 90), now = new Date(), top = f * 2.2;
+  const tw = text(PLACE, f * 1.5, top, f * 1.6, T.text, 0, true);
+  texasFlag(f * 2.3 + tw, top, f * 1.5);
+  const old = !state.updated || now - state.updated > STALE_MIN * 60e3;
+  const msg = state.error || (state.updated ? `Updated ${hm(state.updated)}` : "Loading...");
+  text(msg, W - f * 1.5, top, f * .9, (old || state.error) ? T.red : T.gray, 1);
+  if (state.data) chart(W, H, f, now, top);
+}
+
+function chart(W, H, f, now, top) {
+  const { curve, hilo, w, waves } = state.data, hr = w.hourly, dy = w.daily;
+  const times = hr.time.map(parse);
+  const t0 = new Date(now); t0.setMinutes(0, 0, 0);
+  const ts = state.past ? new Date(t0 - 24 * 3600e3) : t0;   // chart start
+  const t1 = addDays(t0, state.days + 1);
+  const inow = hr.time.indexOf(hourKey(t0)), i0 = hr.time.indexOf(hourKey(ts));
+  if (inow < 0 || i0 < 0) { text("Waiting for new data...", W / 2, H / 2, f, T.gray); return; }
+  const n = Math.round((t1 - ts) / 3600e3);
+  const idx = []; for (let k = 0; k < n && i0 + k < times.length; k++) idx.push(i0 + k);
+  const spd = hr.wind_speed_10m, gst = hr.wind_gusts_10m, dirs = hr.wind_direction_10m;
+  const rainP = hr.precipitation_probability;
+
+  const L = f * 3.5, R = W - f * 3, pw = R - L, bw = pw / n, span = t1 - ts;
+  const xt = t => L + (t - ts) / span * pw;
+  const step = n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
+  const P = fr => H - H * fr;                        // fraction of height, from the bottom
+  const wb = P(.50), wt = P(.70), vb = P(.28), vt = P(.45), tb = P(.07), tt = P(.23);
+
+  // current conditions in header
+  const s0 = spd[inow], cx = W * .40;
+  arrow(cx, top, dirs[inow], f * 1.8, windColor(s0));
+  let x = cx + f * 1.5;
+  x += text(`${Math.round(s0)} mph`, x, top, f * 2.2, windColor(s0), 0, true);
+  let extra = `   gusts ${Math.round(gst[inow])}   ${compass(dirs[inow])}   ${Math.round(hr.temperature_2m[inow])}°F`;
+  const wv0 = waves.get(hr.time[inow]);
+  if (wv0) extra += `   waves ${wv0[0].toFixed(1)} ft @ ${Math.round(wv0[1])}s`;
+  text(extra, x, top, f * 1.1, T.text, 0);
+
+  // day / night shading
+  for (let k = 0; k < idx.length;) {
+    const isDay = hr.is_day[idx[k]];
+    let e = k; while (e < idx.length && hr.is_day[idx[e]] === isDay) e++;
+    rect(L + k * bw, wt, (e - k) * bw, tb - wt, isDay ? T.day : T.night);
+    k = e;
+  }
+
+  // day columns with forecast and moon
+  const today = midnight(now);
+  for (let d = midnight(ts); d < t1; d = addDays(d, 1)) {
+    const a = new Date(Math.max(ts, d)), b = new Date(Math.min(t1, addDays(d, 1)));
+    const xa = xt(a), xb = xt(b), mid = (xa + xb) / 2, colw = xb - xa;
+    if (a > ts) line([xa, tb, xa, P(.88)], T.sep, 1);
+    const j = dy.time.indexOf(isoDate(d));
+    if (j < 0) continue;
+    const pp = dy.precipitation_probability_max[j] || 0;
+    const cond = WMO[dy.weather_code[j]] || "";
+    const temps = `${Math.round(dy.temperature_2m_max[j])}° / ${Math.round(dy.temperature_2m_min[j])}°`;
+    let name;
+    if (d < today) name = "Yesterday";
+    else if (+d === +today) name = now.getHours() >= 17 && !state.past ? "Tonight" : "Today";
+    else name = colw > pw * .18 ? d.toLocaleDateString("en-US", { weekday: "long" })
+                                : `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getDate()}`;
+    if (colw > pw * .18) {
+      const nw = text(name, mid, P(.855), f * 1.15, T.text, .5, true);
+      moon(mid + nw / 2 + f * 1.2, P(.855), f * .7, moonAge(d));
+      text(cond, mid, P(.815), f * .95, T.gray);
+      text(`${temps}    rain ${Math.round(pp)}%`, mid, P(.78), f * .95);
+    } else if (colw > pw * .07) {
+      const nw = text(name, mid, P(.86), f * .95, T.text, .5, true);
+      moon(mid + nw / 2 + f * 1, P(.86), f * .55, moonAge(d));
+      text(cond, mid, P(.83), f * .75, T.gray);
+      text(temps, mid, P(.80), f * .8);
+      text(`rain ${Math.round(pp)}%`, mid, P(.775), f * .75, T.gray);
+    } else if (colw > f * 3) {
+      text(name.slice(0, 3), mid, P(.855), f * .85, T.text, .5, true);
+    }
+  }
+
+  // wind chart
+  const ymax = Math.max(30, Math.ceil(Math.max(...idx.map(i => gst[i])) / 10) * 10);
+  const wy = v => wb - v / ymax * (wb - wt);
+  for (let v = 10; v <= ymax; v += 10) {
+    line([L, wy(v), R, wy(v)], T.grid, 1);
+    text(String(v), L - f * .5, wy(v), f * .8, T.gray, 1);
+  }
+  text("wind mph", L - f * 3, wt - f * 1.2, f * .75, T.gray, 0);
+  line([L, wy(KITE), R, wy(KITE)], [...T.kite.slice(0, 3), .6], 1, [6, 6]);
+  const gpts = [], best = new Map();
+  idx.forEach((i, k) => {
+    const xx = L + k * bw;
+    rect(xx + bw * .15, wy(spd[i]), bw * .7, wb - wy(spd[i]), windColor(spd[i]));
+    gpts.push(xx + bw / 2, wy(gst[i]));
+    const key = isoDate(times[i]);
+    if (!best.has(key) || spd[i] > best.get(key)[0]) best.set(key, [spd[i], k, i]);
+  });
+  line(gpts, T.gust, 1.3);
+  let lastX = -1e9;
+  for (const [s, k, i] of best.values()) {  // daily peak
+    const px = L + (k + .5) * bw;
+    if (px - lastX < f * 2.5) continue;
+    text(String(Math.round(s)), px, wy(gst[i]) - f * .7, f * .85, windColor(s), .5, true);
+    lastX = px;
+  }
+  idx.forEach((i, k) => {                  // direction arrows with rain chance
+    if (k % step !== Math.floor(step / 2)) return;
+    const ax = L + (k + .5) * bw, pr = rainP[i] || 0;
+    arrow(ax, P(.75), dirs[i], f * 1.3, windColor(spd[i]));
+    text(`${Math.round(pr)}%`, ax, P(.725), f * .65, pr >= 30 ? T.rain : T.gray, .5, pr >= 30);
+  });
+
+  // wave chart: height (filled, left axis ft) and period (line, right axis seconds)
+  const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
+  text("wave height ft", L, vt - f * .9, f * .75, T.wave, 0);
+  text("wave period sec", R, vt - f * .9, f * .75, T.period, 1);
+  if (wv.length) {
+    const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));
+    const pmax = Math.max(10, Math.ceil(Math.max(...wv.map(v => v[2])) / 5) * 5);
+    const hy = v => vb - v / hmax * (vb - vt), py = v => vb - v / pmax * (vb - vt);
+    const hstep = hmax <= 4 ? 1 : 2;
+    for (let v = hstep; v <= hmax; v += hstep) {
+      line([L, hy(v), R, hy(v)], T.grid, 1);
+      text(String(v), L - f * .5, hy(v), f * .8, T.gray, 1);
+    }
+    for (let v = 5; v <= pmax; v += 5) text(String(v), R + f * .5, py(v), f * .8, T.period, 0);
+    const hl = [], pl = [];
+    for (const [t, h, p] of wv) { const xx = xt(t) + bw / 2; hl.push(xx, hy(h)); pl.push(xx, py(p)); }
+    area(hl, vb, T.wave_fill);
+    line(hl, T.wave, 2);
+    line(pl, T.period, 1.5);
+    const last = wv[wv.length - 1][0];
+    if (last < t1 - 6 * 3600e3)
+      text("no wave forecast past here", xt(last) + f * .5, (vb + vt) / 2, f * .75, T.gray, 0);
+  } else {
+    text("Wave data unavailable", (L + R) / 2, (vb + vt) / 2, f * .9, T.gray);
+  }
+
+  // tide chart
+  const pts = curve.filter(([t]) => t >= ts && t <= t1);
+  if (pts.length) {
+    const vs = pts.map(p => p[1]);
+    const lo = Math.floor(Math.min(...vs) * 2) / 2 - .5, hi = Math.ceil(Math.max(...vs) * 2) / 2 + .5;
+    const ty = v => tb - (v - lo) / (hi - lo) * (tb - tt);
+    for (let v = Math.ceil(lo); v <= Math.floor(hi); v++) {
+      line([L, ty(v), R, ty(v)], T.grid, 1);
+      text(String(v), L - f * .5, ty(v), f * .8, T.gray, 1);
+    }
+    const tl = pts.flatMap(([t, v]) => [xt(t), ty(v)]);
+    area(tl, tb, T.tide_fill);
+    line(tl, T.tide, 2);
+    for (const [t, v, typ] of hilo) {
+      if (t < ts || t > t1) continue;
+      const xx = xt(t), yy = ty(v);
+      dot(xx, yy, 4, T.dot);
+      const lbl = n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1);
+      text(lbl, xx, yy + (typ === "H" ? -f * .9 : f * .9), f * .75);
+    }
+  }
+  text("tide ft", L, tt - f * .9, f * .75, T.tide, 0);
+
+  // hour ticks, past dimming and "now" line
+  const tick = n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
+  idx.forEach((i, k) => { if (tick.includes(times[i].getHours())) text(hourLbl(times[i]), L + k * bw, tb + f * .9, f * .75, T.gray); });
+  const xn = xt(now);
+  if (state.past) rect(L, wt, xn - L, tb - wt, T.past);
+  line([xn, tb, xn, wt], T.now, 1.2);
+}
+
+// ---------- buttons, theme, screen ----------
+const bar = document.getElementById("bar");
+function applyTheme() {
+  T = state.light ? LIGHT : DARK;
+  const s = document.documentElement.style;
+  s.setProperty("--bg", rgba(T.bg)); s.setProperty("--btn", rgba(T.btn));
+  s.setProperty("--btntext", rgba(T.btntext)); s.setProperty("--on", rgba(T.kite));
+  document.querySelector('meta[name="theme-color"]').content = rgba(T.bg);
+  document.getElementById("past").classList.toggle("on", state.past);
+  document.getElementById("light").classList.toggle("on", state.light);
+  bar.querySelectorAll("[data-days]").forEach(b => b.classList.toggle("on", +b.dataset.days === state.days));
+}
+bar.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "past") state.past = !state.past;
+  else if (b.id === "light") state.light = !state.light;
+  else state.days = +b.dataset.days;
+  save(); applyTheme(); draw();
+});
+
+let wakeLock = null;  // keep the screen on while this page is showing
+async function keepAwake() {
+  try { if ("wakeLock" in navigator && document.visibilityState === "visible") wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    keepAwake();
+    if (!state.updated || Date.now() - state.updated > 10 * 60e3) load();
+  }
+});
+
+window.addEventListener("resize", draw);
+applyTheme();
+draw();
+load();
+keepAwake();
+setInterval(load, 15 * 60e3);   // new data every 15 min
+setInterval(draw, 60e3);        // move "now" line each minute
+</script>
+</body>
+</html>

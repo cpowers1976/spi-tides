@@ -295,11 +295,11 @@ function wxIcon(code, cx, cy, s) {  // s = icon height
 
 // name of a day with its weather icon on the left and moon on the right, fitted to the column
 function dayTitle(name, mid, y, size, maxW, d, code, iconS, moonR) {
-  const ic = state.showWx && code != null ? iconS * 1.25 : 0, mn = state.showMoon ? moonR * 2 + size * .35 : 0;
+  const ic = state.showWx && code != null ? iconS * 1.4 : 0, mn = state.showMoon ? moonR * 2 + size * .35 : 0;
   const ns = fit(name, size, maxW - ic - mn, true);
   setFont(ns, true);
   const nw = ctx.measureText(name).width, x0 = mid - (ic + nw + mn) / 2;
-  if (ic) wxIcon(code, x0 + iconS * .5, y, iconS);
+  if (ic) wxIcon(code, x0 + iconS * .65, y + iconS * .04, iconS);  // icon's art reaches ~.6 left of centre
   text(name, x0 + ic, y, ns, T.text, 0, true);
   if (mn) moon(x0 + ic + nw + size * .35 + moonR, y, moonR, moonAge(d));
 }
@@ -388,8 +388,9 @@ function chart(W, H, f, now, top, placeEnd) {
   const fullCol = 86400e3 / span * pw;
   const mode = fullCol > pw * .18 ? "wide" : fullCol > pw * .07 ? "mid" : "narrow";
   const rh = f * 1.5, rows = mode === "wide" ? 3 : mode === "mid" ? 4 : 1;
-  const dayTop = top + f * 2.2, dayBot = dayTop + rows * rh;
-  const rowY = r => dayTop + rh * (r + .5);
+  const h0 = state.showWx ? rh * 1.4 : rh;  // taller name row so weather icons don't touch the next line
+  const dayTop = top + f * 2.2, dayBot = dayTop + h0 + (rows - 1) * rh;
+  const rowY = r => r ? dayTop + h0 + rh * (r - .5) : dayTop + h0 / 2;
   const arrowY = dayBot + f * 1.1, pctY = arrowY + f * 1.35, tempY = pctY + f * 1.2;
   const pBot = H - f * 1.7, gap = f * 2.1;  // room for hour labels and panel titles
   const panels = [["wind", 1.3]];
@@ -427,12 +428,12 @@ function chart(W, H, f, now, top, placeEnd) {
                                 : `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getDate()}`;
     const rain = `rain ${Math.round(pp)}%`;
     if (mode === "wide" && colw > pw * .12) {
-      dayTitle(name, mid, rowY(0), f * 1.45, cw, d, dy.weather_code[j], f * 2.1, f * .75);
+      dayTitle(name, mid, rowY(0), f * 1.45, colw - f * 1.2, d, dy.weather_code[j], f * 1.8, f * .75);
       text(cond, mid, rowY(1), fit(cond, f * 1.2, cw), T.gray);
       const tr = `${temps}    ${rain}`;
       text(tr, mid, rowY(2), fit(tr, f * 1.2, cw));
     } else if (mode !== "narrow" && colw > fullCol * .55) {
-      dayTitle(name, mid, rowY(0), f * 1.2, cw, d, dy.weather_code[j], f * 1.75, f * .6);
+      dayTitle(name, mid, rowY(0), f * 1.2, colw - f * .8, d, dy.weather_code[j], f * 1.6, f * .6);
       text(cond, mid, rowY(1), fit(cond, f * 1.05, cw), T.gray);
       text(temps, mid, rowY(2), fit(temps, f * 1.1, cw));
       text(rain, mid, rowY(3), fit(rain, f * 1.05, cw), pp >= 30 ? T.rain : T.gray);

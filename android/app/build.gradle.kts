@@ -11,8 +11,8 @@ android {
         applicationId = "com.kiteboardokoboji.spitides"
         minSdk = 24          // Android 7.0 and newer
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.2"
     }
 
     compileOptions {

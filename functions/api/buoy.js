@@ -23,7 +23,7 @@ export async function onRequestGet({ request }) {
   const headers = {
     "content-type": "application/json",
     "access-control-allow-origin": "*",
-    "cache-control": "public, max-age=600",
+    "cache-control": "public, max-age=300",
   };
   if (!SITES.has(site)) return new Response(JSON.stringify({ error: "unknown site" }), { status: 400, headers });
   const lake = lakeTemp(site);   // runs alongside the buoy request

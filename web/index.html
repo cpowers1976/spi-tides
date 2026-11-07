@@ -217,7 +217,7 @@ async function load() {
       });
     } catch (e) {}
     let buoy = null;
-    if (L.buoy) try { buoy = readBuoy(await getJSON(BUOY_API, { site: L.buoy })); } catch (e) { buoy = { error: true }; }
+    if (L.buoy) try { buoy = readBuoy(await getJSON(BUOY_API, { site: L.buoy, v: 2 })   /* v: skip responses cached before the water temp backup */); } catch (e) { buoy = { error: true }; }
     if (my !== loading) return;
     state.data = {
       curve: curve.predictions.map(p => [parse(p.t), +p.v]),

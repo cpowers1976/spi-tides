@@ -1360,7 +1360,27 @@ function ren(e, now, dt, sec, P) {
     for (let i = 0; i < 3; i++) FX.splash.push({ x: rx + rnd(-s, s), y: gy, vx: rnd(-80, 80) - d * 60, vy: rnd(-200, -80), t0: now });
 }
 // ---- a yellow submarine cruising by, trailing rainbow bubbles ----
-function yellowSub(u, sec) {   // facing +x, centred on the hull
+function sixtiesGuy(r, k, sec) {   // in a porthole of radius r; k = 0 looking ahead (side view), 1 = turned to look at you
+  const skin = [.98, .82, .66, 1], hair = "#5a3417";
+  dot(0, r * .15, r * .78, skin);   // face
+  ctx.fillStyle = hair; ctx.beginPath();   // big mop of hair with bangs
+  ctx.ellipse(-r * .25 * (1 - k), -r * .3, r * .95, r * .62, 0, Math.PI * .95, Math.PI * 2.05); ctx.fill();
+  for (let i = -4; i <= 4; i++) dot(i * r * .2 - r * .25 * (1 - k), -r * .3 + Math.abs(i) * r * .04, r * .2, [.35, .2, .09, 1]);
+  dot(-r * .75 * (1 - k * .3), r * .1, r * .28, [.35, .2, .09, 1]);   // side hair
+  if (k > .5) dot(r * .75, r * .1, r * .28 * (k - .5) * 2, [.35, .2, .09, 1]);
+  const glass = (x, a) => {   // round tinted glasses
+    ctx.globalAlpha = a; dot(x, r * .05, r * .26, [.95, .45, .55, .75]);
+    ctx.strokeStyle = "#c9a227"; ctx.lineWidth = Math.max(1, r * .07); ctx.beginPath(); ctx.arc(x, r * .05, r * .26, 0, 7); ctx.stroke();
+    dot(x - r * .08, -r * .03, r * .06, [1, 1, 1, .8]); ctx.globalAlpha = 1;
+  };
+  glass(r * (.5 - .82 * k), 1); glass(r * (.5 + .3 * k), k);   // second lens appears as he turns
+  if (k < .6) dot(r * .82, r * .22, r * .14 * (1 - k), skin);   // nose in profile
+  ctx.fillStyle = hair; ctx.beginPath();   // big droopy mustache
+  const mx = r * .45 * (1 - k), w = r * (.32 + .22 * k);
+  ctx.moveTo(mx - w, r * .62); ctx.quadraticCurveTo(mx, r * .3, mx + w, r * .62); ctx.quadraticCurveTo(mx, r * .48, mx - w, r * .62); ctx.fill();
+  if (k > .9) { const sm = Math.sin(sec * 3) * r * .03; line([mx - r * .12, r * .7 + sm, mx + r * .12, r * .7 + sm], [.5, .2, .15, 1], Math.max(1, r * .05)); }
+}
+function yellowSub(u, sec, look = 0) {   // facing +x, centred on the hull
   ctx.lineJoin = "round";
   ctx.fillStyle = "#e8452c"; ctx.beginPath();   // tail fins
   ctx.moveTo(-2.5 * u, -.6 * u); ctx.lineTo(-3.3 * u, -1.3 * u); ctx.lineTo(-3 * u, -.2 * u);
@@ -1378,15 +1398,21 @@ function yellowSub(u, sec) {   // facing +x, centred on the hull
   ctx.quadraticCurveTo(-3 * u, -.8 * u, -2.3 * u, -.9 * u); ctx.closePath(); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#e8452c"; ctx.fillRect(-2.8 * u, .45 * u, 5.9 * u, .18 * u);   // stripe
   for (let i = 0; i < 5; i++) dot(-2.2 * u + i * 1.2 * u, -.62 * u, u * .07, [.72, .53, .04, 1]);   // rivets
-  for (const x of [-1.7, -.6, .5, 1.6]) {   // portholes
+  for (const x of [-1.9, -1.05, 1.6]) {   // portholes
     dot(x * u, -.05 * u, .36 * u, [.72, .53, .04, 1]);
     dot(x * u, -.05 * u, .27 * u, [.37, .76, 1, 1]);
     dot(x * u - .08 * u, -.13 * u, .08 * u, [1, 1, 1, .85]);
   }
+  const R = .62 * u;   // the big porthole, with someone inside
+  dot(.3 * u, -.05 * u, R, [.72, .53, .04, 1]);
+  ctx.save(); ctx.beginPath(); ctx.arc(.3 * u, -.05 * u, R * .82, 0, 7); ctx.clip();
+  ctx.fillStyle = "#5fc3ff"; ctx.fillRect(-.5 * u, -1 * u, 1.6 * u, 2 * u);
+  ctx.translate(.3 * u, .05 * u); sixtiesGuy(R * .78, look, sec); ctx.restore();
+  ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.arc(.3 * u - R * .3, -.05 * u - R * .3, R * .3, 0, 7); ctx.fill();   // glass glare
   ctx.lineJoin = "miter";
 }
 function submarine(e, now, dt, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 1.7, p = (now - e.t0) / e.dur, d = e.dir;
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.1, p = (now - e.t0) / e.dur, d = e.dir;
   const x = d > 0 ? -W * .12 + W * 1.24 * p : W * 1.12 - W * 1.24 * p, y = P.y0 - u * .35 + Math.sin(sec * 1.6) * u * .12;
   e.bub = e.bub || [];
   if (Math.random() < .5) e.bub.push({ x: x - d * 3.3 * u, y: y + rnd(-.4, .4) * u, r: rnd(.12, .32) * u, hue: rnd(0, 360), t0: now, ph: rnd(0, 6) });
@@ -1397,7 +1423,8 @@ function submarine(e, now, dt, sec, P) {
     ctx.beginPath(); ctx.arc(b.x + Math.sin(t * 3 + b.ph) * 6, b.y - t * 45, b.r * (1 + t * .3), 0, 7); ctx.stroke();
   }
   ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(sec * 1.6 + 1) * .03); if (d < 0) ctx.scale(-1, 1);
-  yellowSub(u, sec); ctx.restore();
+  const look = p < .3 ? 0 : p < .38 ? ease((p - .3) / .08) : p < .72 ? 1 : p < .8 ? 1 - ease((p - .72) / .08) : 0;   // turns to look at you, then back
+  yellowSub(u, sec, look); ctx.restore();
 }
 function splashes(now) {
   FX.splash = FX.splash.filter(s => now - s.t0 < 800);

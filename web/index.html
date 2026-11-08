@@ -29,6 +29,14 @@
   #upd.old { color: var(--red); }
   #gear { padding: 8px 12px; display: flex; align-items: center; }
   #gear svg { width: 26px; height: 26px; }
+  /* rotate mode: the spin button cycles 24 hours, 3 days, 5 days, 10 days and hides the range buttons */
+  #spin { padding: 8px 12px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  #spin svg { width: 24px; height: 24px; flex: none; }
+  #spin.on svg { animation: spin 4s linear infinite; }
+  #spin .lbl:empty { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  body.rot #bar [data-days], body.rot #past { display: none; }
+  body.rot #upd { text-align: left; }
 
   /* settings window */
   #settings { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.5); display: flex;
@@ -52,7 +60,7 @@
   .seg { display: flex; gap: 6px; }
   .seg button { font-size: 17px; padding: 8px 12px; }
   .panel h3 { margin: 22px 0 0; font-size: 21px; }
-  .row.sub { padding-left: 16px; }
+  .row.sub, .row.ind { padding-left: 16px; }
   .key ol { margin: 8px 0 0; padding-left: 26px; columns: 2; column-gap: 24px; font-size: 15px; color: var(--gray); }
   .key li { break-inside: avoid; padding: 1px 0; }
   .ctl { display: flex; align-items: center; gap: 12px; flex: none; }
@@ -97,6 +105,10 @@
   <button data-days="3">3 days</button>
   <button data-days="5">5 days</button>
   <button data-days="10">10 days</button>
+  <button id="spin" aria-label="Rotate forecast range" title="Rotate 24 hours, 3 days, 5 days, 10 days">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M19 2v4.2h-4.2"/><path d="M5 22v-4.2h4.2"/></svg>
+    <span class="lbl"></span>
+  </button>
   <button id="gear" aria-label="Settings" title="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
@@ -117,6 +129,8 @@
     <label class="row"><span>Show waves<small>Wave height, period and water temp</small></span><input type="checkbox" class="sw" data-set="showWaves"></label>
     <div class="row"><span>Text size</span>
       <div class="seg"><button data-size="s">Small</button><button data-size="m">Medium</button><button data-size="l">Large</button></div></div>
+    <label class="row"><span>Rotate forecast range<small>Cycles 24 hours, 3 days, 5 days, 10 days and hides the range buttons. The spin button at the bottom turns it on and off too</small></span><input type="checkbox" class="sw" data-set="rotate"></label>
+    <label class="row ind" id="rotrow"><span>Time on each range</span><select class="pick" data-rot="rotSec"><option value="10">10 sec</option><option value="15">15 sec</option><option value="20">20 sec</option><option value="30">30 sec</option><option value="60">1 min</option><option value="120">2 min</option><option value="300">5 min</option></select></label>
     <button class="row navrow" data-page="anim"><span>Animations<small id="animsum">On</small></span><span class="chev">›</span></button>
     <button class="done">Done</button>
   </div>
@@ -201,8 +215,8 @@ const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
 const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin"];   // one switch per animation
-const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", ...FXKEYS];
-const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
+const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", ...FXKEYS];
+const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, data: null, updated: null, error: "",
                 // animations start off if the device asks for reduced motion (Android: Remove animations)
                 anim: !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) };
@@ -661,16 +675,20 @@ function chart(W, H, f, now, top, placeEnd) {
   const { curve, hilo, w, waves, water, buoy } = state.data, hr = w.hourly, dy = w.daily;
   const times = hr.time.map(parse);
   const t0 = new Date(now); t0.setMinutes(0, 0, 0);
-  const ts = state.past ? new Date(t0 - 24 * 3600e3) : t0;   // chart start
-  const t1 = state.days === 1 ? new Date(+t0 + 24 * 3600e3) : addDays(t0, state.days + 1);
+  const ts = past() ? new Date(t0 - 24 * 3600e3) : t0;   // chart start
+  const endFor = d => d === 1 ? +t0 + 24 * 3600e3 : +addDays(t0, d + 1);
+  // while the range is changing, the end of the chart slides smoothly so new days come in from the right
+  const zm = ZOOM, ze = zm ? zoomEase(Math.min(1, (performance.now() - zm.t0) / zm.ms)) : 1;
+  const t1 = new Date(zm ? endFor(zm.from) + (endFor(state.days) - endFor(zm.from)) * ze : endFor(state.days));
   const inow = hr.time.indexOf(hourKey(t0)), i0 = hr.time.indexOf(hourKey(ts));
   if (inow < 0 || i0 < 0) { text("Waiting for new data...", W / 2, H / 2, f, T.gray); return; }
-  const n = Math.round((t1 - ts) / 3600e3);
-  const idx = []; for (let k = 0; k < n && i0 + k < times.length; k++) idx.push(i0 + k);
+  const n = Math.round((endFor(state.days) - ts) / 3600e3);   // hours in the range being shown (sets the layout)
+  const nv = Math.ceil((t1 - ts) / 3600e3 - 1e-6);             // hours on screen right now (less, mid-slide)
+  const idx = []; for (let k = 0; k < nv && i0 + k < times.length; k++) idx.push(i0 + k);
   const spd = hr.wind_speed_10m, gst = hr.wind_gusts_10m, dirs = hr.wind_direction_10m;
   const rainP = hr.precipitation_probability;
 
-  const L = f * 3.4, R = W - f * 3.2, pw = R - L, bw = pw / n, span = t1 - ts;
+  const L = f * 3.4, R = W - f * 3.2, pw = R - L, span = t1 - ts, bw = pw * 3600e3 / span;
   const xt = t => L + (t - ts) / span * pw;
   const hourly = n <= 50;                           // 24 hour view: show every hour
   const step = n <= 30 ? 1 : n <= 50 ? 2 : n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
@@ -707,7 +725,7 @@ function chart(W, H, f, now, top, placeEnd) {
   text(extra, x, top, es, T.text, 0);
 
   // ---- vertical layout ----
-  const fullCol = 86400e3 / span * pw;
+  const fullCol = 86400e3 / (endFor(state.days) - ts) * pw;
   const mode = fullCol > pw * .18 ? "wide" : fullCol > pw * .07 ? "mid" : "narrow";
   const rh = f * 1.5, rows = mode === "wide" ? 3 : mode === "mid" ? 4 : 1;
   const h0 = state.showWx ? rh * 1.4 : rh;  // taller name row so weather icons don't touch the next line
@@ -734,7 +752,7 @@ function chart(W, H, f, now, top, placeEnd) {
   for (let k = 0; k < idx.length;) {
     const isDay = hr.is_day[idx[k]];
     let e = k; while (e < idx.length && hr.is_day[idx[e]] === isDay) e++;
-    rect(L + k * bw, wt, (e - k) * bw, pBot - wt, isDay ? T.day : T.night);
+    rect(L + k * bw, wt, Math.min((e - k) * bw, R - L - k * bw), pBot - wt, isDay ? T.day : T.night);
     k = e;
   }
 
@@ -751,7 +769,7 @@ function chart(W, H, f, now, top, placeEnd) {
     const temps = `${Math.round(dy.temperature_2m_max[j])}° / ${Math.round(dy.temperature_2m_min[j])}°`;
     let name;
     if (d < today) name = "Yesterday";
-    else if (+d === +today) name = now.getHours() >= 17 && !state.past ? "Tonight" : "Today";
+    else if (+d === +today) name = now.getHours() >= 17 && !past() ? "Tonight" : "Today";
     else name = mode === "wide" ? d.toLocaleDateString("en-US", { weekday: "long" })
                                 : `${d.toLocaleDateString("en-US", { weekday: "short" })} ${d.getDate()}`;
     const rain = `rain ${Math.round(pp)}%`;
@@ -795,7 +813,7 @@ function chart(W, H, f, now, top, placeEnd) {
   const gpts = [], best = new Map();
   idx.forEach((i, k) => {
     const xx = L + k * bw;
-    rect(xx + bw * .15, wy(spd[i]), bw * .7, wb - wy(spd[i]), windColor(spd[i]));
+    rect(xx + bw * .15, wy(spd[i]), Math.max(0, Math.min(bw * .7, R - xx - bw * .15)), wb - wy(spd[i]), windColor(spd[i]));
     gpts.push(xx + bw / 2, wy(gst[i]));
     const key = isoDate(times[i]);
     if (!best.has(key) || spd[i] > best.get(key)[0]) best.set(key, [spd[i], k, i]);
@@ -941,8 +959,57 @@ function chart(W, H, f, now, top, placeEnd) {
     hourBoxes.push({ x: x - Math.max(w / 2 + f * .5, f * 1.6), y: pBot, w: Math.max(w + f, f * 3.2), h: f * 1.8 });
   });
   const xn = xt(now);
-  if (state.past) rect(L, wt, xn - L, pBot - wt, T.past);
+  if (past()) rect(L, wt, xn - L, pBot - wt, T.past);
   line([xn, pBot, xn, wt], T.now, 1.4);
+}
+
+// ---------- forecast range: changing it, and rotate mode ----------
+const RANGES = [1, 3, 5, 10], RANGE_NAME = { 1: "24 hours", 3: "3 days", 5: "5 days", 10: "10 days" };
+const past = () => state.past && !state.rotate;   // rotate mode always starts at now
+const zoomEase = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+let ZOOM = null, zoomRaf = 0, rotT = 0;
+function setRange(d) {   // slide to a new range; labels that change layout cross-fade
+  if (d === state.days) return;
+  const from = state.days;
+  state.days = d; save(); applyTheme();
+  if (!state.data || matchMedia("(prefers-reduced-motion: reduce)").matches) { ZOOM = null; draw(); return; }
+  crossfade(500);
+  ZOOM = { from, t0: performance.now(), ms: 1400 };
+  cancelAnimationFrame(zoomRaf);
+  const step = () => {
+    if (ZOOM && performance.now() - ZOOM.t0 >= ZOOM.ms) ZOOM = null;
+    draw();
+    if (ZOOM) zoomRaf = requestAnimationFrame(step);
+  };
+  step();
+}
+function crossfade(ms) {   // a still copy of the chart fades out over the new one
+  if (!cv.width) return;
+  const r = cv.getBoundingClientRect(), snap = document.createElement("canvas");
+  snap.width = cv.width; snap.height = cv.height; snap.getContext("2d").drawImage(cv, 0, 0);
+  Object.assign(snap.style, { position: "fixed", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px",
+    zIndex: 1, pointerEvents: "none", flex: "none", transition: `opacity ${ms}ms ease` });
+  document.body.appendChild(snap);
+  cv.style.transition = "none"; cv.style.opacity = 0;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cv.style.transition = `opacity ${ms}ms ease`; cv.style.opacity = 1; snap.style.opacity = 0;
+  }));
+  setTimeout(() => { snap.remove(); cv.style.transition = ""; }, ms + 100);
+}
+function rotTimer() {   // time on each range
+  clearTimeout(rotT);
+  if (!state.rotate) return;
+  rotT = setTimeout(() => {
+    if (!state.rotate) return;
+    const i = RANGES.indexOf(state.days);
+    setRange(RANGES[(i + 1) % RANGES.length]);
+    rotTimer();
+  }, state.rotSec * 1000);
+}
+function setRotate(onoff) {
+  state.rotate = onoff;
+  if (onoff && !RANGES.includes(state.days)) state.days = 1;
+  changed(); rotTimer();
 }
 
 // ---------- buttons, settings, theme, screen ----------
@@ -2940,6 +3007,11 @@ function applyTheme() {
   s.setProperty("--gray", rgba(T.gray)); s.setProperty("--red", rgba(T.red));
   document.querySelector('meta[name="theme-color"]').content = rgba(T.bg);
   document.getElementById("past").classList.toggle("on", state.past);
+  document.body.classList.toggle("rot", state.rotate);
+  document.getElementById("spin").classList.toggle("on", state.rotate);
+  document.querySelector("#spin .lbl").textContent = state.rotate ? RANGE_NAME[state.days] || "" : "";
+  dlg.querySelector('[data-rot]').value = state.rotSec;
+  dlg.querySelector('[data-rot]').disabled = !state.rotate; document.getElementById("rotrow").classList.toggle("off", !state.rotate);
   bar.querySelectorAll("[data-days]").forEach(b => b.classList.toggle("on", +b.dataset.days === state.days));
   dlg.querySelectorAll("[data-set]").forEach(c => c.checked = !!state[c.dataset.set]);
   const lake = !LOC.station, tc = dlg.querySelector('[data-set="showTides"]');   // lakes: tides off and greyed out
@@ -3061,11 +3133,13 @@ menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); 
 bar.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.id === "gear") { dlg.hidden = false; return; }
-  if (b.id === "past") state.past = !state.past;
-  else state.days = +b.dataset.days;
-  changed();
+  if (b.id === "spin") { setRotate(!state.rotate); return; }
+  if (b.id === "past") { state.past = !state.past; changed(); return; }
+  setRange(+b.dataset.days);
 });
 dlg.addEventListener("change", e => {
+  if (e.target.dataset.rot) { state.rotSec = +e.target.value; save(); rotTimer(); return; }
+  if (e.target.dataset.set === "rotate") { setRotate(e.target.checked); return; }
   const m = e.target.closest("[data-min]");
   if (m) { state[m.dataset.min] = +m.value; const k = { lifeMin: "life", boatMin: "boat" }[m.dataset.min] || "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
   const c = e.target.closest("[data-set]"); if (!c) return;
@@ -3105,6 +3179,7 @@ applyTheme();
 draw();
 load();
 keepAwake();
+rotTimer();
 setInterval(load, 15 * 60e3);   // new data every 15 min
 setInterval(refreshObs, 6 * 60e3);   // the NOAA wind sensor reports every 6 min
 setInterval(draw, 60e3);        // move "now" line each minute

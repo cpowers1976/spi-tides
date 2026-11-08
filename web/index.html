@@ -18,6 +18,8 @@
   /* animation layers: one behind the chart (sun glow, clouds, wind streaks, wave band), one in front */
   #fxb, #fxf { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
   #fxb { z-index: 0; } #fxf { z-index: 3; }
+  /* the beach that rises from the bottom for Ren's chase, while everything else scrunches up above it */
+  #beach { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
   #bar { display: flex; gap: 10px; padding: 8px 16px 12px; align-items: center; position: relative; z-index: 2; }
   button { font: inherit; font-size: 18px; padding: 10px 18px; border: 0; border-radius: 8px;
            background: var(--btn); color: var(--btntext); cursor: pointer; }
@@ -87,6 +89,7 @@
 <canvas id="fxb"></canvas>
 <canvas id="c"></canvas>
 <canvas id="fxf"></canvas>
+<canvas id="beach"></canvas>
 <div id="bar">
   <button id="past">Past 24h</button>
   <span id="upd"></span>
@@ -131,7 +134,7 @@
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span>Wildlife<small id="lifenames">Dolphin, redfish, sea turtle, stingray, pelican</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
-    <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
+    <label class="row sub"><span>Ren chases sanderlings<small>The screen scrunches up, a beach rises, and he chases them along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
     <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
     <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
@@ -1166,7 +1169,7 @@ function play(kind, opt = {}) {
   if (kind === "ren") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600, queen: 20000, coaster: 30000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 9000, rocket: 9600, queen: 20000, coaster: 30000 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {   // wildlife and the other animations each have their own timer, set in Settings, +/- 20%
@@ -1852,12 +1855,14 @@ function sanderling(b, flying, sec, ph) {   // b = size unit; facing +x, feet on
   line([1.05 * b, -1.48 * b, 1.55 * b, -1.4 * b], [.08, .08, .08, 1], Math.max(1, b * .12));   // bill
   dot(.85 * b, -1.58 * b, Math.max(.8, b * .07), [.05, .05, .05, 1]);
 }
-function ren(e, now, dt, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, t = (now - e.t0) / 1000;
-  const s = f * 1.15, b = f * .5, gy = P.y0 - P.A * .2, v = W * 1.3 / 11, d = e.dir;
+function ren(e, now, dt, sec, gy, t, reflH) {   // t = seconds since Ren started running (negative while the beach comes up)
+  const W = innerWidth, H = innerHeight, f = G ? G.f : H / 46;
+  const s = f * 1.3, b = f * .55, v = W * 1.3 / 11, d = e.dir;
   const rx = (d > 0 ? -W * .1 : W * 1.1) + d * v * t, ph = sec * 13;
   if (!e.birds) e.birds = Array.from({ length: 11 }, () => ({ x: W * (d > 0 ? .35 : .65) + rnd(-W * .07, W * .07), y: 0, fly: -1, n: 0, ph: rnd(0, 6), k: rnd(.8, 1.2) }));
+  e.renOff = d * rx > d * (d > 0 ? W + s * 4 : -s * 4);
   for (const bd of e.birds) {
+    if (bd.fly < 0 && e.renOff) { bd.fly = 0; bd.n = 3; bd.vx = d * rnd(200, 320); bd.h = rnd(35, 90); }   // Ren's gone by: the stragglers leave too
     if (bd.fly < 0) {
       bd.x += d * 30 * bd.k * dt * (1 + Math.sin(sec * 2 + bd.ph));   // scurrying along the edge
       if (d * (bd.x - rx) < W * .12 + bd.k * 20 && d * (bd.x - rx) > -s * 3) {   // Ren's coming: flush!
@@ -1877,11 +1882,62 @@ function ren(e, now, dt, sec, P) {
     ctx.save(); ctx.translate(rx, gy); if (d < 0) ctx.scale(-1, 1);
     renDog(s, ph); ctx.restore();
   };
+  e.birdsOff = e.birds.every(bd => bd.x < -W * .05 || bd.x > W * 1.05 || gy + bd.y < -b * 3);
   scene(false);
-  ctx.save(); ctx.globalAlpha = .28; ctx.beginPath(); ctx.rect(0, gy, W, innerHeight - gy); ctx.clip();
+  ctx.save(); ctx.globalAlpha = .25; ctx.beginPath(); ctx.rect(0, gy, W, reflH); ctx.clip();
   ctx.translate(0, gy * 2); ctx.scale(1, -1); scene(true); ctx.restore();
   if (Math.abs(Math.sin(ph)) > .95 && Math.random() < .5)   // splashes from his paws
     for (let i = 0; i < 3; i++) FX.splash.push({ x: rx + rnd(-s, s), y: gy, vx: rnd(-80, 80) - d * 60, vy: rnd(-200, -80), t0: now });
+}
+// ---- the beach: everything scrunches up, sand and surf rise from the bottom, Ren runs, then it all goes back ----
+const BEACH = { pre: 5, move: 2.2, h: .42, max: 13 };   // seconds before Ren runs, seconds to rise or sink, share of the screen, longest run
+const beachCv = document.getElementById("beach"), beachCtx = beachCv.getContext("2d");
+const SAND = Array.from({ length: 160 }, () => [Math.random(), Math.random(), Math.random()]);
+let scrunchK = 1;
+function scrunch(k) {   // squeeze the chart, the buttons and their animation layers into the top k of the screen
+  if (k === scrunchK) return;
+  scrunchK = k;
+  for (const el of [fxb, cv, fxf, document.getElementById("bar")]) {
+    el.style.transformOrigin = `50% ${-el.offsetTop}px`;
+    el.style.transform = k < 1 ? `scaleY(${k})` : "";
+  }
+}
+function beachScene(e, now, dt, sec) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, M = BEACH.move, lake = !LOC.station;
+  if (e.down == null && (t > BEACH.pre + BEACH.max || t > BEACH.pre + 3 && e.renOff && e.birdsOff)) e.down = t;   // all gone: back down
+  const r = e.down == null ? ease(Math.min(1, t / M)) : 1 - ease(Math.min(1, (t - e.down) / M));
+  if (e.down != null && t - e.down >= M) e.dur = now - e.t0;   // done
+  e.rise = r;
+  const hb = H * BEACH.h, yb = H - hb * r;   // beach top, sliding up and back down
+  if (r <= 0) return;
+  const shore = yb + hb * .36, swash = hb * .07 * Math.sin(sec * .8), gy = yb + hb * .56;
+  const edge = x => shore + swash + 3 * Math.sin(x / 55 + sec * 1.3) + 2 * Math.sin(x / 23 - sec);
+  const g = ctx.createLinearGradient(0, yb, 0, H);   // sand: wet near the water, dry farther up the beach
+  g.addColorStop(0, "#b8935a"); g.addColorStop(.62, "#c9a76c"); g.addColorStop(.75, "#e3cc98"); g.addColorStop(1, "#ead7a8");
+  ctx.fillStyle = g; ctx.fillRect(0, yb, W, hb + 1);
+  for (const [px, py, pz] of SAND) dot(px * W, yb + hb * (.72 + py * .28), .8 + pz * 1.2, pz < .5 ? [.6, .48, .3, .5] : [1, .96, .86, .6]);   // grains and shells
+  const sea = ctx.createLinearGradient(0, yb, 0, shore + hb * .07);
+  if (lake) { sea.addColorStop(0, "#22506b"); sea.addColorStop(1, "#4e8c9a"); }
+  else { sea.addColorStop(0, "#14607e"); sea.addColorStop(1, "#45b7b4"); }
+  ctx.beginPath(); ctx.moveTo(0, yb);   // the water, washing up and back
+  for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, edge(x) - 6);
+  ctx.lineTo(W + 8, yb); ctx.closePath(); ctx.fillStyle = sea; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, edge(0) - 8);   // thin sheet of swash and its foamy lip
+  for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, edge(x));
+  for (let x = W + 8; x >= 0; x -= 8) ctx.lineTo(x, edge(x) - 9);
+  ctx.fillStyle = "rgba(225,248,245,.55)"; ctx.fill();
+  ctx.beginPath(); for (let x = 0; x <= W + 8; x += 8) ctx[x ? "lineTo" : "moveTo"](x, edge(x));
+  ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 3; ctx.stroke();
+  for (let i = 0; i < 3; i++) {   // waves rolling in toward the beach
+    const q = (sec * (lake ? .12 : .16) + i / 3) % 1, y = yb + (shore - yb) * (.12 + q * .8), a = (lake ? .35 : .7) * Math.sin(q * Math.PI);
+    ctx.beginPath();
+    for (let x = 0; x <= W + 8; x += 8) ctx[x ? "lineTo" : "moveTo"](x, y + 3 * Math.sin(x / 70 + i * 2 + sec * .7));
+    ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.lineWidth = 2 + q * 3; ctx.stroke();
+  }
+  const sh = ctx.createLinearGradient(0, yb - 12, 0, yb);   // soft shadow where it meets the scrunched screen
+  sh.addColorStop(0, "rgba(0,0,0,0)"); sh.addColorStop(1, "rgba(0,0,0,.35)");
+  ctx.fillStyle = sh; ctx.fillRect(0, yb - 12, W, 12);
+  ren(e, now, dt, sec, gy, t - BEACH.pre, hb * .22);
 }
 // ---- a yellow submarine cruising by, trailing rainbow bubbles ----
 function sixtiesGuy(r, k, sec) {   // in a porthole of radius r; k = 0 looking ahead (side view), 1 = turned to look at you
@@ -2293,7 +2349,7 @@ function fxFrame(now) {
   if (now < numUntil || FX.slot && !FX.slot.wild) draw();   // (haywire redraws the chart itself)
   fxSchedule(now);
   const dpr = window.devicePixelRatio || 1, S = { w: innerWidth, h: innerHeight };
-  for (const c of [fxb, fxf]) {
+  for (const c of [fxb, fxf, beachCv]) {
     const w = Math.round(S.w * dpr), h = Math.round(S.h * dpr);
     if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
     const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, S.w, S.h);
@@ -2325,7 +2381,7 @@ function fxFrame(now) {
     if (e.kind === "coaster") coaster(e, now, dt);
     if (e.kind === "truck") { truckBy(e, now, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "rocket") starship(e, now);
-    if (e.kind === "ren") { ren(e, now, dt, sec, P); busy = splashes(now) || busy; }
+    if (e.kind === "ren") { ctx = beachCtx; beachScene(e, now, dt, sec); splashes(now); ctx = fctx; }
     if (e.kind === "bite") { bite(e, now, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "wipe") wipe(e, p, sec);
     if (e.kind === "melt") melt(e, now);
@@ -2334,6 +2390,8 @@ function fxFrame(now) {
     busy = true;
   }
   if (!FX.events.some(e => e.kind === "life" || e.kind === "bite" || e.kind === "ren" || e.kind === "truck")) busy = splashes(now) || busy;
+  const re = FX.events.find(e => e.kind === "ren");
+  scrunch(re && re.rise ? 1 - BEACH.h * re.rise : 1);
   ctx = mainCtx;
   if (busy) fxKick();
 }

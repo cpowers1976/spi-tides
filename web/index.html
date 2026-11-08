@@ -18,6 +18,8 @@
   /* animation layers: one behind the chart (sun glow, clouds, wind streaks, wave band), one in front */
   #fxb, #fxf { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
   #fxb { z-index: 0; } #fxf { z-index: 3; }
+  /* the beach that rises from the bottom for Ren's chase, while everything else scrunches up above it */
+  #beach { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
   #bar { display: flex; gap: 10px; padding: 8px 16px 12px; align-items: center; position: relative; z-index: 2; }
   button { font: inherit; font-size: 18px; padding: 10px 18px; border: 0; border-radius: 8px;
            background: var(--btn); color: var(--btntext); cursor: pointer; }
@@ -87,6 +89,7 @@
 <canvas id="fxb"></canvas>
 <canvas id="c"></canvas>
 <canvas id="fxf"></canvas>
+<canvas id="beach"></canvas>
 <div id="bar">
   <button id="past">Past 24h</button>
   <span id="upd"></span>
@@ -131,13 +134,14 @@
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span>Wildlife<small id="lifenames">Dolphin, redfish, sea turtle, stingray, pelican</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
-    <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
+    <label class="row sub"><span>Ren chases sanderlings<small>The screen scrunches up, a beach rises, and he chases them along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
     <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
     <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
-    <label class="row sub"><span>Cybertruck<small>Elon drives by, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
+    <label class="row sub"><span>Cybertruck<small>A beach rises and Elon drives along it, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
+    <label class="row sub"><span>Mariachi band<small>A beach rises and the band plays and dances across it</small></span><span class="ctl"><button class="try" data-try="mariachi">▶</button><input type="checkbox" class="sw" data-set="aMariachi"></span></label>
     <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
-    <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
+    <label class="row sub"><span>Starship launch<small>A beach rises, Starship fades in on Mechazilla, launches, and the booster comes back to be caught</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
@@ -192,7 +196,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "otherMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, otherMin: 10, data: null, updated: null, error: "",
@@ -1163,10 +1167,10 @@ function play(kind, opt = {}) {
   if (kind === "truck") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "rocket") { opt.x0 = rnd(.3, .7); opt.side = Math.random() < .5 ? -1 : 1; }
   if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
-  if (kind === "ren") opt.dir = Math.random() < .5 ? -1 : 1;
+  if (kind === "ren" || kind === "mariachi") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600, queen: 20000, coaster: 30000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {   // wildlife and the other animations each have their own timer, set in Settings, +/- 20%
@@ -1180,7 +1184,7 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
     const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null, lake = !LOC.station;
     const pool = [["kite", on("aKite") && G.spd >= KITE], [hot, on("aMelt") && hot], ["slot", on("aSlot") && !FX.slot],
       ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake],
-      ["sub", on("aSub")], ["ren", on("aRen")], ["bite", on("aBite")], ["chaos", on("aChaos")]].filter(([, ok]) => ok).map(([k]) => k);
+      ["sub", on("aSub")], ["ren", on("aRen")], ["mariachi", on("aMariachi")], ["bite", on("aBite")], ["chaos", on("aChaos")]].filter(([, ok]) => ok).map(([k]) => k);
     const pick = pool.length > 1 ? pool.filter(k => k !== FX.last) : pool;   // no repeats in a row
     if (!pick.length) FX.next.other = now + MIN;
     else if (busy) FX.next.other = wait;
@@ -1852,12 +1856,14 @@ function sanderling(b, flying, sec, ph) {   // b = size unit; facing +x, feet on
   line([1.05 * b, -1.48 * b, 1.55 * b, -1.4 * b], [.08, .08, .08, 1], Math.max(1, b * .12));   // bill
   dot(.85 * b, -1.58 * b, Math.max(.8, b * .07), [.05, .05, .05, 1]);
 }
-function ren(e, now, dt, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, t = (now - e.t0) / 1000;
-  const s = f * 1.15, b = f * .5, gy = P.y0 - P.A * .2, v = W * 1.3 / 11, d = e.dir;
+function ren(e, now, dt, sec, gy, t, reflH) {   // t = seconds since Ren started running (negative while the beach comes up)
+  const W = innerWidth, H = innerHeight, f = G ? G.f : H / 46;
+  const s = f * 1.3, b = f * .55, v = W * 1.3 / 11, d = e.dir;
   const rx = (d > 0 ? -W * .1 : W * 1.1) + d * v * t, ph = sec * 13;
   if (!e.birds) e.birds = Array.from({ length: 11 }, () => ({ x: W * (d > 0 ? .35 : .65) + rnd(-W * .07, W * .07), y: 0, fly: -1, n: 0, ph: rnd(0, 6), k: rnd(.8, 1.2) }));
+  e.renOff = d * rx > d * (d > 0 ? W + s * 4 : -s * 4);
   for (const bd of e.birds) {
+    if (bd.fly < 0 && e.renOff) { bd.fly = 0; bd.n = 3; bd.vx = d * rnd(200, 320); bd.h = rnd(35, 90); }   // Ren's gone by: the stragglers leave too
     if (bd.fly < 0) {
       bd.x += d * 30 * bd.k * dt * (1 + Math.sin(sec * 2 + bd.ph));   // scurrying along the edge
       if (d * (bd.x - rx) < W * .12 + bd.k * 20 && d * (bd.x - rx) > -s * 3) {   // Ren's coming: flush!
@@ -1877,11 +1883,153 @@ function ren(e, now, dt, sec, P) {
     ctx.save(); ctx.translate(rx, gy); if (d < 0) ctx.scale(-1, 1);
     renDog(s, ph); ctx.restore();
   };
+  e.birdsOff = e.birds.every(bd => bd.x < -W * .05 || bd.x > W * 1.05 || gy + bd.y < -b * 3);
   scene(false);
-  ctx.save(); ctx.globalAlpha = .28; ctx.beginPath(); ctx.rect(0, gy, W, innerHeight - gy); ctx.clip();
+  ctx.save(); ctx.globalAlpha = .25; ctx.beginPath(); ctx.rect(0, gy, W, reflH); ctx.clip();
   ctx.translate(0, gy * 2); ctx.scale(1, -1); scene(true); ctx.restore();
   if (Math.abs(Math.sin(ph)) > .95 && Math.random() < .5)   // splashes from his paws
     for (let i = 0; i < 3; i++) FX.splash.push({ x: rx + rnd(-s, s), y: gy, vx: rnd(-80, 80) - d * 60, vy: rnd(-200, -80), t0: now });
+}
+// ---- the beach: everything scrunches up, sand and surf rise from the bottom, Ren runs, then it all goes back ----
+const BEACH = { move: 2.2, h: .42 };   // seconds to rise or sink, share of the screen
+// who comes out on the beach: seconds from the beach starting up until they start, the longest they can take, and how to draw them
+// (each draw returns true once they're done, then the beach goes back down)
+const BEACH_KIND = {
+  ren: { pre: 5, max: 13, draw: (e, now, dt, sec, g) => { ren(e, now, dt, sec, g.gy, g.t, g.hb * .22); return g.t > 3 && e.renOff && e.birdsOff; } },
+  truck: { pre: 3, max: 12, draw: (e, now, dt, sec, g) => truckOnBeach(e, now, sec, g) },
+  rocket: { pre: 2.4, max: 22, draw: (e, now, dt, sec, g) => starship(e, now, g) },
+  mariachi: { pre: 3, max: 22, draw: (e, now, dt, sec, g) => mariachiBand(e, now, sec, g) },
+};
+const beachCv = document.getElementById("beach"), beachCtx = beachCv.getContext("2d");
+const SAND = Array.from({ length: 160 }, () => [Math.random(), Math.random(), Math.random()]);
+let scrunchK = 1;
+function scrunch(k) {   // squeeze the chart, the buttons and their animation layers into the top k of the screen
+  if (k === scrunchK) return;
+  scrunchK = k;
+  for (const el of [fxb, cv, fxf, document.getElementById("bar")]) {
+    el.style.transformOrigin = `50% ${-el.offsetTop}px`;
+    el.style.transform = k < 1 ? `scaleY(${k})` : "";
+  }
+}
+function beachScene(e, now, dt, sec) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, M = BEACH.move, lake = !LOC.station, K = BEACH_KIND[e.kind];
+  if (e.down == null && (t > K.pre + K.max || e.done)) e.down = t;   // all gone: back down
+  const r = e.down == null ? ease(Math.min(1, t / M)) : 1 - ease(Math.min(1, (t - e.down) / M));
+  if (e.down != null && t - e.down >= M) e.dur = now - e.t0;   // done
+  e.rise = r;
+  const hb = H * BEACH.h, yb = H - hb * r;   // beach top, sliding up and back down
+  if (r <= 0) return;
+  const shore = yb + hb * .36, swash = hb * .07 * Math.sin(sec * .8), gy = yb + hb * .56;
+  const edge = x => shore + swash + 3 * Math.sin(x / 55 + sec * 1.3) + 2 * Math.sin(x / 23 - sec);
+  const g = ctx.createLinearGradient(0, yb, 0, H);   // sand: wet near the water, dry farther up the beach
+  g.addColorStop(0, "#b8935a"); g.addColorStop(.62, "#c9a76c"); g.addColorStop(.75, "#e3cc98"); g.addColorStop(1, "#ead7a8");
+  ctx.fillStyle = g; ctx.fillRect(0, yb, W, hb + 1);
+  for (const [px, py, pz] of SAND) dot(px * W, yb + hb * (.72 + py * .28), .8 + pz * 1.2, pz < .5 ? [.6, .48, .3, .5] : [1, .96, .86, .6]);   // grains and shells
+  const sea = ctx.createLinearGradient(0, yb, 0, shore + hb * .07);
+  if (lake) { sea.addColorStop(0, "#22506b"); sea.addColorStop(1, "#4e8c9a"); }
+  else { sea.addColorStop(0, "#14607e"); sea.addColorStop(1, "#45b7b4"); }
+  ctx.beginPath(); ctx.moveTo(0, yb);   // the water, washing up and back
+  for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, edge(x) - 6);
+  ctx.lineTo(W + 8, yb); ctx.closePath(); ctx.fillStyle = sea; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, edge(0) - 8);   // thin sheet of swash and its foamy lip
+  for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, edge(x));
+  for (let x = W + 8; x >= 0; x -= 8) ctx.lineTo(x, edge(x) - 9);
+  ctx.fillStyle = "rgba(225,248,245,.55)"; ctx.fill();
+  ctx.beginPath(); for (let x = 0; x <= W + 8; x += 8) ctx[x ? "lineTo" : "moveTo"](x, edge(x));
+  ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 3; ctx.stroke();
+  for (let i = 0; i < 3; i++) {   // waves rolling in toward the beach
+    const q = (sec * (lake ? .12 : .16) + i / 3) % 1, y = yb + (shore - yb) * (.12 + q * .8), a = (lake ? .35 : .7) * Math.sin(q * Math.PI);
+    ctx.beginPath();
+    for (let x = 0; x <= W + 8; x += 8) ctx[x ? "lineTo" : "moveTo"](x, y + 3 * Math.sin(x / 70 + i * 2 + sec * .7));
+    ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.lineWidth = 2 + q * 3; ctx.stroke();
+  }
+  const sh = ctx.createLinearGradient(0, yb - 12, 0, yb);   // soft shadow where it meets the scrunched screen
+  sh.addColorStop(0, "rgba(0,0,0,0)"); sh.addColorStop(1, "rgba(0,0,0,.35)");
+  ctx.fillStyle = sh; ctx.fillRect(0, yb - 12, W, 12);
+  ctx.save();
+  e.done = K.draw(e, now, dt, sec, { W, H, yb, hb, gy, t: t - K.pre, lake }) || e.done;
+  ctx.restore();
+}
+function reflect(gy, h, drawIt) {   // drawIt() again, upside down and faint, as a reflection on the wet sand
+  ctx.save(); ctx.globalAlpha = .25; ctx.beginPath(); ctx.rect(0, gy, innerWidth, h); ctx.clip();
+  ctx.translate(0, gy * 2); ctx.scale(1, -1); drawIt(); ctx.restore();
+}
+// Elon in the Cybertruck, driving along the wet sand
+function truckOnBeach(e, now, sec, g) {
+  const f = G ? G.f : g.H / 46, u = f * 1.6, d = e.dir, T = 8;
+  const x = (d > 0 ? -g.W * .15 : g.W * 1.15) + d * g.W * 1.3 * g.t / T, y = g.gy + Math.sin(sec * 9) * 1.2;
+  if (g.t < 0) return false;
+  if (Math.random() < .6) for (let i = 0; i < 2; i++) FX.splash.push({ x: x - d * 2.3 * u + rnd(-6, 6), y, vx: -d * rnd(60, 200), vy: rnd(-180, -60), t0: now });
+  const it = () => { ctx.save(); ctx.translate(x, y); if (d < 0) ctx.scale(-1, 1); cybertruck(u, sec, sec * 7); ctx.restore(); };
+  it(); reflect(g.gy, g.hb * .2, it);
+  return g.t > T;
+}
+// ---- a mariachi band playing and dancing across the beach ----
+function mariachi(u, inst, ph, sec, d) {   // front view, feet on y = 0; u = size unit; d = the way they're heading
+  const skin = [.82, .6, .44, 1], suit = "#17171c", silver = [.86, .86, .9, 1], gold = [.85, .68, .2, 1];
+  const hop = -Math.abs(Math.sin(ph)) * u * .35, kick = Math.sin(ph) * u * .45;
+  ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  line([-.3 * u, -2 * u, -.3 * u + Math.min(0, kick), -Math.max(0, -kick) * .6], [.09, .09, .11, 1], u * .36);   // legs, stepping
+  line([.3 * u, -2 * u, .3 * u + Math.max(0, kick), -Math.max(0, kick) * .6], [.09, .09, .11, 1], u * .36);
+  for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) dot(sx * .42 * u + (sx < 0 ? Math.min(0, kick) : Math.max(0, kick)) * (i / 4), -2 * u + i * .45 * u, u * .06, silver);   // silver buttons down the pants
+  ctx.translate(0, hop); ctx.rotate(Math.sin(ph) * .08);
+  ctx.fillStyle = suit; ctx.beginPath(); ctx.roundRect(-.62 * u, -3.7 * u, 1.24 * u, 1.9 * u, .25 * u); ctx.fill();   // short charro jacket
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(-.28 * u, -3.7 * u); ctx.lineTo(.28 * u, -3.7 * u); ctx.lineTo(0, -2.9 * u); ctx.fill();   // shirt
+  ctx.fillStyle = "#c8102e"; ctx.beginPath(); ctx.moveTo(0, -3.55 * u); ctx.lineTo(-.3 * u, -3.72 * u); ctx.lineTo(-.3 * u, -3.38 * u); ctx.lineTo(.3 * u, -3.72 * u); ctx.lineTo(.3 * u, -3.38 * u); ctx.fill();   // big red bow
+  for (let i = 0; i < 3; i++) { dot(-.5 * u, -3.4 * u + i * .35 * u, u * .06, silver); dot(.5 * u, -3.4 * u + i * .35 * u, u * .06, silver); }
+  ctx.fillStyle = "#0f0f12"; ctx.fillRect(-.62 * u, -2 * u, 1.24 * u, .18 * u);   // belt
+  dot(0, -4.15 * u, .42 * u, skin);   // head
+  dot(-.15 * u, -4.22 * u, u * .05, [.1, .08, .06, 1]); dot(.15 * u, -4.22 * u, u * .05, [.1, .08, .06, 1]);
+  ctx.fillStyle = "#2a1a10"; ctx.beginPath(); ctx.ellipse(0, -3.98 * u, .26 * u, .08 * u, 0, 0, 7); ctx.fill();   // mustache
+  ctx.fillStyle = suit; ctx.beginPath(); ctx.ellipse(0, -4.5 * u, 1.15 * u, .22 * u, 0, 0, 7); ctx.fill();   // sombrero brim
+  ctx.beginPath(); ctx.moveTo(-.42 * u, -4.5 * u); ctx.quadraticCurveTo(-.4 * u, -5.25 * u, 0, -5.25 * u); ctx.quadraticCurveTo(.4 * u, -5.25 * u, .42 * u, -4.5 * u); ctx.fill();   // crown
+  ctx.strokeStyle = rgba(gold); ctx.lineWidth = u * .07; ctx.beginPath(); ctx.ellipse(0, -4.5 * u, 1.08 * u, .17 * u, 0, 0, 7); ctx.stroke();   // gold trim
+  ctx.beginPath(); ctx.moveTo(-.4 * u, -4.68 * u); ctx.lineTo(.4 * u, -4.68 * u); ctx.stroke();
+  const arm = (pts, w = .26) => line(pts.map(v => v * u), [.09, .09, .11, 1], u * w), hand = (x, y) => dot(x * u, y * u, u * .13, skin);
+  const strum = Math.sin(sec * 16 + ph);
+  if (inst === "trumpet") {   // horn up to the lips, bell out to the side, swinging up and down with the beat
+    ctx.save(); ctx.translate(0, -3.95 * u); ctx.rotate(d * (-.35 + Math.sin(ph) * .15));
+    line([0, 0, d * 1.5 * u, 0], [.95, .78, .25, 1], u * .12);
+    ctx.fillStyle = rgba(gold); ctx.beginPath(); ctx.moveTo(d * 1.35 * u, 0); ctx.lineTo(d * 1.9 * u, -.3 * u); ctx.lineTo(d * 1.9 * u, .3 * u); ctx.fill();
+    ctx.restore();
+    arm([-.55, -3.5, d * .2, -3.75]); arm([.55, -3.5, d * .7, -3.95]); hand(d * .25, -3.8); hand(d * .7, -4);
+  } else if (inst === "violin") {   // fiddle under the chin, bow sawing away
+    ctx.fillStyle = "#8a3b12"; ctx.beginPath(); ctx.ellipse(.45 * u, -3.75 * u, .42 * u, .22 * u, -.5, 0, 7); ctx.fill();
+    line([.6 * u, -3.85 * u, 1.3 * u, -4.2 * u], [.25, .14, .06, 1], u * .1);
+    const bx = .3 * u + strum * .35 * u; line([bx - .7 * u, -3.3 * u, bx + .7 * u, -4.1 * u], [.9, .85, .7, 1], u * .05);
+    arm([.55, -3.5, 1.2, -4.1]); hand(1.2, -4.15); arm([-.55, -3.5, (bx - .7 * u) / u + .1, -3.35]); hand((bx - .7 * u) / u + .1, -3.35);
+  } else if (inst === "guitar" || inst === "bass") {   // vihuela or the big guitarrón, strummed across the belly
+    const big = inst === "bass", r = big ? .85 : .55;
+    ctx.save(); ctx.translate(-.05 * u, -2.75 * u); ctx.rotate(-.45);
+    line([0, 0, (big ? 2.1 : 1.8) * u, 0], [.3, .17, .07, 1], u * .16);   // neck
+    ctx.fillStyle = big ? "#5e2c0f" : "#d79a52"; ctx.beginPath(); ctx.ellipse(-.1 * u, 0, r * u, r * .85 * u, 0, 0, 7); ctx.fill();
+    dot(0, 0, r * .3 * u, [.12, .07, .03, 1]); ctx.restore();
+    arm([.55, -3.5, 1.15, -3.45]); hand(1.25, -3.5); arm([-.55, -3.5, -.25 + strum * .12, -2.7]); hand(-.2 + strum * .12, -2.7);
+  } else {   // the singer, arm flung out, belting it
+    dot(0, -3.93 * u, u * .09, [.35, .08, .08, 1]);
+    arm([.55, -3.5, 1.15, -4.3 + Math.sin(ph) * .2]); hand(1.2, -4.4 + Math.sin(ph) * .2);
+    arm([-.55, -3.5, -.75, -2.6]); hand(-.75, -2.55);
+  }
+  ctx.restore();
+}
+function mariachiBand(e, now, sec, g) {
+  const f = G ? G.f : g.H / 46, u = f * 1.15, d = e.dir, T = 16, v = g.W * 1.5 / T, band = ["trumpet", "violin", "singer", "guitar", "bass", "trumpet"];
+  if (g.t < 0) return false;
+  const x0 = (d > 0 ? -g.W * .05 : g.W * 1.05) + d * v * g.t;
+  if (!e.notes) e.notes = [];
+  if (Math.random() < .35) { const i = Math.floor(Math.random() * band.length); e.notes.push({ x: x0 - d * i * u * 3.2, y: g.gy - u * 5, t0: now, c: "♪♫♩♬"[Math.floor(Math.random() * 4)], vx: rnd(-20, 20) }); }
+  const it = () => band.forEach((inst, i) => {
+    ctx.save(); ctx.translate(x0 - d * i * u * 3.2, g.gy); mariachi(u, inst, sec * 7 + i * 1.3, sec, d); ctx.restore();
+  });
+  it(); reflect(g.gy, g.hb * .22, it);
+  e.notes = e.notes.filter(n => now - n.t0 < 2200);
+  ctx.font = `bold ${Math.round(u * 1.3)}px system-ui, sans-serif`; ctx.textAlign = "center";
+  for (const n of e.notes) {   // music notes floating up
+    const q = (now - n.t0) / 2200;
+    ctx.fillStyle = `rgba(255,${200 + 40 * Math.sin(n.t0)},90,${1 - q})`;
+    ctx.fillText(n.c, n.x + n.vx * q * 2 + Math.sin(q * 9) * u * .4, n.y - q * u * 6);
+  }
+  return d * x0 > d * (d > 0 ? g.W : 0) + band.length * u * 3.2 + u * 2;
 }
 // ---- a yellow submarine cruising by, trailing rainbow bubbles ----
 function sixtiesGuy(r, k, sec) {   // in a porthole of radius r; k = 0 looking ahead (side view), 1 = turned to look at you
@@ -1979,13 +2127,6 @@ function cybertruck(u, sec, wave) {   // facing +x, wheels on y = 0; u = size un
   }
   ctx.lineCap = "butt"; ctx.lineJoin = "miter";
 }
-function truckBy(e, now, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 1.6, p = (now - e.t0) / e.dur, d = e.dir;
-  const x = d > 0 ? -W * .15 + W * 1.3 * p : W * 1.15 - W * 1.3 * p, y = P.y0 + Math.sin(sec * 9) * 1.2;
-  if (Math.random() < .6) for (let i = 0; i < 2; i++) FX.splash.push({ x: x - d * 2.3 * u + rnd(-6, 6), y, vx: -d * rnd(60, 200), vy: rnd(-180, -60), t0: now });
-  ctx.save(); ctx.translate(x, y); if (d < 0) ctx.scale(-1, 1);
-  cybertruck(u, sec, sec * 7); ctx.restore();
-}
 
 // ---- Starship: the full stack blasts up, they separate, the ship flies off the top,
 // the booster flips, boosts back, flips upright again and drops off the bottom on its landing burn ----
@@ -2022,35 +2163,63 @@ function ship(w, L) {   // engines at y = 0, nose at -L
   ctx.beginPath(); ctx.moveTo(-w / 2, -L * .8); ctx.lineTo(-w * .85, -L * .72); ctx.lineTo(-w / 2, -L * .68); ctx.fill();
   ctx.beginPath(); ctx.moveTo(w / 2, -L * .8); ctx.lineTo(w * .85, -L * .72); ctx.lineTo(w / 2, -L * .68); ctx.fill();
 }
-function starship(e, now) {
-  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
-  const Lb = H * .24, Ls = H * .18, w = Lb * .12, x0 = e.x0 * W, TS = 2.8;   // separation at TS
+function mechazilla(x, top, ground, tw, side, armY, armOpen, reach) {   // the launch tower with its chopstick arms
+  ctx.fillStyle = "#3b3f45"; ctx.fillRect(x - tw / 2, top, tw, ground - top);
+  ctx.strokeStyle = "#8c939b"; ctx.lineWidth = Math.max(1, tw * .07);
+  for (let y = top; y < ground - tw * .5; y += tw) {   // lattice bracing
+    ctx.beginPath(); ctx.moveTo(x - tw / 2, y); ctx.lineTo(x + tw / 2, y + tw); ctx.moveTo(x + tw / 2, y); ctx.lineTo(x - tw / 2, y + tw); ctx.stroke();
+  }
+  ctx.fillStyle = "#c9ced4"; ctx.fillRect(x - tw * .65, top - tw * .4, tw * 1.3, tw * .4);   // top cap
+  for (const k of [0, 1]) {   // two arms, one a little behind the other
+    ctx.save(); ctx.translate(x - side * tw * .5, armY + k * tw * .25); ctx.rotate(side * armOpen);
+    ctx.fillStyle = k ? "#5b6067" : "#7d838a"; ctx.fillRect(side > 0 ? -reach : 0, -tw * .14, reach, tw * .28);
+    ctx.restore();
+  }
+}
+// Starship stacked on Mechazilla fades onto the beach, launches, separates, the ship flies off the top,
+// and the booster flips, boosts back, and is caught by the chopsticks
+function starship(e, now, g) {
+  const { W, H, yb, hb } = g, t = g.t, FADE = 1.4, LIFT = 3.2, TS = 2.8, CATCH = 6.4, HOLD = 1.6;
+  const Lb = H * .21, Ls = H * .16, w = Lb * .12, x0 = e.x0 * W, side = e.side;
+  const pad = yb + hb * .8, legs = w * 1.3, tw = w * 1.4, tx = x0 + side * (w * .5 + tw * .5 + w * 1.1);
+  const caughtY = pad - w * .8, armY = caughtY - Lb + w * .7, reach = w * 1.1 + tw * .5 + w * .55;
+  if (t < 0) return false;
   if (!e.smoke) e.smoke = [];
-  const sepY = H * .78, a = 2 * (H + Lb + Ls * .2 - sepY) / (TS * TS);   // the stack's engines reach sepY at TS
-  const baseY = tt => H + Lb + Ls * .2 - a * tt * tt / 2, vSep = a * TS;
-  if (t < TS) {   // the whole stack climbing
-    const y = baseY(t);
-    if (Math.random() < .7) e.smoke.push({ x: x0 + rnd(-w, w), y: Math.min(H, y + w * 4), r: rnd(.8, 1.4) * w, t0: now, vx: rnd(-60, 60) });
-    plume(x0, y, 0, w * 7, w * 1.2);
+  const fade = Math.min(1, t / FADE);
+  ctx.globalAlpha = fade;
+  const u = t - LIFT - TS;   // time since stage separation
+  const armOpen = u > CATCH - .8 ? .9 * (1 - ease(Math.min(1, (u - CATCH + .8) / .8))) : t > LIFT - .6 ? .9 * ease(Math.min(1, (t - LIFT + .6) / .6)) : 0;
+  mechazilla(tx, armY - Lb * .25 - Ls * .45, pad + legs, tw, side, armY, armOpen, reach);
+  ctx.fillStyle = "#4a4e55"; ctx.fillRect(x0 - w * 1.1, pad, w * 2.2, w * .3);   // launch mount
+  for (const lx of [-1, 1]) ctx.fillRect(x0 + lx * w * .9 - w * .1, pad, w * .2, legs);
+  if (t < LIFT + TS) {   // on the pad, then the whole stack climbing
+    const q = Math.max(0, t - LIFT), a = 2 * H * .36 / (TS * TS), y = pad - a * q * q / 2;
+    if (t > LIFT - .8) {
+      plume(x0, y, 0, w * (t < LIFT ? 2 + 3 * (t - LIFT + .8) : 7), w * 1.2, t < LIFT ? .8 : 1);
+      if (Math.random() < .8) e.smoke.push({ x: x0 + rnd(-w, w) * 2, y: pad + legs * .8, r: rnd(.8, 1.4) * w, t0: now, vx: rnd(-90, 90) });
+    }
     ctx.save(); ctx.translate(x0, y); booster(w, Lb, false); ctx.translate(0, -Lb); ship(w, Ls); ctx.restore();
   } else {
-    const u = t - TS;
+    const a = 2 * H * .36 / (TS * TS), sepY = pad - H * .36, vSep = a * TS;
     if (u < .3) { ctx.fillStyle = `rgba(255,210,140,${(.3 - u) * 2})`; ctx.beginPath(); ctx.arc(x0, sepY - Lb, w * 3 * (1 + u * 6), 0, 7); ctx.fill(); }   // hot-staging flash
     const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster
     if (sy > -Ls * 1.5) { plume(x0, sy, 0, w * 6, w * 1.1); ctx.save(); ctx.translate(x0, sy); ship(w, Ls); ctx.restore(); }
-    // booster: coasts up and slows, then falls back; flips over for the boostback, then upright for landing
-    const g = vSep / 1.6, by = u < 3.2 ? sepY - vSep * u + g * u * u / 2 : sepY + (H + Lb * 1.2 - sepY) * ((u - 3.2) / 3.4) ** 1.4, bx = x0 + e.side * W * .08 * Math.min(1, u / 2);
+    // booster: coasts up and back down to where it separated, flipping for the boostback and upright again, then a landing burn into the arms
+    const gv = vSep / 1.6, drift = W * .1 * side * Math.sin(Math.PI * Math.min(1, u / CATCH));
+    const by = u < 3.2 ? sepY - vSep * u + gv * u * u / 2 : u < CATCH ? sepY + (caughtY - sepY) * (1 - (1 - (u - 3.2) / (CATCH - 3.2)) ** 2) : caughtY;
     const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
-    ctx.save(); ctx.translate(bx, by - Lb / 2); ctx.rotate(rot * e.side); ctx.translate(0, Lb / 2);
+    ctx.save(); ctx.translate(x0 - drift, by - Lb / 2); ctx.rotate(rot * side); ctx.translate(0, Lb / 2);
     if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
-    if (u > 3.3) plume(0, 0, 0, w * 5, w * .8);                     // landing burn on the way down
+    if (u > 3.3 && u < CATCH) plume(0, 0, 0, w * 5 * (1 - (u - 3.3) / (CATCH - 3.3) * .6), w * .8);   // landing burn
     booster(w, Lb, u > .5); ctx.restore();
   }
+  ctx.globalAlpha = 1;
   e.smoke = e.smoke.filter(s => now - s.t0 < 2600);
-  for (const s of e.smoke) {   // launch smoke billowing out
+  for (const s of e.smoke) {   // launch smoke billowing across the beach
     const q = (now - s.t0) / 2600;
-    dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.85, .85, .85, .28 * (1 - q)]);
+    dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.88, .86, .82, .32 * (1 - q)]);
   }
+  return u > CATCH + HOLD;
 }
 function splashes(now) {
   FX.splash = FX.splash.filter(s => now - s.t0 < 800);
@@ -2293,7 +2462,7 @@ function fxFrame(now) {
   if (now < numUntil || FX.slot && !FX.slot.wild) draw();   // (haywire redraws the chart itself)
   fxSchedule(now);
   const dpr = window.devicePixelRatio || 1, S = { w: innerWidth, h: innerHeight };
-  for (const c of [fxb, fxf]) {
+  for (const c of [fxb, fxf, beachCv]) {
     const w = Math.round(S.w * dpr), h = Math.round(S.h * dpr);
     if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
     const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, S.w, S.h);
@@ -2315,7 +2484,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, sub: 0, truck: 0, queen: 0, coaster: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, truck: 0, queen: 0, coaster: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
@@ -2323,9 +2492,8 @@ function fxFrame(now) {
     if (e.kind === "sub") submarine(e, now, dt, sec, P);
     if (e.kind === "queen") queenII(e, now, sec, P);
     if (e.kind === "coaster") coaster(e, now, dt);
-    if (e.kind === "truck") { truckBy(e, now, sec, P); busy = splashes(now) || busy; }
-    if (e.kind === "rocket") starship(e, now);
-    if (e.kind === "ren") { ren(e, now, dt, sec, P); busy = splashes(now) || busy; }
+
+    if (BEACH_KIND[e.kind]) { ctx = beachCtx; beachScene(e, now, dt, sec); splashes(now); ctx = fctx; }
     if (e.kind === "bite") { bite(e, now, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "wipe") wipe(e, p, sec);
     if (e.kind === "melt") melt(e, now);
@@ -2334,6 +2502,8 @@ function fxFrame(now) {
     busy = true;
   }
   if (!FX.events.some(e => e.kind === "life" || e.kind === "bite" || e.kind === "ren" || e.kind === "truck")) busy = splashes(now) || busy;
+  const re = FX.events.find(e => BEACH_KIND[e.kind]);
+  scrunch(re && re.rise ? 1 - BEACH.h * re.rise : 1);
   ctx = mainCtx;
   if (busy) fxKick();
 }
@@ -2402,7 +2572,7 @@ function pctList() {
   return [["kite", "Kiteboarder"], ...(LIFE[state.loc] || LIFE.spi).map(sp => ["life:" + sp, LIFE_LABEL[sp]]),
     [cold ? "freeze" : "melt", "Melt or freeze"], ["wipe", "Wave wipe"], ["ren", "Ren and the sanderlings"],
     ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : []),
-    ["sub", "Yellow submarine"], ["truck", "Cybertruck"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
+    ["sub", "Yellow submarine"], ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
     ["bite", lake ? "Muskie bite" : "Shark bite"], ["chaos", "Haywire forecast"]];
 }
 const LIFE_LABEL = { dolphin: "Dolphin", redfish: "Redfish", seaturtle: "Sea turtle", stingray: "Stingray", pelican: "Pelican dive", manowar: "Man o' war",
@@ -2418,7 +2588,7 @@ const inPct = e => {
 function playAny() {   // a random animation that's switched on here (or any of them, if none are)
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["chaos", "aChaos"], ["bite", "aBite"],
-    ["ren", "aRen"], ["sub", "aSub"], ["truck", "aTruck"], ["rocket", "aRocket"], ["slot", "aSlot"], ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
+    ["ren", "aRen"], ["sub", "aSub"], ["truck", "aTruck"], ["rocket", "aRocket"], ["mariachi", "aMariachi"], ["slot", "aSlot"], ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
   const ok = all.filter(([, k]) => state[k]), list = ok.length ? ok : all, [kind] = list[Math.floor(Math.random() * list.length)];
   play(kind, kind === "life" ? { random: true } : {});
 }

@@ -124,6 +124,8 @@
     <label class="row sub"><span>Wildlife<small id="lifenames">Dolphin, redfish, sea turtle, stingray, pelican</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
     <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge, every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
+    <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
+    <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
     <label class="row sub"><span>Cybertruck<small>Elon drives by, waving. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
     <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands. Every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
@@ -178,7 +180,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", data: null, updated: null, error: "",
@@ -812,7 +814,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN, slot: performance.now() + rnd(6, 12) * MIN }, lifeIdx: 0, slot: null };
+             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN, slot: performance.now() + rnd(6, 12) * MIN, queen: performance.now() + rnd(5, 12) * MIN, coaster: performance.now() + rnd(10, 20) * MIN }, lifeIdx: 0, slot: null };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -1019,11 +1021,11 @@ function play(kind, opt = {}) {
   }
   if (kind === "truck") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "rocket") { opt.x0 = rnd(.3, .7); opt.side = Math.random() < .5 ? -1 : 1; }
-  if (kind === "sub") opt.dir = Math.random() < .5 ? -1 : 1;
+  if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "ren") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600, queen: 20000, coaster: 30000 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {
@@ -1048,6 +1050,11 @@ function fxSchedule(now) {
   if (now >= FX.next.rocket) {
     if (!on("aRocket")) FX.next.rocket = now + MIN;
     else if (busy) FX.next.rocket = wait; else { FX.next.rocket = now + rnd(50, 70) * MIN; play("rocket"); }
+  }
+  for (const k of ["queen", "coaster"]) {   // Spirit Lake only
+    if (now < FX.next[k]) continue;
+    if (!on(k === "queen" ? "aQueen" : "aCoaster") || LOC.station) FX.next[k] = now + MIN;
+    else if (busy) FX.next[k] = wait; else { FX.next[k] = now + rnd(30, 45) * MIN; play(k); }
   }
   if (now >= FX.next.sub) {
     if (!on("aSub")) FX.next.sub = now + MIN;
@@ -1420,6 +1427,146 @@ function pelican(e, now, sec, P) {
     ctx.beginPath(); ctx.ellipse(xd, wy, l * (.3 + q * 1.2), l * (.06 + q * .2), 0, 0, 7); ctx.stroke();
     if (t < T3 + .5) { const c = (t - T3) / .5; ctx.fillStyle = `rgba(255,255,255,${.7 * (1 - c)})`; ctx.beginPath(); ctx.ellipse(xd, wy - l * .4 * Math.sin(c * Math.PI), l * .18, l * .5 * Math.sin(c * Math.PI) + 1, 0, 0, 7); ctx.fill(); }
   }
+}
+
+// ---- the Queen II, the Okoboji excursion boat (a replica of the 1884 steamer): white, two decks,
+//      enclosed main cabin, open upper deck under a canopy, pilothouse forward, tall stack, flags ----
+function queenBoat(u, sec, d) {   // facing +x, origin at the waterline, centre of the boat
+  const white = "#f7f5ee", trim = "#1f4d3a", line2 = "rgba(40,40,40,.35)";
+  ctx.lineJoin = "round"; ctx.lineWidth = Math.max(1, u * .06); ctx.strokeStyle = line2;
+  ctx.fillStyle = white; ctx.beginPath();   // hull, raked bow
+  ctx.moveTo(-7 * u, 0); ctx.lineTo(-7.2 * u, -1.4 * u); ctx.lineTo(6.2 * u, -1.4 * u); ctx.quadraticCurveTo(7.6 * u, -1.3 * u, 7.9 * u, -1.7 * u);
+  ctx.lineTo(6.6 * u, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#b8332b"; ctx.fillRect(-7 * u, -.25 * u, 13.5 * u, .25 * u);   // boot stripe at the waterline
+  ctx.fillStyle = trim; ctx.fillRect(-7.2 * u, -1.5 * u, 14.2 * u, .22 * u);       // rub rail
+  ctx.fillStyle = white; ctx.fillRect(-6.4 * u, -3.1 * u, 11.6 * u, 1.62 * u); ctx.strokeRect(-6.4 * u, -3.1 * u, 11.6 * u, 1.62 * u);   // main cabin
+  for (let i = 0; i < 12; i++) {   // cabin windows
+    const x = -6 * u + i * .92 * u;
+    ctx.fillStyle = "#7fb3cf"; ctx.fillRect(x, -2.85 * u, .62 * u, .8 * u);
+    ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.fillRect(x + .06 * u, -2.8 * u, .14 * u, .7 * u);
+  }
+  ctx.fillStyle = trim; ctx.fillRect(-6.6 * u, -3.28 * u, 12 * u, .2 * u);   // upper deck edge
+  ctx.strokeStyle = white; ctx.lineWidth = Math.max(1, u * .07);   // upper deck railing
+  ctx.beginPath(); ctx.moveTo(-6.4 * u, -3.95 * u); ctx.lineTo(2.9 * u, -3.95 * u);
+  for (let x = -6.4; x <= 2.9; x += .5) { ctx.moveTo(x * u, -3.28 * u); ctx.lineTo(x * u, -3.95 * u); }
+  ctx.stroke();
+  for (let i = 0; i < 9; i++) {   // people on the upper deck, a couple waving
+    const x = -5.8 * u + i * .95 * u, wave = i % 4 === 1;
+    dot(x, -4.25 * u, .2 * u, i % 3 ? [.93, .76, .62, 1] : [.62, .45, .32, 1]);
+    ctx.fillStyle = ["#d9534f", "#3c7dc4", "#f0c419", "#5cb85c"][i % 4]; ctx.fillRect(x - .2 * u, -4.05 * u, .4 * u, .4 * u);
+    if (wave) line([x + .15 * u, -4 * u, x + .4 * u, -4.55 * u + Math.sin(sec * 8 + i) * .12 * u], [.93, .76, .62, 1], u * .08);
+  }
+  ctx.strokeStyle = trim; ctx.lineWidth = Math.max(1, u * .08);   // canopy posts and roof
+  ctx.beginPath(); for (const x of [-6.2, -3.6, -1, 1.6]) { ctx.moveTo(x * u, -3.28 * u); ctx.lineTo(x * u, -4.9 * u); } ctx.stroke();
+  ctx.fillStyle = trim; ctx.beginPath(); ctx.moveTo(-6.7 * u, -4.85 * u); ctx.lineTo(2.2 * u, -4.85 * u); ctx.lineTo(2 * u, -5.15 * u); ctx.lineTo(-6.5 * u, -5.15 * u); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#fff"; for (let x = -6.4; x < 1.9; x += .9) { ctx.beginPath(); ctx.arc((x + .45) * u, -4.85 * u, .45 * u, 0, Math.PI); ctx.fill(); }   // scalloped valance
+  ctx.fillStyle = white; ctx.strokeStyle = line2; ctx.lineWidth = Math.max(1, u * .06);   // pilothouse
+  ctx.fillRect(3 * u, -5 * u, 2 * u, 1.72 * u); ctx.strokeRect(3 * u, -5 * u, 2 * u, 1.72 * u);
+  ctx.fillStyle = "#7fb3cf"; ctx.fillRect(3.25 * u, -4.7 * u, .65 * u, .6 * u); ctx.fillRect(4.15 * u, -4.7 * u, .65 * u, .6 * u);
+  ctx.fillStyle = trim; ctx.beginPath(); ctx.moveTo(2.8 * u, -5 * u); ctx.lineTo(5.2 * u, -5 * u); ctx.lineTo(4.9 * u, -5.4 * u); ctx.lineTo(3.1 * u, -5.4 * u); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#222"; ctx.fillRect(2.25 * u, -6.6 * u, .55 * u, 1.75 * u);   // stack with a gold band
+  ctx.fillStyle = "#d4a017"; ctx.fillRect(2.2 * u, -6.75 * u, .65 * u, .22 * u);
+  for (let i = 0; i < 4; i++) {   // light exhaust drifting off the stack
+    const q = ((sec * .5 + i / 4) % 1);
+    dot(2.5 * u - d * q * 2.5 * u, -6.9 * u - q * 1.8 * u, (.2 + q * .5) * u, [.85, .85, .85, .35 * (1 - q)]);
+  }
+  const flag = (x, top, h, foot) => {   // pole with a waving US-style flag
+    line([x, foot, x, top], [.3, .3, .3, 1], Math.max(1, u * .06));
+    for (let r = 0; r < 4; r++) {
+      ctx.fillStyle = r % 2 ? "#fff" : "#c8102e"; ctx.beginPath();
+      for (let k = 0; k <= 6; k++) { const xx = x - k * h * .25, w = Math.sin(sec * 6 - k) * h * .06; ctx.lineTo(xx, top + r * h / 4 + w); }
+      for (let k = 6; k >= 0; k--) { const xx = x - k * h * .25, w = Math.sin(sec * 6 - k) * h * .06; ctx.lineTo(xx, top + (r + 1) * h / 4 + w); }
+      ctx.fill();
+    }
+    ctx.fillStyle = "#1c3f94"; ctx.fillRect(x - h * .6, top, h * .6, h / 2);
+  };
+  flag(-7 * u, -4.2 * u, .9 * u, -1.5 * u); flag(4 * u, -6.6 * u, .7 * u, -5.4 * u);
+  line([7.6 * u, -1.65 * u, 7.6 * u, -3 * u], [.3, .3, .3, 1], Math.max(1, u * .06));   // bow pennant
+  ctx.fillStyle = "#c8102e"; ctx.beginPath(); ctx.moveTo(7.6 * u, -3 * u); ctx.lineTo(7.6 * u - 1.1 * u, -2.8 * u + Math.sin(sec * 7) * .1 * u); ctx.lineTo(7.6 * u, -2.6 * u); ctx.fill();
+  ctx.lineJoin = "miter";
+}
+function queenII(e, now, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * .95, p = (now - e.t0) / e.dur, d = e.dir;
+  const x = d > 0 ? -9 * u + (W + 18 * u) * p : W + 9 * u - (W + 18 * u) * p, y = bandY(x, sec, P) + u * .5;
+  ctx.fillStyle = "rgba(255,255,255,.45)";   // bow wave and wake
+  ctx.beginPath(); ctx.ellipse(x + d * 7 * u, y - u * .3, 1.2 * u, .3 * u, 0, 0, 7); ctx.fill();
+  for (let k = 1; k <= 3; k++) { ctx.globalAlpha = .4 / k; ctx.beginPath(); ctx.ellipse(x - d * (7 + k * 2.2) * u, y - u * .15, 1.6 * u, .22 * u, 0, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(sec * 1.3) * .012); if (d < 0) ctx.scale(-1, 1);
+  queenBoat(u, sec, d); ctx.restore();
+  setFont(u * .95, true); ctx.fillStyle = "#1f4d3a"; ctx.textBaseline = "middle";   // the name, never mirrored
+  const nm = "QUEEN II", nw = ctx.measureText(nm).width; ctx.fillText(nm, x + d * 4.3 * u - nw / 2, y - .82 * u);
+}
+
+// ---- The Legend, Arnolds Park's 1930 wooden coaster: the white track fades in, a red train full of riders
+//      clanks up the lift to the "Point of No Return", races over the hills, and the track fades away ----
+const LEGEND = [[-.05, .06], [.04, .06], [.24, 1], [.36, .12], [.49, .66], [.59, .2], [.7, .46], [.79, .2], [.88, .32], [.96, .14], [1.08, .1]];
+function legendY(x, W, base, hgt) {   // track height at x (smooth hills; the lift is a straight climb)
+  const q = x / W;
+  let i = 0; while (i < LEGEND.length - 2 && q > LEGEND[i + 1][0]) i++;
+  const [x0, h0] = LEGEND[i], [x1, h1] = LEGEND[i + 1], k = clamp((q - x0) / (x1 - x0), 0, 1);
+  const s = i === 1 ? (k < .9 ? k / .9 * .97 : .97 + .03 * Math.sin((k - .9) / .1 * Math.PI / 2)) : (1 - Math.cos(k * Math.PI)) / 2;
+  return base - (h0 + (h1 - h0) * s) * hgt;
+}
+function coaster(e, now, dt) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, t = (now - e.t0) / 1000;
+  const base = H - f * 1.2, hgt = H * .42, ty = x => legendY(x, W, base, hgt), u = f * .9;
+  if (e.s == null) { e.s = -W * .15; e.v = 160; e.out = 0; }
+  const lift0 = LEGEND[1][0] * W, top = LEGEND[2][0] * W, g = H * 1.6;
+  if (t > 1.3 && !e.out) {   // move the train along the track, by its length along the rails
+    const steps = 4;
+    for (let k = 0; k < steps; k++) {
+      const h = dt / steps, sl = (ty(e.s + 1) - ty(e.s - 1)) / 2;
+      if (e.s < lift0) e.v = 160;
+      else if (e.s < top - 4) e.v = 95;   // chain lift: slow and steady
+      else e.v = Math.max(120, e.v + g * sl / Math.hypot(1, sl) * h - e.v * .04 * h);   // gravity, a little drag
+      e.s += e.v * h / Math.hypot(1, sl);
+    }
+    if (e.s > W * 1.25) { e.out = t; e.dur = (t + 1.4) * 1000; }
+  }
+  const a = t < 1.2 ? t / 1.2 : e.out ? Math.max(0, 1 - (t - e.out) / 1.2) : 1;
+  ctx.save(); ctx.globalAlpha = a;
+  const white = state.light ? "rgba(120,110,95,.85)" : "rgba(245,242,232,.85)", step = f * 1.3;
+  ctx.strokeStyle = white; ctx.lineWidth = 1;   // wooden bents and cross bracing
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += step) { const y = ty(x); ctx.moveTo(x, y); ctx.lineTo(x, base); }
+  for (let x = 0; x + step <= W; x += step) {
+    const y0 = ty(x), y1 = ty(x + step);
+    for (let yy = Math.max(y0, y1) + step; yy < base; yy += step * 1.4) { ctx.moveTo(x, yy); ctx.lineTo(x + step, Math.min(base, yy + step * 1.4)); ctx.moveTo(x + step, yy); ctx.lineTo(x, Math.min(base, yy + step * 1.4)); }
+  }
+  ctx.moveTo(0, base); ctx.lineTo(W, base); ctx.stroke();
+  ctx.lineWidth = Math.max(2, f * .28); ctx.beginPath();   // the track
+  for (let x = 0; x <= W; x += 4) ctx.lineTo(x, ty(x));
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(90,90,90,.9)"; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let x = 0; x <= W; x += 4) ctx.lineTo(x, ty(x) - f * .14);
+  ctx.stroke();
+  const sx = top, sy = ty(top) - f * 2.6, sw = f * 9.5, sh = f * 1.5;   // the sign at the top of the lift
+  line([sx - sw * .3, sy + sh / 2, sx - sw * .3, ty(sx - sw * .3)], [.5, .45, .4, 1], 2);
+  line([sx + sw * .3, sy + sh / 2, sx + sw * .3, ty(sx + sw * .3)], [.5, .45, .4, 1], 2);
+  rect(sx - sw / 2, sy - sh / 2, sw, sh, [.75, .12, .1, 1]);
+  text("POINT OF NO RETURN", sx, sy, f * .85, [1, .95, .8, 1], .5, true);
+  if (t > 1.3 && !e.out || e.out && t - e.out < .1) {   // the train: three red cars, two rows of riders each
+    const L = u * 3.1;
+    for (let c = 0; c < 3; c++) {
+      let x = e.s - c * L;   // walk back along the rails for each car
+      for (let k = 0; k < 6; k++) { const sl = (ty(x + 1) - ty(x - 1)) / 2; x = e.s - c * L * (1 / Math.hypot(1, sl)); }
+      const y = ty(x), sl = (ty(x + 1) - ty(x - 1)) / 2, ang = Math.atan(sl), fast = e.v > 260 && e.s > top;
+      ctx.save(); ctx.translate(x, y - f * .2); ctx.rotate(ang);
+      for (let r = 0; r < 2; r++) {   // riders
+        const rx = -L * .25 + r * L * .45;
+        ctx.fillStyle = ["#3c7dc4", "#f0c419", "#5cb85c", "#9b59b6", "#e67e22", "#1abc9c"][(c * 2 + r) % 6]; ctx.fillRect(rx - u * .35, -u * 1.25, u * .7, u * .7);
+        dot(rx, -u * 1.55, u * .32, (c + r) % 3 ? [.93, .76, .62, 1] : [.55, .38, .27, 1]);
+        if (fast) for (const sgn of [-1, 1]) line([rx + sgn * u * .25, -u * 1.15, rx + sgn * u * .45, -u * 2.25 + Math.sin(now / 90 + c + r) * u * .15], [.93, .76, .62, 1], u * .16);   // hands up!
+      }
+      ctx.fillStyle = "#c0392b"; ctx.beginPath();   // car body
+      ctx.moveTo(-L * .48, -u * .9); ctx.lineTo(L * .45, -u * .9); ctx.quadraticCurveTo(L * .5, -u * .2, L * .4, 0); ctx.lineTo(-L * .48, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#f1c40f"; ctx.fillRect(-L * .44, -u * .6, L * .84, u * .14);
+      dot(-L * .3, u * .1, u * .22, [.15, .15, .15, 1]); dot(L * .3, u * .1, u * .22, [.15, .15, .15, 1]);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
 }
 
 // ---- shark (or muskie at the lake) bites a chunk out of the screen; the hole stays 5 s, then fills back in over 10 s ----
@@ -1975,12 +2122,14 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, sub: 0, truck: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, sub: 0, truck: 0, queen: 0, coaster: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
     if (e.kind === "life") { e.way === "jump" ? jump(e, p, sec, P, now) : e.way === "dive" ? pelican(e, now, sec, P) : cameo(e, p, sec, P, now); busy = splashes(now) || busy; }
     if (e.kind === "sub") submarine(e, now, dt, sec, P);
+    if (e.kind === "queen") queenII(e, now, sec, P);
+    if (e.kind === "coaster") coaster(e, now, dt);
     if (e.kind === "truck") { truckBy(e, now, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "rocket") starship(e, now);
     if (e.kind === "ren") { ren(e, now, dt, sec, P); busy = splashes(now) || busy; }
@@ -2014,6 +2163,7 @@ function applyTheme() {
   dlg.querySelectorAll(".row.sub").forEach(r => {   // animation switches follow the main Animations switch
     const c = r.querySelector(".sw"), off = !state.anim || (r.id === "tidefxrow" && (lake || !state.showTides));
     c.disabled = off; r.classList.toggle("off", off);
+    if (r.classList.contains("lakeonly")) r.hidden = !lake;
   });
   document.getElementById("coldF").textContent = LOC.cold;
   document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". Every 10 to 15 min; ▶ shows the next one";

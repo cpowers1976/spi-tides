@@ -11,8 +11,19 @@ android {
         applicationId = "com.kiteboardokoboji.spitides"
         minSdk = 24          // Android 7.0 and newer
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2"
+        versionCode = 3
+        versionName = "0.3"
+    }
+
+    // Use the same signing key on every build so a new APK installs over the old one.
+    // This is a debug key kept in the repo on purpose; it is not a secret.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     compileOptions {

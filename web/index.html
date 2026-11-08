@@ -72,6 +72,8 @@
   #locmenu button:hover { background: var(--btn); }
   #locmenu .ck { width: 1.1em; color: var(--on); font-weight: bold; }
   #locmenu small { display: block; font-size: 15px; color: var(--gray); }
+  #pcttip { position: fixed; z-index: 5; pointer-events: none; background: rgba(20,24,32,.92); color: #fff; font-size: 15px;
+    padding: 5px 10px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
   #hint { position: fixed; z-index: 5; background: var(--on); color: #fff; font-size: 18px; font-weight: 600;
           padding: 10px 16px; border-radius: 10px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.35);
           animation: bob 1.6s ease-in-out infinite; }
@@ -97,6 +99,7 @@
 </div>
 <div id="locmenu" hidden role="menu" aria-label="Choose location"></div>
 <div id="hint" hidden>Tap here to switch location</div>
+<div id="pcttip" hidden></div>
 <div id="settings" hidden>
   <div class="panel" role="dialog" aria-label="Settings" data-pg="main">
     <h2>Settings</h2>
@@ -2413,12 +2416,37 @@ cv.addEventListener("click", e => {
   if (inTitle(e)) { menu.hidden ? openMenu() : (menu.hidden = true); return; }
   menu.hidden = true;
   const pi = inPct(e);
-  if (pi >= 0) { playPct(pi); return; }
+  if (pi >= 0) { if (pressShown) { pressShown = false; return; } hidePctTip(); playPct(pi); return; }
   const h = inHour(e);
   if (h === 0) { showPage("anim"); dlg.hidden = false; }   // first time label: straight to the Animations page
   if (h === 1) playAny();                                    // second time label: play something
 });
-cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) || inHour(e) >= 0 || inPct(e) >= 0 ? "pointer" : "");
+cv.addEventListener("mousemove", e => {
+  const pi = inPct(e);
+  cv.style.cursor = inTitle(e) || inHour(e) >= 0 || pi >= 0 ? "pointer" : "";
+  if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;   // a tap, not a real hover
+  pi >= 0 ? showPctTip(pi) : hidePctTip();
+});
+cv.addEventListener("mouseleave", hidePctTip);
+// which animation a rain % plays: shown on hover, or on a long press on touch screens (which then doesn't play it)
+const pcttip = document.getElementById("pcttip");
+let tipTimer = 0, pressTimer = 0, pressShown = false;
+function showPctTip(i, ms) {
+  const b = pctBoxes[i], r = cv.getBoundingClientRect(), list = pctList();
+  pcttip.textContent = "▶ " + list[i % list.length][1];
+  pcttip.style.left = `${Math.min(innerWidth - 90, Math.max(90, r.left + b.x + b.w / 2))}px`; pcttip.style.top = `${r.top + b.y}px`;
+  pcttip.hidden = false;
+  clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(hidePctTip, ms);
+}
+function hidePctTip() { pcttip.hidden = true; }
+cv.addEventListener("pointerdown", e => {
+  if (e.pointerType !== "touch") return;
+  pressShown = false; clearTimeout(pressTimer);
+  const pi = inPct(e);
+  if (pi >= 0) pressTimer = setTimeout(() => { pressShown = true; showPctTip(pi, 2000); }, 450);
+});
+for (const ev of ["pointerup", "pointercancel", "pointermove"]) cv.addEventListener(ev, e => { if (ev !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(pressTimer); });
+cv.addEventListener("contextmenu", e => { if (inPct(e) >= 0) e.preventDefault(); });
 hint.addEventListener("click", openMenu);
 menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); if (b) setLoc(b.dataset.loc); });
 bar.addEventListener("click", e => {

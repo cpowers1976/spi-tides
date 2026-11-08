@@ -109,7 +109,7 @@
     <label class="row sub"><span>Kiteboarder<small>Rides by every few minutes at 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
     <label class="row sub" id="tidefxrow"><span>Tide shimmer<small>Water ripples at the current tide level</small></span><input type="checkbox" class="sw" data-set="aTide"></label>
     <label class="row sub"><span>Weather<small>Rain, snow, clouds, sun glow, stars</small></span><input type="checkbox" class="sw" data-set="aWx"></label>
-    <label class="row sub"><span>Screen melt<small>Every 15 min on hot days (80°F+)</small></span><span class="ctl"><button class="try" data-try="melt">▶</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
+    <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span><span id="lifename">Dolphin jump</span><small>Every 10 to 15 min</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
@@ -122,10 +122,10 @@ const LOCS = {
   spi: { name: "South Padre Island, Texas", short: "South Padre Island", sub: "Tides, waves and water temp",
          flag: "texas", lat: 26.07, lon: -97.17,
          sea: [26.07, -97.05],             // a few miles offshore, for waves
-         station: "8779749" },             // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
+         station: "8779749", cold: 60 },             // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
   spirit: { name: "Big Spirit Lake, Iowa", short: "Big Spirit Lake", sub: "Lake buoy waves and water temp",
             flag: "iowa", lat: 43.467, lon: -95.10,
-            buoy: 2118 },                  // Big Spirit Lake research buoy (wqdatalive.com/public/470)
+            buoy: 2118, cold: 32 },                  // Big Spirit Lake research buoy (wqdatalive.com/public/470)
 };
 // The buoy site doesn't allow other websites to read it, so a small relay on our Cloudflare Pages site fetches it.
 const BUOY_API = /kiteboardokoboji\.com$|pages\.dev$/.test(location.hostname)
@@ -937,10 +937,11 @@ function play(kind, opt = {}) {
       return [.6 - base * .5, .45 + base * .5 + drip];
     });
   }
+  if (kind === "freeze") opt.snap = snapshot();
   if (kind === "kite") { const [vx] = windVec(); opt.dir = Math.abs(vx) < .2 ? (Math.random() < .5 ? -1 : 1) : Math.sign(vx); }
   if (kind === "life") { opt.dir = Math.random() < .5 ? -1 : 1; opt.x0 = W * rnd(.2, .6) + (opt.dir < 0 ? W * .2 : 0); opt.fish = LOC.flag === "iowa"; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 3700, wipe: 1700 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {
@@ -955,8 +956,9 @@ function fxSchedule(now) {
     else if (busy) FX.next.life = wait; else { FX.next.life = now + rnd(10, 15) * MIN; play("life"); }
   }
   if (now >= FX.next.melt) {
-    if (!on("aMelt") || G.temp < 80) FX.next.melt = now + MIN;
-    else if (busy) FX.next.melt = wait; else { FX.next.melt = now + 15 * MIN; play("melt"); }
+    const kind = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null;   // hot days melt, cold days freeze
+    if (!on("aMelt") || !kind) FX.next.melt = now + MIN;
+    else if (busy) FX.next.melt = wait; else { FX.next.melt = now + 15 * MIN; play(kind); }
   }
 }
 
@@ -1054,17 +1056,124 @@ function splashes(now) {
   }
   return FX.splash.length > 0;
 }
+// black screen, then the real screen fades back in; returns true while it's still black
+function blackout(t, start, hold, fade) {
+  const W = innerWidth, H = innerHeight, a = t < start + hold ? 1 : 1 - ease(Math.min(1, (t - start - hold) / fade));
+  ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.fillRect(0, 0, W, H);
+}
+// melts all the way down to black (3 s), stays black 0.5 s, fades back in (1 s)
 function melt(e, now) {
   const W = cv.clientWidth, H = cv.clientHeight, t = (now - e.t0) / 1000, r = e.snap.width / W, cw = 4;
-  const sag = (d, s, tt) => Math.min(H * .55, Math.max(0, tt - d) ** 2 * s * H * .07);
+  if (t >= 3) return blackout(t, 3, .5, 1);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, innerWidth, innerHeight);
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
-  rect(0, 0, W, H, T.bg);
   e.cols.forEach(([d, s], i) => {
-    let g = sag(d, s, Math.min(t, 2.7));
-    if (t > 3.05) { const q = Math.min(1, (t - 3.05) / .55); g *= 1 - (1 + 2.7 * (q - 1) ** 3 + 1.7 * (q - 1) ** 2); }   // snap back with a little bounce
-    ctx.drawImage(e.snap, i * cw * r, 0, cw * r, e.snap.height, i * cw, g * .25, cw + .5, H + g * .75);
+    const g = Math.max(0, t - d) ** 3 * s * H * .25;   // slow sag that speeds up until it all drips away
+    if (g * .7 < H) ctx.drawImage(e.snap, i * cw * r, 0, cw * r, e.snap.height, i * cw, g * .7, cw + .5, H + g * .6);
   });
   ctx.restore();
+  ctx.fillStyle = `rgba(0,0,0,${1 - Math.min(1, t / 2.5)})`;   // buttons along the bottom sink into the dark too
+  ctx.globalCompositeOperation = "destination-out"; ctx.fillRect(0, H, innerWidth, innerHeight - H);
+  ctx.globalCompositeOperation = "source-over";
+}
+
+// freezes over (1.8 s), cracks (0.5 s), shatters to black (1.3 s), stays black 0.5 s, slowly fades back in (2.3 s)
+function iceArt(e, W, H) {   // frost ferns growing in from the edges, and cracks from a point of impact
+  if (e.ferns) return;
+  const R = Math.min(W, H), ferns = [];
+  for (let i = 0; i < 46; i++) {
+    const side = i % 4, u = Math.random();
+    let [x, y, a] = side === 0 ? [u * W, 0, Math.PI / 2] : side === 1 ? [u * W, H, -Math.PI / 2] : side === 2 ? [0, u * H, 0] : [W, u * H, Math.PI];
+    const pts = [[x, y]], n = 14, len = R * rnd(.22, .45) / n, br = [];
+    for (let k = 0; k < n; k++) {
+      a += rnd(-.35, .35); x += Math.cos(a) * len; y += Math.sin(a) * len; pts.push([x, y]);
+      if (k % 2) for (const sgn of [-1, 1]) br.push([k / n, x, y, a + sgn * 1.05, len * rnd(1, 2.4) * (1 - k / n)]);
+    }
+    ferns.push([pts, br]);
+  }
+  e.ferns = ferns;
+  const cx = W * rnd(.35, .65), cy = H * rnd(.35, .6);
+  e.hit = [cx, cy];
+  e.cracks = Array.from({ length: 13 }, (_, i) => {
+    let a = i / 13 * Math.PI * 2 + rnd(-.2, .2), x = cx, y = cy;
+    const pts = [[x, y]];
+    for (let k = 0; k < 12; k++) { a += rnd(-.3, .3); x += Math.cos(a) * R * .07; y += Math.sin(a) * R * .07; pts.push([x, y]); }
+    return pts;
+  });
+  // shards: a jittered grid split into triangles
+  const nx = 9, ny = 6, P = [];
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+    const edge = i === 0 || j === 0 || i === nx || j === ny;
+    P.push([W * i / nx + (edge && (i === 0 || i === nx) ? 0 : rnd(-.3, .3) * W / nx), H * j / ny + (edge && (j === 0 || j === ny) ? 0 : rnd(-.3, .3) * H / ny)]);
+  }
+  e.shards = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const a = P[j * (nx + 1) + i], b = P[j * (nx + 1) + i + 1], c = P[(j + 1) * (nx + 1) + i + 1], d = P[(j + 1) * (nx + 1) + i];
+    for (const tri of [[a, b, c], [a, c, d]]) {
+      const mx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3, my = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
+      const dx = mx - cx, dy = my - cy, dist = Math.hypot(dx, dy) || 1;
+      e.shards.push({ tri, mx, my, vx: dx / dist * rnd(80, 260), vy: dy / dist * rnd(60, 200) - rnd(40, 160), spin: rnd(-3, 3),
+                      delay: dist / R * .35 });   // pieces near the impact fall first
+    }
+  }
+}
+function drawIce(e, W, H, p, q) {   // p = how frozen (0-1), q = how cracked (0-1)
+  ctx.fillStyle = `rgba(150,200,255,${.28 * p})`; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .2, W / 2, H / 2, Math.max(W, H) * .7);
+  g.addColorStop(0, "rgba(230,245,255,0)"); g.addColorStop(1, `rgba(230,245,255,${.55 * p})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = "rgba(240,250,255,.75)"; ctx.lineCap = "round";
+  for (const [pts, br] of e.ferns) {
+    const m = Math.floor(p * (pts.length - 1));
+    ctx.lineWidth = 1.6; ctx.beginPath();
+    for (let k = 0; k <= m; k++) ctx.lineTo(...pts[k]);
+    ctx.stroke();
+    ctx.lineWidth = 1; ctx.beginPath();
+    for (const [at, x, y, a, l] of br) if (at < p) {
+      const ll = l * Math.min(1, (p - at) * 5);
+      ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * ll, y + Math.sin(a) * ll);
+    }
+    ctx.stroke();
+  }
+  if (q > 0) {
+    ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.lineWidth = 2;
+    for (const pts of e.cracks) {
+      const m = Math.max(1, Math.floor(q * (pts.length - 1)));
+      ctx.beginPath(); for (let k = 0; k <= m; k++) ctx.lineTo(...pts[k]); ctx.stroke();
+    }
+    dot(e.hit[0], e.hit[1], 3 + q * 4, [1, 1, 1, .9]);
+  }
+  ctx.lineCap = "butt";
+}
+function freeze(e, now) {
+  const W = cv.clientWidth, H = cv.clientHeight, t = (now - e.t0) / 1000;
+  iceArt(e, W, H);
+  if (t < 2.3) {   // frosting over the live screen, then cracking
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+    drawIce(e, W, H, ease(Math.min(1, t / 1.8)), clamp((t - 1.8) / .5, 0, 1));
+    ctx.restore();
+    return;
+  }
+  if (!e.frozen) {   // the frozen, cracked screen as one picture, to break into pieces
+    const c = document.createElement("canvas"), r = e.snap.width / W;
+    c.width = e.snap.width; c.height = e.snap.height;
+    const x = c.getContext("2d"); x.drawImage(e.snap, 0, 0); x.setTransform(r, 0, 0, r, 0, 0);
+    const keep = ctx; ctx = x; drawIce(e, W, H, 1, 1); ctx = keep;
+    e.frozen = c;
+  }
+  if (t >= 3.6) return blackout(t, 3.6, .5, 2.3);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, innerWidth, innerHeight);
+  const ts = t - 2.3;
+  for (const s of e.shards) {
+    const u = Math.max(0, ts - s.delay), dx = s.vx * u, dy = s.vy * u + 1400 * u * u;
+    if (s.my + dy > H + 200) continue;
+    ctx.save();
+    ctx.translate(s.mx + dx, s.my + dy); ctx.rotate(s.spin * u); ctx.translate(-s.mx, -s.my);
+    ctx.beginPath(); ctx.moveTo(...s.tri[0]); ctx.lineTo(...s.tri[1]); ctx.lineTo(...s.tri[2]); ctx.closePath();
+    ctx.save(); ctx.clip(); ctx.drawImage(e.frozen, 0, 0, W, H); ctx.restore();
+    ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
 }
 function wipe(e, p, sec) {
   const W = cv.clientWidth, H = cv.clientHeight, ww = Math.max(80, W * .08), front = -ww + (W + ww * 2) * ease(p);
@@ -1103,26 +1212,27 @@ function fxFrame(now) {
   if (G && on("aWind")) busy = streaks(dt, sec) || busy;
   if (on("aWaves")) { waveBand(sec, S, P); busy = true; }
   ctx = fctx;
-  const melting = FX.events.some(e => e.kind === "melt");
-  if (G && !melting) {
+  if (G) {
     if (on("aWx")) busy = wxFront(dt, now) || busy;
     if (on("aTide") && G.tide && state.showTides) { tideShimmer(sec, now); busy = true; }
   }
-  FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  for (const e of FX.events) {
-    const p = (now - e.t0) / e.dur;
-    if (e.kind === "kite") kiteboarder(e, p, sec, P);
-    if (e.kind === "life") jump(e, p, sec, P, now);
-    if (e.kind === "wipe") wipe(e, p, sec);
-    if (e.kind === "melt") melt(e, now);
-    busy = true;
-  }
-  busy = splashes(now) || busy;
-  if (G && G.arrow && !melting) {   // header wind arrow, swaying more when it's gusty
+  if (G && G.arrow) {   // header wind arrow, swaying more when it's gusty
     const a = G.arrow, g = Math.max(0, G.gst - G.spd), amp = Math.min(20, 2 + g * 1.2);
     arrow(a.x, a.y, G.dir + amp * (Math.sin(sec * 2.1) * .6 + Math.sin(sec * 5.3 + 1) * .4 * clamp(g / 10, 0, 1)), a.size, a.color);
     busy = true;
   }
+  FX.events = FX.events.filter(e => now - e.t0 < e.dur);
+  const order = { kite: 0, life: 0, wipe: 1, melt: 2, freeze: 2 };   // melt and freeze cover everything else
+  for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
+    const p = (now - e.t0) / e.dur;
+    if (e.kind === "kite") kiteboarder(e, p, sec, P);
+    if (e.kind === "life") { jump(e, p, sec, P, now); busy = splashes(now) || busy; }
+    if (e.kind === "wipe") wipe(e, p, sec);
+    if (e.kind === "melt") melt(e, now);
+    if (e.kind === "freeze") freeze(e, now);
+    busy = true;
+  }
+  if (!FX.events.some(e => e.kind === "life")) busy = splashes(now) || busy;
   ctx = mainCtx;
   if (busy) fxKick();
 }
@@ -1146,6 +1256,7 @@ function applyTheme() {
     const c = r.querySelector(".sw"), off = !state.anim || (r.id === "tidefxrow" && (lake || !state.showTides));
     c.disabled = off; r.classList.toggle("off", off);
   });
+  document.getElementById("coldF").textContent = LOC.cold;
   document.getElementById("lifename").textContent = lake ? "Walleye jump" : "Dolphin jump";
   dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
   dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));

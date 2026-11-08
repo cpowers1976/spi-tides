@@ -318,6 +318,10 @@ function text(s, x, y, size, color, ax = .5, bold = false) {
 // ---- slot machine: every number spins like a reel, then lands, left to right ----
 const REEL_V = 14, REEL_A = 1.2, REEL_D = .7;   // digits a second at full spin; seconds to speed up; seconds to slow down
 function reelLeft(x, y, i = 0) {  // how many digits this reel still has to turn (0 = landed)
+  if (FX.slot.wild) {   // haywire: spinning faster and faster, never landing
+    const tt = (performance.now() - FX.slot.t0) / 1000;
+    return { r: 1e4 - (8 * tt + 9 * tt * tt) - x * .37 - i * 1.7, since: -1 };
+  }
   const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1, A = REEL_A, D = REEL_D;
   const stop = 1.9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
   const k = A / 3 + (stop - D - A) + D / 2;   // distance covered at a speed of 1
@@ -538,6 +542,16 @@ function worldFlag(spec, x, cy, h) {
 const PLACE_T = 6.2, PLACE_A = 1.2, PLACE_D = 1.8;   // the place reel lands last, and turns slowly enough to read
 function placeReel(f, top, ps, clipR) {
   const sl = FX.slot, t = (performance.now() - sl.t0) / 1000, N = sl.places.length;
+  if (sl.wild) {   // haywire: whirls through the world faster and faster, never landing
+    const pos = 1.5 * t + 1.6 * t * t, i = Math.floor(pos), fr = pos - i, row = ps * 1.6;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, top - ps * .85, clipR, ps * 1.7); ctx.clip();
+    for (const [j, dy] of [[i, -fr * row], [i + 1, (1 - fr) * row]]) {
+      const [name, spec] = sl.places[j % N], s2 = fit(name, ps, clipR - f * 1.9 - ps * 1.6, true), y = top + dy;
+      setFont(s2, true); ctx.fillStyle = rgba(T.text); ctx.textBaseline = "middle"; ctx.fillText(name, f * 1.2, y);
+      worldFlag(spec, f * 1.9 + ctx.measureText(name).width, y, ps * .95);
+    }
+    ctx.restore(); return;
+  }
   const k = PLACE_A / 3 + (PLACE_T - PLACE_D - PLACE_A) + PLACE_D / 2, v = N / k;
   const pos = t < PLACE_A ? v * t ** 3 / (3 * PLACE_A ** 2)
     : t < PLACE_T - PLACE_D ? v * (PLACE_A / 3 + t - PLACE_A)
@@ -2205,11 +2219,13 @@ function chaos(e, now) {
       try { draw(); } finally { state.data = real; FX.chaos = false; ctx = fctx; }
     }
     const a = t > 26 ? (t - 26) / 4 * 14 : 0;   // shakes harder and harder just before it blows
+    if (t > 26 && !(FX.slot && FX.slot.wild))   // ...while every number, arrow and the place name spin like slot reels
+      FX.slot = { t0: now, end: Infinity, wild: true, places: [...WORLD].sort(() => Math.random() - .5) };
     cv.style.transform = a ? `translate(${rnd(-a, a)}px,${rnd(-a, a)}px) rotate(${rnd(-a, a) * .05}deg)` : "";
     return;
   }
   if (!e.snap) {   // boom: break up the wild screen, and quietly put the real data back underneath
-    e.snap = snapshot(); cv.style.transform = ""; draw(); ctx = fctx;
+    e.snap = snapshot(); cv.style.transform = ""; FX.slot = null; draw(); ctx = fctx;
     const nx = 10, ny = 7, P = [], cx = W / 2, cy = H / 2;
     for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++)
       P.push([W * i / nx + (i % nx ? rnd(-.3, .3) * W / nx : 0), H * j / ny + (j % ny ? rnd(-.3, .3) * H / ny : 0)]);
@@ -2256,8 +2272,8 @@ function fxFrame(now) {
   fxRaf = 0;
   if (now - fxPrev < 30) { fxKick(); return; }   // about 30 frames a second is plenty
   const dt = Math.min(.1, (now - fxPrev) / 1000), sec = now / 1000; fxPrev = now;
-  if (FX.slot && now >= FX.slot.end) { FX.slot = null; draw(); }
-  if (now < numUntil || FX.slot) draw();
+  if (FX.slot && (now >= FX.slot.end || FX.slot.wild && !FX.events.some(e => e.kind === "chaos" && !e.snap))) { FX.slot = null; draw(); }
+  if (now < numUntil || FX.slot && !FX.slot.wild) draw();   // (haywire redraws the chart itself)
   fxSchedule(now);
   const dpr = window.devicePixelRatio || 1, S = { w: innerWidth, h: innerHeight };
   for (const c of [fxb, fxf]) {

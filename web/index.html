@@ -310,12 +310,15 @@ function text(s, x, y, size, color, ax = .5, bold = false) {
   return w;
 }
 // ---- slot machine: every number spins like a reel, then lands, left to right ----
-const REEL_V = 14, REEL_D = .7;   // digits a second at full spin; seconds spent slowing down
+const REEL_V = 14, REEL_A = 1.2, REEL_D = .7;   // digits a second at full spin; seconds to speed up; seconds to slow down
 function reelLeft(x, y, i = 0) {  // how many digits this reel still has to turn (0 = landed)
-  const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1;
-  const stop = .9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
-  const total = REEL_V * (stop - REEL_D / 2) + i * 1.7;
-  const done = t >= stop - REEL_D ? REEL_V * (stop - REEL_D) + REEL_V / (2 * REEL_D) * (REEL_D ** 2 - Math.max(0, stop - t) ** 2) : REEL_V * t;
+  const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1, A = REEL_A, D = REEL_D;
+  const stop = 1.9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
+  const k = A / 3 + (stop - D - A) + D / 2;   // distance covered at a speed of 1
+  const total = 10 * Math.ceil((REEL_V * k + i * 1.7) / 10), v = total / k;   // whole turns, so it starts on the real value
+  const done = t < A ? v * t ** 3 / (3 * A * A)   // starts slow and speeds up
+    : t < stop - D ? v * (A / 3 + t - A)
+    : v * (A / 3 + stop - D - A) + v / (2 * D) * (D * D - Math.max(0, stop - t) ** 2);
   return { r: Math.max(0, total - done), since: t - stop };
 }
 function reelText(s, x0, y, size) {
@@ -365,7 +368,7 @@ function rect(x, y, w, h, color) { ctx.fillStyle = rgba(color); ctx.fillRect(x, 
 function dot(x, y, r, color) { ctx.fillStyle = rgba(color); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
 
 function arrow(cx, cy, deg, size, color) {
-  if (FX.slot) deg -= reelLeft(cx, cy).r * 30;   // slot machine: the arrow spins, then lands on the real direction
+  if (FX.slot) deg -= reelLeft(cx, cy).r * 36;   // slot machine: the arrow spins, then lands on the real direction
   const a = (deg + 180) * Math.PI / 180;  // direction the wind blows toward
   const dx = Math.sin(a), dy = -Math.cos(a);
   const x1 = cx + dx * size / 2, y1 = cy + dy * size / 2;
@@ -979,7 +982,7 @@ function snapshot() {   // the chart as it looks now, with its background
 function play(kind, opt = {}) {
   const now = performance.now(), W = cv.clientWidth;
   if (kind === "nums") { for (const k in NUM) delete NUM[k]; draw(); return; }
-  if (kind === "slot") { FX.slot = { t0: now, end: now + 4200 }; fxKick(); return; }
+  if (kind === "slot") { FX.slot = { t0: now, end: now + 5200 }; fxKick(); return; }
   if (kind === "wipe" && !opt.old) opt.old = snapshot();
   if (kind === "melt") {
     // smooth sag across the screen, plus a few narrow drips, so it looks like warm wax

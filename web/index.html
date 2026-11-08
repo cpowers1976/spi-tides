@@ -153,14 +153,17 @@ const LOCS = {
          station: "8779749", cold: 60 },             // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
   spirit: { name: "Big Spirit Lake, Iowa", short: "Big Spirit Lake", sub: "Lake buoy waves and water temp",
             flag: "iowa", lat: 43.467, lon: -95.10,
-            buoy: 2118, cold: 32 },                  // Big Spirit Lake research buoy (wqdatalive.com/public/470)
+            buoy: 2118, cold: 32,
+            metar: "KMJQ" },                         // Jackson, MN airport: live wind when the buoy has none                  // Big Spirit Lake research buoy (wqdatalive.com/public/470)
 };
 // The buoy site doesn't allow other websites to read it, so a small relay on our Cloudflare Pages site fetches it.
-const BUOY_API = /kiteboardokoboji\.com$|pages\.dev$/.test(location.hostname)
-  ? "/api/buoy" : "https://spi-tides-app.pages.dev/api/buoy";   // Android app and local copies
+const RELAY = /kiteboardokoboji\.com$|pages\.dev$/.test(location.hostname)
+  ? "" : "https://spi-tides-app.pages.dev";   // Android app and local copies use the live site's relay
+const BUOY_API = RELAY + "/api/buoy", METAR_API = RELAY + "/api/metar";
 let LOC = LOCS.spi;
 const KITE = 15;                          // bars turn green at this speed (mph)
 const STALE_MIN = 35;                     // "Updated" turns red if older than this
+const OBS_MIN = 30;                       // live wind older than this (airport: 75 min) shows the forecast instead
 
 const DARK = {
   bg: [.06,.08,.12,1], text: [1,1,1,1], gray: [.6,.68,.78,1], grid: [.2,.25,.32,1], sep: [.25,.3,.4,1],
@@ -274,11 +277,12 @@ async function load() {
     } catch (e) {}
     let buoy = null;
     if (L.buoy) try { buoy = readBuoy(await getJSON(BUOY_API, { site: L.buoy, v: 2 })   /* v: skip responses cached before the water temp backup */); } catch (e) { buoy = { error: true }; }
+    const obs = await getObs(L, buoy);
     if (my !== loading) return;
     state.data = {
       curve: curve.predictions.map(p => [parse(p.t), +p.v]),
       hilo: hilo.predictions.map(p => [parse(p.t), +p.v, p.type]),
-      w, waves, water, buoy };
+      w, waves, water, buoy, obs };
     state.updated = new Date();
     state.error = "";
     ok = true;
@@ -293,6 +297,34 @@ async function load() {
   if (ok) FX.tideFlood = performance.now();
 }
 
+// latest live wind -> { time, spd, gst, dir, where, maxMin } in mph, or null
+//   South Padre: NOAA's sensor on the Brazos Santiago jetty (every 6 minutes)
+//   Big Spirit Lake: the buoy if it reports wind, otherwise the Jackson, MN airport (about every 20 minutes)
+async function getObs(L, buoy) {
+  if (L.station) try {
+    const j = await getJSON("https://api.tidesandcurrents.noaa.gov/api/prod/datagetter", { product: "wind", station: L.station,
+      date: "latest", units: "english", time_zone: "lst_ldt", format: "json", application: "casey_app" });
+    const o = (j.data || [])[0];
+    if (!o || o.s === "" || isNaN(+o.s)) return null;
+    return { time: parse(o.t), spd: +o.s, gst: o.g === "" ? null : +o.g, dir: o.d === "" ? null : +o.d,
+             where: "at the jetty", maxMin: OBS_MIN };
+  } catch (e) { return null; }
+  if (buoy && buoy.live && buoy.wind) return { ...buoy.wind, time: buoy.time, where: "at the buoy", maxMin: OBS_MIN * 3 };
+  if (L.metar) try {
+    const j = await getJSON(METAR_API, { id: L.metar });
+    const kt = 1.15078;   // knots -> mph
+    return { time: new Date(j.time), spd: j.spdKt * kt, gst: j.gstKt == null ? null : j.gstKt * kt, dir: j.dir,
+             where: "at Jackson airport", maxMin: 75 };
+  } catch (e) { return null; }
+  return null;
+}
+async function refreshObs() {   // between full updates, keep the live wind fresh
+  const d = state.data, L = LOCS[state.loc];
+  if (!d || document.visibilityState === "hidden") return;
+  const obs = await getObs(L, d.buoy);
+  if (state.data === d && LOCS[state.loc] === L && obs) { d.obs = obs; draw(); }
+}
+
 // latest buoy reading -> { time, live, waveFt, period, waterF }; live = reported in the last 3 hours
 // lake = backup water temp (LakeMonster) for when the buoy is out
 function readBuoy(j) {
@@ -300,7 +332,12 @@ function readBuoy(j) {
   if (!j || !j.time) return { error: true, lake };
   const r = j.readings || {}, val = k => (r[k] || {}).value;
   const time = new Date(j.time), hs = val("Hs Wave Height"), wt = val("Water Temperature at surface");
-  return { time, lake, live: Date.now() - time < 3 * 3600e3,
+  // wind, if this buoy has an anemometer (names vary, so match loosely); m/s or knots -> mph
+  const pick = re => { const k = Object.keys(r).find(n => re.test(n)); return k ? r[k] : null; };
+  const mph = p => p == null ? null : /m\/s/i.test(p.unit) ? p.value * 2.237 : /kn|kt/i.test(p.unit) ? p.value * 1.15078 : /km/i.test(p.unit) ? p.value / 1.609 : p.value;
+  const ws = pick(/wind speed/i), wg = pick(/gust/i), wd = pick(/wind dir/i);
+  const wind = ws ? { spd: mph(ws), gst: mph(wg), dir: wd ? wd.value : null } : null;
+  return { time, lake, wind, live: Date.now() - time < 3 * 3600e3,
            waveFt: hs == null ? null : (r["Hs Wave Height"].unit === "m" ? hs * 3.281 : hs),
            period: val("Tp (DPD) Wave Period"), waterF: wt };
 }
@@ -631,9 +668,13 @@ function chart(W, H, f, now, top, placeEnd) {
   const step = n <= 30 ? 1 : n <= 50 ? 2 : n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
 
   // ---- current conditions in header ----
-  const s0 = spd[inow], wc = windColor(s0);
+  // measured wind from the NOAA station when it's recent, otherwise the forecast for this hour
+  const ob = state.data.obs, live = !!ob && now - ob.time < ob.maxMin * 60e3 && now - ob.time > -10 * 60e3;
+  const s0 = live ? ob.spd : spd[inow], g0 = live ? (ob.gst != null ? ob.gst : ob.spd) : gst[inow];   // no gust reported = steady
+  const d0 = live && ob.dir != null ? ob.dir : dirs[inow], wc = windColor(s0);
   const mph = `${Math.round(num("spd", s0))} mph`;
-  let extra = `gusts ${Math.round(num("gst", gst[inow]))}   ${compass(dirs[inow])}   ${Math.round(num("temp", hr.temperature_2m[inow]))}°F`;
+  const srcTag = live ? `live ${ob.where} ${short(ob.time)}` : "forecast (no live reading)";
+  let extra = `gusts ${Math.round(num("gst", g0))}   ${compass(d0)}   ${Math.round(num("temp", hr.temperature_2m[inow]))}°F`;
   let wv0 = waves.get(hr.time[inow]), wt0 = water.get(hr.time[inow]);
   if (buoy && buoy.live) {
     if (buoy.waveFt != null && buoy.period != null) wv0 = [buoy.waveFt, buoy.period];
@@ -650,9 +691,11 @@ function chart(W, H, f, now, top, placeEnd) {
   if (cx + need() > W - f * 1.2) cx = Math.max(placeEnd + f * 1.5, W - f * 1.2 - need());
   if (cx + need() > W - f * 1.2) { es = fit(extra, es, W - f * 1.2 - cx - f * 4.8 - mphW, false); setFont(es); ew = ctx.measureText(extra).width; }
   const wobble = on("aNums");   // the animation layer draws the arrow so it can wobble
-  if (!wobble) arrow(cx + f, top, dirs[inow], f * 1.9, wc);
+  if (!wobble) arrow(cx + f, top, d0, f * 1.9, wc);
   let x = cx + f * 2.4;
+  const mphX = x;
   x += text(mph, x, top, f * 2.3, wc, 0, true) + f * 1.2;
+  if (srcTag) text(srcTag, mphX + mphW / 2, top + f * 1.6, f * .85, T.gray, .5);   // "live at the jetty 1:36p" under the speed
   text(extra, x, top, es, T.text, 0);
 
   // ---- vertical layout ----
@@ -674,7 +717,7 @@ function chart(W, H, f, now, top, placeEnd) {
   for (const [name, wgt] of panels) { y += gap; box[name] = [y, y + avail * wgt / totW]; y = box[name][1]; }
   const [wt, wb] = box.wind;
   const code = (hr.weather_code || [])[inow];
-  G = { W, H, f, L, R, wt, wb, top, pBot, dayBot, spd: s0, gst: gst[inow], dir: dirs[inow],
+  G = { W, H, f, L, R, wt, wb, top, pBot, dayBot, spd: s0, gst: g0, dir: d0,
         temp: hr.temperature_2m[inow], code: code == null ? dy.weather_code[dy.time.indexOf(isoDate(now))] : code,
         isDay: hr.is_day[inow], wave: wv0, lakeCalm: !!buoy && !wv0, tide: null,
         arrow: wobble ? { x: cx + f, y: top, size: f * 1.9, color: wc } : null };
@@ -2458,7 +2501,7 @@ async function keepAwake() {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     keepAwake(); fxKick();
-    if (!state.updated || Date.now() - state.updated > 10 * 60e3) load();
+    if (!state.updated || Date.now() - state.updated > 10 * 60e3) load(); else refreshObs();
   }
 });
 
@@ -2469,6 +2512,7 @@ draw();
 load();
 keepAwake();
 setInterval(load, 15 * 60e3);   // new data every 15 min
+setInterval(refreshObs, 6 * 60e3);   // the NOAA wind sensor reports every 6 min
 setInterval(draw, 60e3);        // move "now" line each minute
 </script>
 </body>

@@ -126,6 +126,7 @@
     <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge, every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
     <label class="row sub"><span>Cybertruck<small>Elon drives by, waving. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
+    <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands. Every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
     <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back. About once an hour</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen, about once an hour</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up. About once an hour</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
@@ -177,7 +178,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", data: null, updated: null, error: "",
@@ -304,8 +305,43 @@ function text(s, x, y, size, color, ax = .5, bold = false) {
   ctx.fillStyle = rgba(color || T.text);
   ctx.textBaseline = "middle";
   const w = ctx.measureText(s).width;
+  if (FX.slot && ctx === mainCtx && /\d/.test(s) && reelText(s, x - w * ax, y, size)) return w;
   ctx.fillText(s, x - w * ax, y);
   return w;
+}
+// ---- slot machine: every number spins like a reel, then lands, left to right ----
+const REEL_V = 14, REEL_D = .7;   // digits a second at full spin; seconds spent slowing down
+function reelLeft(x, y, i = 0) {  // how many digits this reel still has to turn (0 = landed)
+  const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1;
+  const stop = .9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
+  const total = REEL_V * (stop - REEL_D / 2) + i * 1.7;
+  const done = t >= stop - REEL_D ? REEL_V * (stop - REEL_D) + REEL_V / (2 * REEL_D) * (REEL_D ** 2 - Math.max(0, stop - t) ** 2) : REEL_V * t;
+  return { r: Math.max(0, total - done), since: t - stop };
+}
+function reelText(s, x0, y, size) {
+  let x = x0, i = 0, spun = false;
+  for (const ch of s) {
+    const cw = ctx.measureText(ch).width;
+    if (/\d/.test(ch)) {
+      const { r, since } = reelLeft(x + cw / 2, y, i++);
+      if (r > 0) {
+        spun = true;
+        const v = +ch - r, lo = Math.floor(v), fr = v - lo, gap = size * 1.05;
+        ctx.save(); ctx.beginPath(); ctx.rect(x - 1, y - size * .62, cw + 2, size * 1.24); ctx.clip();
+        for (const [d, dy] of [[lo, -fr * gap], [lo + 1, (1 - fr) * gap]]) {
+          const c = String(((d % 10) + 10) % 10), dw = ctx.measureText(c).width;
+          ctx.fillText(c, x + (cw - dw) / 2, y + dy);
+        }
+        ctx.restore();
+      } else {
+        const b = since < .3 ? -Math.sin(since / .3 * Math.PI) * size * .12 : 0;   // a little clunk as it lands
+        if (b) spun = true;
+        ctx.fillText(ch, x, y + b);
+      }
+    } else ctx.fillText(ch, x, y);
+    x += cw;
+  }
+  return true;
 }
 function fit(s, size, maxW, bold) {  // largest font size (down to 70%) that fits in maxW
   setFont(size, bold);
@@ -329,6 +365,7 @@ function rect(x, y, w, h, color) { ctx.fillStyle = rgba(color); ctx.fillRect(x, 
 function dot(x, y, r, color) { ctx.fillStyle = rgba(color); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
 
 function arrow(cx, cy, deg, size, color) {
+  if (FX.slot) deg -= reelLeft(cx, cy).r * 30;   // slot machine: the arrow spins, then lands on the real direction
   const a = (deg + 180) * Math.PI / 180;  // direction the wind blows toward
   const dx = Math.sin(a), dy = -Math.cos(a);
   const x1 = cx + dx * size / 2, y1 = cy + dy * size / 2;
@@ -761,7 +798,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN }, lifeIdx: 0 };
+             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN, slot: performance.now() + rnd(6, 12) * MIN }, lifeIdx: 0, slot: null };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -942,6 +979,7 @@ function snapshot() {   // the chart as it looks now, with its background
 function play(kind, opt = {}) {
   const now = performance.now(), W = cv.clientWidth;
   if (kind === "nums") { for (const k in NUM) delete NUM[k]; draw(); return; }
+  if (kind === "slot") { FX.slot = { t0: now, end: now + 4200 }; fxKick(); return; }
   if (kind === "wipe" && !opt.old) opt.old = snapshot();
   if (kind === "melt") {
     // smooth sag across the screen, plus a few narrow drips, so it looks like warm wax
@@ -982,6 +1020,10 @@ function fxSchedule(now) {
   if (now >= FX.next.life) {
     if (!on("aLife")) FX.next.life = now + MIN;
     else if (busy) FX.next.life = wait; else { FX.next.life = now + rnd(10, 15) * MIN; play("life", { random: true }); }
+  }
+  if (now >= FX.next.slot) {
+    if (!on("aSlot")) FX.next.slot = now + MIN;
+    else if (busy || FX.slot) FX.next.slot = wait; else { FX.next.slot = now + rnd(20, 30) * MIN; play("slot"); }
   }
   if (now >= FX.next.truck) {
     if (!on("aTruck")) FX.next.truck = now + MIN;
@@ -1785,7 +1827,8 @@ function fxFrame(now) {
   fxRaf = 0;
   if (now - fxPrev < 30) { fxKick(); return; }   // about 30 frames a second is plenty
   const dt = Math.min(.1, (now - fxPrev) / 1000), sec = now / 1000; fxPrev = now;
-  if (now < numUntil) draw();
+  if (FX.slot && now >= FX.slot.end) { FX.slot = null; draw(); }
+  if (now < numUntil || FX.slot) draw();
   fxSchedule(now);
   const dpr = window.devicePixelRatio || 1, S = { w: innerWidth, h: innerHeight };
   for (const c of [fxb, fxf]) {
@@ -1794,7 +1837,7 @@ function fxFrame(now) {
     const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, S.w, S.h);
   }
   const P = bandParams(S);
-  let busy = now < numUntil;
+  let busy = now < numUntil || !!FX.slot;
   ctx = bctx;
   if (G && on("aWx")) busy = wxBack(dt, sec) || busy;
   if (G && on("aWind")) busy = streaks(dt, sec) || busy;

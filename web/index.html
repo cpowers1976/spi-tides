@@ -55,6 +55,7 @@
   .key li { break-inside: avoid; padding: 1px 0; }
   .ctl { display: flex; align-items: center; gap: 12px; flex: none; }
   .try { font-size: 15px; padding: 6px 10px; }
+  .pick { font-size: 17px; padding: 6px 8px; border-radius: 8px; background: var(--btn); color: var(--btntext); border: none; flex: none; }
   .panel[hidden] { display: none; }
   .navrow { width: 100%; background: none; text-align: left; font-size: 20px; padding: 14px 0; border-radius: 0; }
   .chev { font-size: 30px; color: var(--gray); line-height: 1; }
@@ -119,24 +120,26 @@
   <div class="panel" role="dialog" aria-label="Animations" data-pg="anim" hidden>
     <div class="phead"><button class="back" data-page="main">‹ Settings</button><h2>Animations</h2></div>
     <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
+    <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
+    <label class="row sub"><span>Time between other animations<small>Kiteboarder, melt or freeze, and the ones below Lively numbers. One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Wave band<small>Bottom edge moves with the real waves</small></span><input type="checkbox" class="sw" data-set="aWaves"></label>
     <label class="row sub"><span>Wind streaks<small>Drift with the real wind direction and speed</small></span><input type="checkbox" class="sw" data-set="aWind"></label>
-    <label class="row sub"><span>Kiteboarder<small>Rides by every few minutes at 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
+    <label class="row sub"><span>Kiteboarder<small>Rides by when the wind is 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
     <label class="row sub" id="tidefxrow"><span>Tide shimmer<small>Water ripples at the current tide level</small></span><input type="checkbox" class="sw" data-set="aTide"></label>
     <label class="row sub"><span>Weather<small>Rain, snow, clouds, sun glow, stars</small></span><input type="checkbox" class="sw" data-set="aWx"></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span>Wildlife<small id="lifenames">Dolphin, redfish, sea turtle, stingray, pelican</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
-    <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge, every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
-    <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
-    <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
-    <label class="row sub"><span>Yellow submarine<small>Cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
-    <label class="row sub"><span>Cybertruck<small>Elon drives by, waving. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
-    <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands. Every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
-    <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back. About once an hour</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
-    <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen, about once an hour</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
-    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up. About once an hour</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
+    <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
+    <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
+    <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
+    <label class="row sub"><span>Yellow submarine<small>Cruises by</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
+    <label class="row sub"><span>Cybertruck<small>Elon drives by, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
+    <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
+    <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
+    <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
+    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -187,9 +190,9 @@ const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
 const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster"];   // one switch per animation
-const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", ...FXKEYS];
+const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "otherMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
-                textSize: "m", data: null, updated: null, error: "",
+                textSize: "m", lifeMin: 2, otherMin: 10, data: null, updated: null, error: "",
                 // animations start off if the device asks for reduced motion (Android: Remove animations)
                 anim: !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) };
 for (const k of FXKEYS) state[k] = true;
@@ -902,10 +905,10 @@ let G = null;   // chart layout and current conditions, filled in by chart()
 const on = k => !!(state.anim && state[k]);
 const fxb = document.getElementById("fxb"), fxf = document.getElementById("fxf");
 const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
-const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), gap = m => m * MIN * rnd(.8, 1.2), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN, slot: performance.now() + rnd(6, 12) * MIN, queen: performance.now() + rnd(5, 12) * MIN, coaster: performance.now() + rnd(10, 20) * MIN }, lifeIdx: 0, slot: null };
+             next: { life: performance.now() + Math.min(90e3, gap(state.lifeMin)), other: performance.now() + Math.min(3 * MIN, gap(state.otherMin)) }, last: "", lifeIdx: 0, slot: null };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -1123,54 +1126,22 @@ function play(kind, opt = {}) {
   FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600, queen: 20000, coaster: 30000 }[kind], ...opt });
   fxKick();
 }
-function fxSchedule(now) {
+function fxSchedule(now) {   // wildlife and the other animations each have their own timer, set in Settings, +/- 20%
   if (!state.anim || !G || dlg && !dlg.hidden) return;
   const busy = FX.events.length > 0, wait = now + 20e3;
-  if (now >= FX.next.kite) {
-    if (!on("aKite") || G.spd < KITE) FX.next.kite = now + MIN;
-    else if (busy) FX.next.kite = wait; else { FX.next.kite = now + rnd(5, 8) * MIN; play("kite"); }
-  }
   if (now >= FX.next.life) {
     if (!on("aLife")) FX.next.life = now + MIN;
-    else if (busy) FX.next.life = wait; else { FX.next.life = now + rnd(10, 15) * MIN; play("life", { random: true }); }
+    else if (busy) FX.next.life = wait; else { FX.next.life = now + gap(state.lifeMin); play("life", { random: true }); }
   }
-  if (now >= FX.next.slot) {
-    if (!on("aSlot")) FX.next.slot = now + MIN;
-    else if (busy || FX.slot) FX.next.slot = wait; else { FX.next.slot = now + rnd(20, 30) * MIN; play("slot"); }
-  }
-  if (now >= FX.next.truck) {
-    if (!on("aTruck")) FX.next.truck = now + MIN;
-    else if (busy) FX.next.truck = wait; else { FX.next.truck = now + rnd(30, 45) * MIN; play("truck"); }
-  }
-  if (now >= FX.next.rocket) {
-    if (!on("aRocket")) FX.next.rocket = now + MIN;
-    else if (busy) FX.next.rocket = wait; else { FX.next.rocket = now + rnd(50, 70) * MIN; play("rocket"); }
-  }
-  for (const k of ["queen", "coaster"]) {   // Spirit Lake only
-    if (now < FX.next[k]) continue;
-    if (!on(k === "queen" ? "aQueen" : "aCoaster") || LOC.station) FX.next[k] = now + MIN;
-    else if (busy) FX.next[k] = wait; else { FX.next[k] = now + rnd(30, 45) * MIN; play(k); }
-  }
-  if (now >= FX.next.sub) {
-    if (!on("aSub")) FX.next.sub = now + MIN;
-    else if (busy) FX.next.sub = wait; else { FX.next.sub = now + rnd(30, 45) * MIN; play("sub"); }
-  }
-  if (now >= FX.next.ren) {
-    if (!on("aRen")) FX.next.ren = now + MIN;
-    else if (busy) FX.next.ren = wait; else { FX.next.ren = now + rnd(20, 30) * MIN; play("ren"); }
-  }
-  if (now >= FX.next.bite) {
-    if (!on("aBite")) FX.next.bite = now + MIN;
-    else if (busy) FX.next.bite = wait; else { FX.next.bite = now + rnd(45, 75) * MIN; play("bite"); }
-  }
-  if (now >= FX.next.chaos) {
-    if (!on("aChaos")) FX.next.chaos = now + MIN;
-    else if (busy) FX.next.chaos = wait; else { FX.next.chaos = now + rnd(50, 70) * MIN; play("chaos"); }
-  }
-  if (now >= FX.next.melt) {
-    const kind = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null;   // hot days melt, cold days freeze
-    if (!on("aMelt") || !kind) FX.next.melt = now + MIN;
-    else if (busy) FX.next.melt = wait; else { FX.next.melt = now + 15 * MIN; play(kind); }
+  if (now >= FX.next.other) {
+    const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null, lake = !LOC.station;
+    const pool = [["kite", on("aKite") && G.spd >= KITE], [hot, on("aMelt") && hot], ["slot", on("aSlot") && !FX.slot],
+      ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake],
+      ["sub", on("aSub")], ["ren", on("aRen")], ["bite", on("aBite")], ["chaos", on("aChaos")]].filter(([, ok]) => ok).map(([k]) => k);
+    const pick = pool.length > 1 ? pool.filter(k => k !== FX.last) : pool;   // no repeats in a row
+    if (!pick.length) FX.next.other = now + MIN;
+    else if (busy) FX.next.other = wait;
+    else { FX.next.other = now + gap(state.otherMin); FX.last = pick[Math.floor(Math.random() * pick.length)]; play(FX.last); }
   }
 }
 
@@ -2340,16 +2311,17 @@ function applyTheme() {
   document.getElementById("tiderow").classList.toggle("off", lake);
   document.getElementById("tidenote").hidden = !lake;
   dlg.querySelectorAll(".row.sub").forEach(r => {   // animation switches follow the main Animations switch
-    const c = r.querySelector(".sw"), off = !state.anim || (r.id === "tidefxrow" && (lake || !state.showTides));
+    const c = r.querySelector(".sw, .pick"), off = !state.anim || (r.id === "tidefxrow" && (lake || !state.showTides));
     c.disabled = off; r.classList.toggle("off", off);
     if (r.classList.contains("lakeonly")) r.hidden = !lake;
   });
   document.getElementById("coldF").textContent = LOC.cold;
-  document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". Every 10 to 15 min; ▶ shows the next one";
+  document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". ▶ shows the next one";
   document.getElementById("animsum").textContent = state.anim ? "On. Choose which ones and try them" : "Off";
   document.getElementById("bitename").textContent = lake ? "Muskie bite" : "Shark bite";
   document.getElementById("pctkey").innerHTML = pctList().map(([, n]) => `<li>${n}</li>`).join("");
   dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
+  dlg.querySelectorAll("[data-min]").forEach(c => c.value = state[c.dataset.min]);
   dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));
 }
 function changed() { save(); applyTheme(); draw(); }
@@ -2457,6 +2429,8 @@ bar.addEventListener("click", e => {
   changed();
 });
 dlg.addEventListener("change", e => {
+  const m = e.target.closest("[data-min]");
+  if (m) { state[m.dataset.min] = +m.value; const k = m.dataset.min === "lifeMin" ? "life" : "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
   const c = e.target.closest("[data-set]"); if (!c) return;
   state[c.dataset.set] = c.checked; changed();
 });

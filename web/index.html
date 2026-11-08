@@ -1088,7 +1088,7 @@ function play(kind, opt = {}) {
   if (kind === "life") {
     const list = LIFE[state.loc] || LIFE.spi;   // on its own: a random animal; the ▶ button: the next one in turn
     opt.sp = opt.random ? list[Math.floor(Math.random() * list.length)] : list[FX.lifeIdx++ % list.length];
-    opt.way = LIFE_WAY[opt.sp]; opt.dur = { jump: 2400, swim: 11000, fly: 9000, dive: 14500 }[opt.way];
+    opt.way = LIFE_WAY[opt.sp]; opt.dur = { jump: 2400, swim: 11000, fly: 9000, dive: 14500, drift: 16000 }[opt.way];
     opt.dir = Math.random() < .5 ? -1 : 1; opt.x0 = W * rnd(.2, .6) + (opt.dir < 0 ? W * .2 : 0); opt.fish = opt.sp === "walleye"; opt.y = rnd(.12, .4);
   }
   if (kind === "truck") opt.dir = Math.random() < .5 ? -1 : 1;
@@ -1368,9 +1368,9 @@ function jaws(l, open, x0, x1, y0, top, inside) {   // open mouth with teeth, at
     ctx.beginPath(); ctx.moveTo(ux - s, ly); ctx.lineTo(ux + s, ly); ctx.lineTo(ux, ly - s * 1.8); ctx.fill();
   }
 }
-const LIFE = { spi: ["dolphin", "redfish", "seaturtle", "stingray", "pelican"], spirit: ["walleye", "bluegill", "painted", "gull"] };
-const LIFE_NAMES = { spi: "Dolphin, redfish, sea turtle, stingray, diving pelican", spirit: "Walleye, bluegill, painted turtle, seagull" };
-const LIFE_WAY = { dolphin: "jump", redfish: "jump", walleye: "jump", seaturtle: "swim", stingray: "swim", bluegill: "swim", painted: "swim", pelican: "dive", gull: "fly" };
+const LIFE = { spi: ["dolphin", "redfish", "seaturtle", "stingray", "pelican", "manowar"], spirit: ["walleye", "bluegill", "painted", "gull"] };
+const LIFE_NAMES = { spi: "Dolphin, redfish, sea turtle, stingray, diving pelican, man o' war", spirit: "Walleye, bluegill, painted turtle, seagull" };
+const LIFE_WAY = { dolphin: "jump", redfish: "jump", walleye: "jump", seaturtle: "swim", stingray: "swim", bluegill: "swim", painted: "swim", pelican: "dive", manowar: "drift", gull: "fly" };
 function drawAnimal(sp, l, w) {
   if (sp === "seaturtle" || sp === "painted") ART.turtle(l, w, sp === "painted");
   else if (sp === "stingray") ART.stingray(l, w);
@@ -1676,6 +1676,50 @@ function coaster(e, now, dt) {
       ctx.restore();
     }
   }
+  ctx.restore();
+}
+
+// ---- Portuguese man o' war: a translucent blue-violet float with a pink crest sail, drifting through the
+//      middle of the screen, long blue tentacles dangling and swaying below ----
+function manOWar(e, p, sec) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, d = e.dir, u = f * 1.5;
+  const x = d > 0 ? -W * .1 + W * 1.2 * p : W * 1.1 - W * 1.2 * p, y = H * .42 + Math.sin(sec * .9) * H * .015;
+  const tilt = Math.sin(sec * .9 + 1) * .08;
+  if (!e.tent) e.tent = Array.from({ length: 16 }, (_, i) => ({ x: (i / 15 - .5) * 3 * u, len: H * rnd(.22, .45), ph: rnd(0, 6), w: rnd(1, 2.2), fish: i % 4 === 0 }));
+  ctx.save(); ctx.translate(x, y); ctx.rotate(tilt);
+  ctx.lineCap = "round";
+  for (const t of e.tent) {   // tentacles, swaying more toward their tips, trailing behind the drift
+    ctx.strokeStyle = t.fish ? "rgba(70,90,220,.75)" : "rgba(110,150,255,.55)"; ctx.lineWidth = t.w;
+    ctx.beginPath(); ctx.moveTo(t.x, u * .5);
+    for (let s = 1; s <= 24; s++) {
+      const q = s / 24, yy = u * .5 + t.len * q;
+      ctx.lineTo(t.x - d * q * q * u * 1.6 + Math.sin(sec * 1.6 + t.ph + q * 5) * q * u * .9, yy);
+    }
+    ctx.stroke();
+    if (t.fish) for (let s = 2; s <= 12; s += 2) {   // little knots of stinging cells
+      const q = s / 24, yy = u * .5 + t.len * q;
+      dot(t.x - d * q * q * u * 1.6 + Math.sin(sec * 1.6 + t.ph + q * 5) * q * u * .9, yy, t.w * 1.4, [.35, .45, .95, .7]);
+    }
+  }
+  ctx.fillStyle = "rgba(120,90,220,.55)";   // short bunched polyps under the float
+  for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.ellipse((i / 8 - .5) * 2.6 * u, u * .62 + Math.sin(sec * 3 + i) * u * .05, u * .14, u * .22, 0, 0, 7); ctx.fill(); }
+  ctx.lineCap = "butt";
+  const g = ctx.createLinearGradient(0, -u, 0, u * .6);   // the gas-filled float
+  g.addColorStop(0, "rgba(200,170,255,.75)"); g.addColorStop(.5, "rgba(130,140,255,.7)"); g.addColorStop(1, "rgba(80,120,240,.75)");
+  ctx.fillStyle = g; ctx.beginPath();
+  ctx.moveTo(-2.2 * u * d, u * .1);
+  ctx.bezierCurveTo(-2.4 * u * d, -u * .9, 1.4 * u * d, -u * 1.1, 2.3 * u * d, -u * .2);   // taller at one end, like the real thing
+  ctx.bezierCurveTo(2.6 * u * d, u * .4, 1.6 * u * d, u * .65, 0, u * .6);
+  ctx.bezierCurveTo(-1.4 * u * d, u * .6, -2.1 * u * d, u * .5, -2.2 * u * d, u * .1); ctx.fill();
+  ctx.strokeStyle = "rgba(90,80,200,.6)"; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.fillStyle = "rgba(255,180,230,.6)"; ctx.beginPath();   // crest sail with a wavy, ruffled edge
+  ctx.moveTo(-1.6 * u * d, -u * .55);
+  for (let i = 0; i <= 12; i++) { const q = i / 12, xx = (-1.6 + 3.4 * q) * u * d; ctx.lineTo(xx, -u * (.85 + .55 * Math.sin(q * Math.PI)) - Math.sin(q * 18 + sec * 2) * u * .08); }
+  ctx.lineTo(1.8 * u * d, -u * .5); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(230,110,190,.75)"; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1;   // ribs on the sail
+  for (let i = 1; i < 7; i++) { const xx = (-1.6 + 3.4 * i / 7) * u * d; ctx.beginPath(); ctx.moveTo(xx, -u * .55); ctx.lineTo(xx, -u * (.8 + .5 * Math.sin(i / 7 * Math.PI))); ctx.stroke(); }
+  ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.beginPath(); ctx.ellipse(-.6 * u * d, -u * .35, u * .7, u * .14, -.15 * d, 0, 7); ctx.fill();   // shine
   ctx.restore();
 }
 
@@ -2236,7 +2280,7 @@ function fxFrame(now) {
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
-    if (e.kind === "life") { e.way === "jump" ? jump(e, p, sec, P, now) : e.way === "dive" ? pelican(e, now, sec, P) : cameo(e, p, sec, P, now); busy = splashes(now) || busy; }
+    if (e.kind === "life") { e.way === "jump" ? jump(e, p, sec, P, now) : e.way === "dive" ? pelican(e, now, sec, P) : e.way === "drift" ? manOWar(e, p, sec) : cameo(e, p, sec, P, now); busy = splashes(now) || busy; }
     if (e.kind === "sub") submarine(e, now, dt, sec, P);
     if (e.kind === "queen") queenII(e, now, sec, P);
     if (e.kind === "coaster") coaster(e, now, dt);

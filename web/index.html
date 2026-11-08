@@ -51,6 +51,8 @@
   .seg button { font-size: 17px; padding: 8px 12px; }
   .panel h3 { margin: 22px 0 0; font-size: 21px; }
   .row.sub { padding-left: 16px; }
+  .key ol { margin: 8px 0 0; padding-left: 26px; columns: 2; column-gap: 24px; font-size: 15px; color: var(--gray); }
+  .key li { break-inside: avoid; padding: 1px 0; }
   .ctl { display: flex; align-items: center; gap: 12px; flex: none; }
   .try { font-size: 15px; padding: 6px 10px; }
   .panel[hidden] { display: none; }
@@ -132,6 +134,7 @@
     <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back. About once an hour</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen, about once an hour</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up. About once an hour</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
+    <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
 </div>
@@ -300,7 +303,7 @@ function readBuoy(j) {
 const cv = document.getElementById("c");
 let ctx = cv.getContext("2d");   // swapped to the animation layers while they draw
 const mainCtx = ctx;
-let hourBoxes = [];   // tap areas of the x-axis time labels
+let hourBoxes = [], pctBoxes = [];   // tap areas of the x-axis time labels and the rain percentages
 
 function setFont(size, bold) { ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`; }
 function text(s, x, y, size, color, ax = .5, bold = false) {
@@ -739,11 +742,14 @@ function chart(W, H, f, now, top, placeEnd) {
     text(String(Math.round(s)), px, wy(gst[i]) - f * .8, f * 1.05, windColor(s), .5, true);
     lastX = px;
   }
+  pctBoxes = [];
   idx.forEach((i, k) => {                  // direction arrows with rain chance
     if (k % step !== Math.floor(step / 2)) return;
     const ax = L + (k + .5) * bw, pr = rainP[i] || 0;
     arrow(ax, arrowY, dirs[i], f * 1.45, windColor(spd[i]));
-    text(`${Math.round(pr)}%`, ax, pctY, f * .85, pr >= 30 ? T.rain : T.gray, .5, pr >= 30);
+    const pw2 = text(`${Math.round(pr)}%`, ax, pctY, f * .85, pr >= 30 ? T.rain : T.gray, .5, pr >= 30);
+    const bw2 = Math.max(pw2 + f * .4, Math.min(f * 2.6, bw * step));   // tap area, as wide as the gap allows
+    pctBoxes.push({ x: ax - bw2 / 2, y: pctY - f * .9, w: bw2, h: f * 1.8 });
     if (hourly) text(`${Math.round(hr.temperature_2m[i])}°`, ax, tempY, f * .9, T.text);
   });
   if (hourly) text("rain / air", L - f * .5, (pctY + tempY) / 2, f * .7, T.gray, 1);
@@ -1087,7 +1093,7 @@ function play(kind, opt = {}) {
   if (kind === "kite") { const [vx] = windVec(); opt.dir = Math.abs(vx) < .2 ? (Math.random() < .5 ? -1 : 1) : Math.sign(vx); }
   if (kind === "life") {
     const list = LIFE[state.loc] || LIFE.spi;   // on its own: a random animal; the ▶ button: the next one in turn
-    opt.sp = opt.random ? list[Math.floor(Math.random() * list.length)] : list[FX.lifeIdx++ % list.length];
+    opt.sp = opt.sp || (opt.random ? list[Math.floor(Math.random() * list.length)] : list[FX.lifeIdx++ % list.length]);
     opt.way = LIFE_WAY[opt.sp]; opt.dur = { jump: 2400, swim: 11000, fly: 9000, dive: 14500, drift: 16000 }[opt.way];
     opt.dir = Math.random() < .5 ? -1 : 1; opt.x0 = W * rnd(.2, .6) + (opt.dir < 0 ? W * .2 : 0); opt.fish = opt.sp === "walleye"; opt.y = rnd(.12, .4);
   }
@@ -2323,6 +2329,7 @@ function applyTheme() {
   document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". Every 10 to 15 min; ▶ shows the next one";
   document.getElementById("animsum").textContent = state.anim ? "On. Choose which ones and try them" : "Off";
   document.getElementById("bitename").textContent = lake ? "Muskie bite" : "Shark bite";
+  document.getElementById("pctkey").innerHTML = pctList().map(([, n]) => `<li>${n}</li>`).join("");
   dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
   dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));
 }
@@ -2355,6 +2362,25 @@ const inHour = e => {   // which time label on the x axis was tapped: 0 = first,
   const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   return hourBoxes.slice(0, 2).findIndex(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
 };
+// the rain % shortcuts: each one, from the left, plays the next of these (and the list repeats)
+function pctList() {
+  const lake = !LOC.station, cold = G && G.temp < LOC.cold;
+  return [["kite", "Kiteboarder"], ...(LIFE[state.loc] || LIFE.spi).map(sp => ["life:" + sp, LIFE_LABEL[sp]]),
+    [cold ? "freeze" : "melt", "Melt or freeze"], ["wipe", "Wave wipe"], ["ren", "Ren and the sanderlings"],
+    ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : []),
+    ["sub", "Yellow submarine"], ["truck", "Cybertruck"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
+    ["bite", lake ? "Muskie bite" : "Shark bite"], ["chaos", "Haywire forecast"]];
+}
+const LIFE_LABEL = { dolphin: "Dolphin", redfish: "Redfish", seaturtle: "Sea turtle", stingray: "Stingray", pelican: "Pelican dive", manowar: "Man o' war",
+  walleye: "Walleye", bluegill: "Bluegill", painted: "Painted turtle", gull: "Seagull" };
+function playPct(i) {
+  const list = pctList(), [k] = list[i % list.length];
+  if (k.startsWith("life:")) play("life", { sp: k.slice(5) }); else play(k);
+}
+const inPct = e => {
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  return pctBoxes.findIndex(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+};
 function playAny() {   // a random animation that's switched on here (or any of them, if none are)
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["chaos", "aChaos"], ["bite", "aBite"],
@@ -2370,11 +2396,13 @@ const inTitle = e => {
 cv.addEventListener("click", e => {
   if (inTitle(e)) { menu.hidden ? openMenu() : (menu.hidden = true); return; }
   menu.hidden = true;
+  const pi = inPct(e);
+  if (pi >= 0) { playPct(pi); return; }
   const h = inHour(e);
   if (h === 0) { showPage("anim"); dlg.hidden = false; }   // first time label: straight to the Animations page
   if (h === 1) playAny();                                    // second time label: play something
 });
-cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) || inHour(e) >= 0 ? "pointer" : "");
+cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) || inHour(e) >= 0 || inPct(e) >= 0 ? "pointer" : "");
 hint.addEventListener("click", openMenu);
 menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); if (b) setLoc(b.dataset.loc); });
 bar.addEventListener("click", e => {

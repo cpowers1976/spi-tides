@@ -124,6 +124,7 @@
     <div class="phead"><button class="back" data-page="main">‹ Settings</button><h2>Animations</h2></div>
     <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
     <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
+    <label class="row sub"><span>Time between big boats<small>Huge, faint boats passing behind the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="boatMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between other animations<small>Kiteboarder, melt or freeze, and the ones below Lively numbers. One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Wave band<small>Bottom edge moves with the real waves</small></span><input type="checkbox" class="sw" data-set="aWaves"></label>
     <label class="row sub"><span>Wind streaks<small>Drift with the real wind direction and speed</small></span><input type="checkbox" class="sw" data-set="aWind"></label>
@@ -137,7 +138,7 @@
     <label class="row sub"><span>Ren chases sanderlings<small>The screen scrunches up, a beach rises, and he chases them along the water's edge</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
     <label class="row sub lakeonly"><span>Queen II<small>Spirit Lake only. The Okoboji excursion boat cruises by</small></span><span class="ctl"><button class="try" data-try="queen">▶</button><input type="checkbox" class="sw" data-set="aQueen"></span></label>
     <label class="row sub lakeonly"><span>The Legend coaster<small>Spirit Lake only. The Arnolds Park coaster fades in, a train full of riders goes over the hills, then it fades away</small></span><span class="ctl"><button class="try" data-try="coaster">▶</button><input type="checkbox" class="sw" data-set="aCoaster"></span></label>
-    <label class="row sub spionly"><span>Giant ship<small>South Padre only. A huge, faint cargo ship heads out from the Port of Brownsville behind the forecast</small></span><span class="ctl"><button class="try" data-try="ship">▶</button><input type="checkbox" class="sw" data-set="aShip"></span></label>
+    <label class="row sub"><span>Big boats<small id="boatnames"></small></span><span class="ctl"><button class="try" data-try="ship">▶</button><input type="checkbox" class="sw" data-set="aShip"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
     <label class="row sub"><span>Cybertruck<small>A beach rises and Elon drives along it, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
     <label class="row sub"><span>Mariachi band<small>A beach rises and the band plays and dances across it</small></span><span class="ctl"><button class="try" data-try="mariachi">▶</button><input type="checkbox" class="sw" data-set="aMariachi"></span></label>
@@ -199,9 +200,9 @@ const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
 const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aShip", "aSpin"];   // one switch per animation
-const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "otherMin", ...FXKEYS];
+const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
-                textSize: "m", lifeMin: 2, otherMin: 10, data: null, updated: null, error: "",
+                textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, data: null, updated: null, error: "",
                 // animations start off if the device asks for reduced motion (Android: Remove animations)
                 anim: !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) };
 for (const k of FXKEYS) state[k] = true;
@@ -957,7 +958,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), gap = m => m * MIN * rnd(.8, 1.2), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { life: performance.now() + Math.min(90e3, gap(state.lifeMin)), other: performance.now() + Math.min(3 * MIN, gap(state.otherMin)) }, last: "", lifeIdx: 0, slot: null };
+             next: { life: performance.now() + Math.min(90e3, gap(state.lifeMin)), other: performance.now() + Math.min(3 * MIN, gap(state.otherMin)), boat: performance.now() + Math.min(60e3, gap(state.boatMin)) }, last: "", lifeIdx: 0, boatIdx: 0, slot: null };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -1170,15 +1171,27 @@ function play(kind, opt = {}) {
   if (kind === "rocket") { opt.x0 = rnd(.3, .7); opt.side = Math.random() < .5 ? -1 : 1; }
   if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "ren" || kind === "mariachi") opt.dir = Math.random() < .5 ? -1 : 1;
-  if (kind === "spin") { opt.dir = Math.random() < .5 ? -1 : 1; opt.turns = Math.random() < .5 ? 2 : 3; opt.T = rnd(5.5, 7); opt.ov = rnd(8, 12); opt.dur = (opt.T + 2) * 1000; }
+  if (kind === "ship") {   // on its own: a random boat for here; the ▶ button: the next one in turn
+    const list = BOAT_LIST[state.loc] || BOAT_LIST.spi;
+    opt.sp = opt.sp || (opt.random ? list[Math.floor(Math.random() * list.length)] : list[FX.boatIdx++ % list.length]);
+    const b = BOATS[opt.sp]; opt.dir = b.dir || (Math.random() < .5 ? -1 : 1); opt.dur = (1 + b.len) * b.secs * 1000;
+  }
+  if (kind === "spin") { opt.dir = Math.random() < .5 ? -1 : 1; opt.turns = Math.random() < .5 ? 2 : 3; opt.T = rnd(5.5, 7); opt.ov = rnd(8, 12);
+    opt.flip = Math.random() < .35; opt.T2 = rnd(1.8, 2.4); opt.dur = (opt.T + 2 + (opt.flip ? opt.T2 + 2 : 0)) * 1000; }
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 45000, spin: 9000 }[kind], ...opt });
+  if (kind === "ship") FX.boatArt = null;
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {   // wildlife and the other animations each have their own timer, set in Settings, +/- 20%
   if (!state.anim || !G || dlg && !dlg.hidden) return;
-  const busy = FX.events.length > 0, wait = now + 20e3;
+  const busy = FX.events.some(e => e.kind !== "ship"), wait = now + 20e3;   // the big boats pass behind everything, so they don't count
+  if (now >= FX.next.boat) {   // the big boats: their own timer, one at a time
+    if (!on("aShip")) FX.next.boat = now + MIN;
+    else if (FX.events.some(e => e.kind === "ship" || e.kind === "spin")) FX.next.boat = wait;
+    else { FX.next.boat = now + gap(state.boatMin); play("ship", { random: true }); }
+  }
   if (now >= FX.next.life) {
     if (!on("aLife")) FX.next.life = now + MIN;
     else if (busy) FX.next.life = wait; else { FX.next.life = now + gap(state.lifeMin); play("life", { random: true }); }
@@ -1186,7 +1199,7 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
   if (now >= FX.next.other) {
     const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null, lake = !LOC.station;
     const pool = [["kite", on("aKite") && G.spd >= KITE], [hot, on("aMelt") && hot], ["slot", on("aSlot") && !FX.slot],
-      ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake], ["ship", on("aShip") && !lake], ["spin", on("aSpin")],
+      ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake], ["spin", on("aSpin")],
       ["sub", on("aSub")], ["ren", on("aRen")], ["mariachi", on("aMariachi")], ["bite", on("aBite")], ["chaos", on("aChaos")]].filter(([, ok]) => ok).map(([k]) => k);
     const pick = pool.length > 1 ? pool.filter(k => k !== FX.last) : pool;   // no repeats in a row
     if (!pick.length) FX.next.other = now + MIN;
@@ -2454,103 +2467,365 @@ function chaos(e, now) {
   }
   if (t >= 32.2 && !e.wiped) { e.wiped = 1; play("wipe", { old: e.black }); }   // after 1 s of black, the wave brings it back
 }
-// ---- a giant container ship heading out of the Port of Brownsville, faint and behind everything: as tall as the
-//      screen and twice as long, it slides by on the wave band with a bow wave, a wake and a little smoke ----
-function shipArt(W, H, light) {   // drawn once at full strength, then laid down faintly each frame (no darker overlaps)
-  const k = `${W}x${H}${light}`;
-  if (FX.shipArt && FX.shipArt.k === k) return FX.shipArt.c;
-  const L = W * 2, c = document.createElement("canvas"), x = c.getContext("2d");
-  c.width = Math.ceil(L); c.height = Math.ceil(H);
-  x.translate(0, H);   // waterline along the bottom, bow pointing right
-  const deck = -.36 * H, fcs = -.42 * H;
-  const hull = new Path2D();
+// ---- big boats: one huge, faint vessel at a time slides by behind everything, as tall as the screen. Each is drawn
+//      once at full strength with the waterline along the bottom and the bow pointing right (b.mir flips it to go left,
+//      keeping its writing readable), then laid down faintly each frame so overlapping parts don't show darker ----
+function boatKit(x, L, H, mir) {   // little drawing helpers for the boat pictures; y is up from the waterline (negative)
+  const k = {
+    fill: (c, path) => { x.fillStyle = c; x.fill(path); },
+    poly: (c, ...pts) => { x.beginPath(); for (let i = 0; i < pts.length; i += 2) x.lineTo(pts[i] * L, pts[i + 1] * H); x.closePath(); x.fillStyle = c; x.fill(); },
+    box: (c, x0, y0, x1, y1) => { x.fillStyle = c; x.fillRect(x0 * L, y0 * H, (x1 - x0) * L, (y1 - y0) * H); },
+    line: (c, w, ...pts) => { x.beginPath(); for (let i = 0; i < pts.length; i += 2) x.lineTo(pts[i] * L, pts[i + 1] * H); x.strokeStyle = c; x.lineWidth = w; x.lineCap = "round"; x.stroke(); },
+    circ: (c, cx, cy, r) => { x.beginPath(); x.arc(cx * L, cy * H, r * H, 0, 7); x.fillStyle = c; x.fill(); },
+    text: (c, s, cx, cy, size, font = "Arial, sans-serif") => {   // centred, never mirrored
+      x.save(); x.translate(cx * L, cy * H); if (mir) x.scale(-1, 1);
+      x.font = `bold ${size * H}px ${font}`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = c; x.fillText(s, 0, 0); x.restore();
+    },
+    windows: (c, x0, x1, y0, h, n, gap = .3) => { const w = (x1 - x0) / n; for (let i = 0; i < n; i++) k.box(c, x0 + w * i + w * gap / 2, y0, x0 + w * (i + 1) - w * gap / 2, y0 + h); },
+    person: (shirt, cx, cy, s, skin = "#d9a77c") => {   // head and shoulders, cy = shoulder line
+      x.beginPath(); x.ellipse(cx * L, cy * H, s * H * .9, s * H * .55, 0, Math.PI, 0); x.fillStyle = shirt; x.fill();
+      k.circ(skin, cx, cy - s * 1.05, s * .55);
+    },
+  };
+  return k;
+}
+const boatSeed = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+
+function artContainer(x, L, H, k, light) {   // a container ship heading out of the Port of Brownsville
+  const deck = -.36 * H, fcs = -.42 * H, hull = new Path2D();
   hull.moveTo(L * .02, 0); hull.lineTo(L * .93, 0);
   hull.quadraticCurveTo(L * .985, -.05 * H, L, fcs);   // raked bow
   hull.lineTo(L * .9, fcs); hull.lineTo(L * .885, deck); hull.lineTo(L * .03, deck);
   hull.quadraticCurveTo(0, deck * .7, L * .02, 0); hull.closePath();
-  x.fillStyle = light ? "#2c3b55" : "#62789a"; x.fill(hull);   // a lighter steel blue at night so the hull still shows
-  x.fillStyle = "#a8322b"; x.fillRect(L * .02, -.035 * H, L * .915, .035 * H);   // red boot-top at the waterline
-  x.fillStyle = "#e9edf2"; x.fillRect(L * .03, deck, L * .855, H * .008);         // white deck edge
-  x.beginPath(); x.moveTo(L * .885, deck); x.lineTo(L * .9, fcs); x.lineTo(L, fcs); x.lineTo(L, fcs + H * .008); x.lineTo(L * .9, fcs + H * .008); x.closePath(); x.fill();
-  const cols = ["#b5452f", "#2f5fa8", "#2f8a57", "#d9822b", "#8a929c", "#e8e4da", "#1f8a8a", "#7a3b8a", "#c9a227"];
-  let seed = 7; const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const bayW = L * .0235, rowH = H * .062, top = [];
-  for (let bx = L * .17; bx + bayW <= L * .875; bx += bayW) {   // container stacks, taller amidships
-    const mid = 1 - Math.abs((bx - L * .52) / (L * .36)), n = 3 + Math.round(mid * 2 + r() * 1.4);
+  k.fill(light ? "#2c3b55" : "#62789a", hull);   // a lighter steel blue at night so the hull still shows
+  k.box("#a8322b", .02, -.035, .935, 0);   // red boot-top
+  k.box("#e9edf2", .03, -.36, .885, -.352);
+  k.poly("#e9edf2", .885, -.36, .9, -.42, 1, -.42, 1, -.412, .9, -.412);
+  const cols = ["#b5452f", "#2f5fa8", "#2f8a57", "#d9822b", "#8a929c", "#e8e4da", "#1f8a8a", "#7a3b8a", "#c9a227"], r = boatSeed(7);
+  const bayW = .0235, rowH = .062;
+  for (let bx = .17; bx + bayW <= .875; bx += bayW) {   // container stacks, taller amidships
+    const mid = 1 - Math.abs((bx - .52) / .36), n = 3 + Math.round(mid * 2 + r() * 1.4);
     for (let j = 0; j < n; j++) {
-      const y = deck - (j + 1) * rowH;
-      x.fillStyle = cols[Math.floor(r() * cols.length)]; x.fillRect(bx + 1, y + 1, bayW - 2, rowH - 2);
-      x.fillStyle = "rgba(0,0,0,.18)";   // corrugation
-      for (let q = 1; q < 5; q++) x.fillRect(bx + 1 + (bayW - 2) * q / 5, y + 1, 1, rowH - 2);
+      const y = -.36 - (j + 1) * rowH;
+      x.fillStyle = cols[Math.floor(r() * cols.length)]; x.fillRect(bx * L + 1, y * H + 1, bayW * L - 2, rowH * H - 2);
+      x.fillStyle = "rgba(0,0,0,.18)";
+      for (let q = 1; q < 5; q++) x.fillRect(bx * L + 1 + (bayW * L - 2) * q / 5, y * H + 1, 1, rowH * H - 2);
     }
-    top.push(deck - n * rowH);
   }
-  const bh = L * .06, bxs = L * .07, btop = -.86 * H;   // the bridge house near the stern
-  x.fillStyle = "#eef1f4"; x.fillRect(bxs, btop, bh, deck - btop + 1);
-  x.fillRect(bxs - L * .012, btop, bh + L * .024, H * .035);   // bridge wings
-  x.fillStyle = "#28303c";
-  x.fillRect(bxs - L * .01, btop + H * .009, bh + L * .02, H * .016);   // bridge windows
-  for (let fl = 1; fl < 7; fl++) for (let w = 0; w < 9; w++)            // cabin portholes
-    x.fillRect(bxs + bh * (.08 + w * .1), btop + H * .06 + fl * H * .055, bh * .05, H * .018);
-  x.fillStyle = "#eef1f4"; x.fillRect(bxs + bh * .45, -.99 * H, L * .003, btop + .99 * H);   // mast
-  x.fillRect(bxs + bh * .3, -.95 * H, bh * .4, H * .006);
-  x.fillStyle = "#1d2a40"; x.fillRect(L * .045, -.8 * H, L * .03, .8 * H + deck);   // funnel, blue band and black top
-  x.fillStyle = "#2f5fa8"; x.fillRect(L * .045, -.74 * H, L * .03, H * .05);
-  x.fillStyle = "#111"; x.fillRect(L * .045, -.8 * H, L * .03, H * .03);
-  x.fillStyle = "#dfe4ea"; x.textBaseline = "middle";
-  x.font = `bold ${H * .055}px Arial, sans-serif`;
-  x.fillText("GULF STAR", L * .78, -.25 * H);   // name on the bow
-  x.font = `bold ${H * .04}px Arial, sans-serif`;
-  x.fillText("BROWNSVILLE, TX", L * .035, -.2 * H);   // home port on the stern
-  x.beginPath(); x.arc(L * .955, -.3 * H, H * .015, 0, 7); x.fill();   // hawsepipe
-  FX.shipArt = { k, c };
+  k.box("#eef1f4", .07, -.86, .13, -.36); k.box("#eef1f4", .058, -.86, .142, -.825);   // bridge house and wings
+  k.box("#28303c", .06, -.851, .14, -.835);
+  for (let fl = 1; fl < 7; fl++) for (let w = 0; w < 9; w++) k.box("#28303c", .07 + .06 * (.08 + w * .1), -.8 + fl * .055, .07 + .06 * (.13 + w * .1), -.782 + fl * .055);
+  k.box("#eef1f4", .097, -.99, .1, -.86); k.box("#eef1f4", .088, -.95, .112, -.944);   // mast
+  k.box("#1d2a40", .045, -.8, .075, -.36); k.box("#2f5fa8", .045, -.74, .075, -.69); k.box("#111", .045, -.8, .075, -.77);   // funnel
+  k.text("#dfe4ea", "GULF STAR", .84, -.25, .055);
+  k.text("#dfe4ea", "BROWNSVILLE, TX", .1, -.2, .04);
+  k.circ("#dfe4ea", .955, -.3, .015);
+}
+function artCutter(x, L, H, k, light) {   // a Coast Guard cutter: white hull, red racing stripe, gray superstructure
+  const hull = new Path2D();
+  hull.moveTo(L * .03, 0); hull.lineTo(L * .9, 0); hull.quadraticCurveTo(L * .97, -.08 * H, L, -.4 * H);
+  hull.lineTo(L * .7, -.36 * H); hull.lineTo(L * .02, -.34 * H); hull.lineTo(L * .03, 0); hull.closePath();
+  k.fill(light ? "#d8dde3" : "#f4f6f8", hull);
+  k.box("#2b2f36", .03, -.03, .92, 0);
+  k.poly("#d6402b", .74, -.02, .79, -.02, .87, -.38, .82, -.375);   // racing stripe, leaning toward the bow
+  k.poly("#1f4f9a", .715, -.02, .728, -.02, .808, -.373, .795, -.372);
+  k.text("#1c2433", "COAST GUARD", .45, -.2, .07);
+  k.box("#c9cfd6", .3, -.55, .68, -.34); k.box("#d7dce2", .38, -.68, .62, -.55); k.box("#c9cfd6", .45, -.76, .6, -.68);   // superstructure
+  k.windows("#25303f", .47, .6, -.745, .03, 6, .25);
+  k.windows("#25303f", .32, .66, -.47, .03, 12, .55);
+  k.box("#b8bec6", .34, -.66, .39, -.55); k.box("#1c2433", .34, -.68, .39, -.65);   // stack
+  k.line("#b8bec6", Math.max(2, L * .003), .53, -.76, .53, -.99);   // mast, yards and radar
+  k.line("#b8bec6", Math.max(2, L * .002), .49, -.9, .57, -.9);
+  k.line("#b8bec6", Math.max(2, L * .002), .5, -.83, .56, -.83);
+  k.box("#e6e9ed", .505, -.97, .555, -.955);
+  k.circ("#e6e9ed", .58, -.81, .03);   // radome
+  k.box("#9aa2ac", .78, -.43, .81, -.38); k.line("#9aa2ac", Math.max(2, H * .012), .8, -.41, .86, -.44);   // deck gun
+  k.box("#f08a24", .06, -.42, .17, -.36);   // the orange small boat at the stern
+  k.flag = [.53, -.99];
+}
+function artSportfish(x, L, H, k, light) {   // an offshore sport fishing boat: tuna tower, outriggers, flybridge
+  const hull = new Path2D();
+  hull.moveTo(L * .04, 0); hull.lineTo(L * .82, 0); hull.quadraticCurveTo(L * .97, -.05 * H, L, -.36 * H);
+  hull.quadraticCurveTo(L * .7, -.31 * H, L * .03, -.29 * H); hull.closePath();
+  k.fill(light ? "#e3e7ea" : "#f6f7f8", hull);
+  k.poly("#123a63", .04, -.04, .84, -.04, .86, -.075, .04, -.08);   // navy stripe
+  k.box("#e9ecef", .3, -.47, .74, -.3); k.poly("#e9ecef", .74, -.47, .8, -.32, .74, -.3);   // cabin
+  k.poly("#1b2532", .62, -.45, .73, -.45, .78, -.34, .62, -.34);   // tinted windshield
+  k.windows("#1b2532", .34, .6, -.43, .06, 4, .2);
+  k.box("#e9ecef", .36, -.56, .7, -.47); k.box("#cfd5db", .34, -.66, .66, -.635);   // flybridge and its hardtop
+  for (const px of [.37, .64]) k.line("#cfd5db", Math.max(2, L * .003), px, -.56, px, -.64);
+  const tw = Math.max(2, L * .0035);   // tuna tower
+  k.line("#d6dbe0", tw, .4, -.64, .45, -.95, .6, -.95, .63, -.64);
+  k.line("#d6dbe0", tw * .7, .42, -.8, .62, -.8);
+  k.box("#cfd5db", .44, -.97, .61, -.95);
+  k.line("#cfd5db", Math.max(1.5, L * .002), .46, -.62, .1, -.99); k.line("#cfd5db", Math.max(1.5, L * .002), .6, -.62, .3, -.99);   // outriggers
+  k.box("#d0a14e", .1, -.4, .14, -.33); k.box("#9aa2ac", .115, -.33, .125, -.29);   // fighting chair
+  for (const rx of [.05, .08, .17, .2]) k.line("#555", Math.max(1.5, L * .0015), rx, -.29, rx - .02, -.5);   // rods
+  k.text("#123a63", "REEL TIME", .18, -.18, .065, 'Georgia, "Times New Roman", serif');
+  k.text("#123a63", "PORT ISABEL, TX", .18, -.11, .035);
+}
+function artShrimper(x, L, H, k, light) {   // a Gulf shrimp boat: pilothouse forward, outriggers up, nets hanging
+  const hull = new Path2D();
+  hull.moveTo(L * .04, 0); hull.lineTo(L * .84, 0); hull.quadraticCurveTo(L * .97, -.06 * H, L, -.4 * H);
+  hull.quadraticCurveTo(L * .6, -.3 * H, L * .02, -.32 * H); hull.closePath();
+  k.fill(light ? "#e4e6e0" : "#f2f2ec", hull);
+  k.box("#2f7d4a", .03, -.05, .87, 0); k.poly("#2f7d4a", .02, -.32, .6, -.3, .97, -.37, 1, -.4, .6, -.33, .02, -.35);   // green trim
+  k.box("#ecebe4", .6, -.6, .84, -.32); k.box("#2f7d4a", .59, -.63, .85, -.6);   // pilothouse
+  k.windows("#22303a", .62, .83, -.56, .07, 5, .25);
+  k.box("#cfcfc6", .52, -.5, .6, -.32); k.box("#3a3a3a", .55, -.66, .58, -.5);   // galley and stack
+  k.line("#8a8f94", Math.max(2, L * .004), .5, -.32, .5, -.98);   // mast
+  k.line("#8a8f94", Math.max(2, L * .004), .5, -.36, .3, -.95); k.line("#8a8f94", Math.max(2, L * .004), .5, -.36, .7, -.95);   // outrigger booms
+  k.line("#8a8f94", Math.max(1, L * .0012), .5, -.98, .3, -.95, .2, -.36); k.line("#8a8f94", Math.max(1, L * .0012), .5, -.98, .7, -.95);
+  for (const [bx, sgn] of [[.3, -1], [.7, 1]]) {   // try nets hanging from the boom tips, drawn as mesh
+    const top = -.93, bot = -.55, w = .07;
+    x.beginPath(); x.moveTo(bx * L, top * H); x.lineTo((bx - w) * L, bot * H); x.lineTo((bx + w) * L, bot * H); x.closePath();
+    x.fillStyle = "rgba(95,110,90,.55)"; x.fill();
+    x.strokeStyle = "#5c6b55"; x.lineWidth = 1;
+    for (let i = 1; i < 7; i++) { const y = top + (bot - top) * i / 7, hw = w * i / 7; x.beginPath(); x.moveTo((bx - hw) * L, y * H); x.lineTo((bx + hw) * L, y * H); x.stroke(); }
+    for (let i = -3; i <= 3; i++) { x.beginPath(); x.moveTo(bx * L, top * H); x.lineTo((bx + w * i / 3) * L, bot * H); x.stroke(); }
+    k.box("#7a5a3a", bx - w * .9, bot - .01, bx + w * .9, bot + .015);   // the doors
+  }
+  k.box("#d0d0c6", .06, -.4, .3, -.32);   // net drum and winch on the back deck
+  k.circ("#7d8a78", .14, -.4, .045);
+  k.text("#2f7d4a", "MISS PORT ISABEL", .4, -.17, .06, 'Georgia, "Times New Roman", serif');
+}
+function artTour(x, L, H, k, light) {   // a two-deck sightseeing boat full of people, out to watch the dolphins
+  const hull = new Path2D();
+  hull.moveTo(L * .03, 0); hull.lineTo(L * .88, 0); hull.quadraticCurveTo(L * .97, -.05 * H, L, -.3 * H);
+  hull.lineTo(L * .02, -.27 * H); hull.closePath();
+  k.fill("#1f6fb2", hull);
+  k.box("#f2f4f6", .02, -.3, .99, -.27);
+  k.text("#ffffff", "DOLPHIN WATCH", .5, -.14, .08);
+  k.box("#f2f4f6", .06, -.55, .9, -.3); k.poly("#f2f4f6", .9, -.55, .96, -.32, .9, -.3);   // main cabin
+  k.windows("#2a3a4c", .08, .88, -.5, .13, 10, .18);
+  const shirts = ["#e85d4a", "#f2c14e", "#4aa3df", "#6cc070", "#c46ad6", "#ffffff", "#f08a24"], r = boatSeed(11);
+  for (let i = 0; i < 10; i++) { const wx = .08 + .082 * (i + .5); k.person(shirts[Math.floor(r() * 7)], wx, -.39, .035); }   // folks at the windows
+  k.box("#f2f4f6", .08, -.6, .86, -.55);   // upper deck
+  for (let i = 0; i < 16; i++) { const px = .12 + i * .047; k.person(shirts[Math.floor(r() * 7)], px, -.62 - r() * .02, .04); }
+  k.line("#f2f4f6", Math.max(2, H * .006), .08, -.66, .86, -.66);   // rail
+  for (let i = 0; i <= 14; i++) k.line("#f2f4f6", Math.max(1, H * .003), .08 + i * .055, -.6, .08 + i * .055, -.66);
+  k.box("#2a7fc4", .06, -.86, .88, -.82); k.poly("#2a7fc4", .06, -.82, .88, -.82, .9, -.8, .04, -.8);   // canopy
+  for (let i = 0; i <= 6; i++) k.line("#e8eaec", Math.max(2, L * .002), .09 + i * .125, -.6, .09 + i * .125, -.82);
+  k.line("#e8eaec", Math.max(2, L * .002), .5, -.86, .5, -.99);
+  k.poly("#c8102e", .5, -.99, .56, -.97, .5, -.95);   // pennant
+}
+function artTow(x, L, H, k, light) {   // a tug towing an old aircraft carrier in to the Brownsville ship breakers
+  const C = .8;   // the carrier takes the stern 80%, then the tow line and the tug
+  const hull = new Path2D();
+  hull.moveTo(L * .01, 0); hull.lineTo(L * C * .93, 0); hull.quadraticCurveTo(L * C * .99, -.1 * H, L * C, -.48 * H);
+  hull.lineTo(L * .005, -.48 * H); hull.closePath();
+  k.fill(light ? "#6b737c" : "#8b949e", hull);
+  k.poly(light ? "#5d646c" : "#7c858f", -.0, -.48, C * 1.01, -.48, C * 1.005, -.53, .0, -.53);   // flight deck overhang
+  const r = boatSeed(5);
+  for (let i = 0; i < 40; i++) {   // rust streaks running down the hull
+    const rx = .02 + r() * (C - .06), len = .06 + r() * .25;
+    x.fillStyle = `rgba(${140 + r() * 40 | 0},${70 + r() * 20 | 0},40,${.35 + r() * .35})`; x.fillRect(rx * L, -.46 * H, L * .0025 * (1 + r() * 2), len * H);
+  }
+  k.box(light ? "#7b838c" : "#9aa2ab", C * .78, -.12, C * .86, -.04);   // the hull number, painted out
+  for (let i = 0; i < 9; i++) k.box("#3a3f45", .05 + i * C * .095, -.4, .05 + i * C * .095 + .012, -.37);   // hangar openings
+  k.box(light ? "#6b737c" : "#8b949e", C * .6, -.8, C * .7, -.53); k.box(light ? "#5d646c" : "#7c858f", C * .62, -.88, C * .69, -.8);   // the island
+  k.windows("#2b3036", C * .61, C * .69, -.77, .025, 6, .3);
+  k.line(light ? "#5d646c" : "#7c858f", Math.max(2, L * .002), C * .655, -.88, C * .655, -.99);
+  k.line(light ? "#5d646c" : "#7c858f", Math.max(2, L * .0015), C * .63, -.95, C * .68, -.95);
+  x.beginPath(); x.moveTo(C * L, -.36 * H);   // the tow line sags between them
+  x.quadraticCurveTo(L * (C + .055), -.02 * H, L * .905, -.16 * H); x.strokeStyle = "#3a3a3a"; x.lineWidth = Math.max(2, H * .005); x.stroke();
+  const tug = new Path2D();   // the tug: black hull, red band, white wheelhouse
+  tug.moveTo(L * .9, 0); tug.lineTo(L * .985, 0); tug.quadraticCurveTo(L, -.05 * H, L, -.18 * H); tug.lineTo(L * .895, -.15 * H); tug.closePath();
+  k.fill("#1b1b1b", tug); k.poly("#c62b2b", .897, -.15, 1, -.18, 1, -.2, .896, -.17);
+  k.box("#f2f2ee", .93, -.3, .98, -.17); k.box("#f2f2ee", .945, -.38, .985, -.3);
+  k.windows("#22303a", .947, .983, -.36, .04, 3, .25);
+  k.box("#1b1b1b", .918, -.36, .93, -.19); k.box("#c62b2b", .918, -.33, .93, -.31);   // stack
+  k.text("#f2f2ee", "RIO GRANDE", .95, -.08, .035);
+}
+function artLakeFish(x, L, H, k, light) {   // a deep-V aluminum walleye boat: two anglers, a big outboard and a kicker
+  const hull = new Path2D();
+  hull.moveTo(L * .1, 0); hull.lineTo(L * .82, 0); hull.quadraticCurveTo(L * .97, -.06 * H, L, -.33 * H);
+  hull.lineTo(L * .09, -.26 * H); hull.closePath();
+  k.fill(light ? "#a9b0b8" : "#c9d0d8", hull);
+  k.poly("#1e4f8a", .09, -.26, 1, -.33, .99, -.29, .09, -.215);   // painted rail stripe
+  k.box("#1e4f8a", .1, -.06, .84, 0);
+  k.box("#222", .02, -.42, .1, -.22); k.box("#333", .045, -.22, .07, .02); k.box("#c62b2b", .02, -.42, .1, -.39);   // outboard
+  k.box("#2a2a2a", .1, -.34, .13, -.22);   // kicker
+  k.poly("#2c3946", .52, -.27, .55, -.42, .62, -.42, .63, -.27);   // console windshield
+  k.box("#8b2f2f", .26, -.35, .31, -.27);   // seats
+  k.box("#8b2f2f", .76, -.4, .81, -.3);
+  k.box("#3f6b3a", .265, -.48, .315, -.34); k.box("#3f6b3a", .785, -.53, .835, -.39);   // their bodies, sitting
+  k.person("#3f6b3a", .29, -.48, .07, "#d9a77c");   // angler in the back, green jacket, cap
+  k.box("#c62b2b", .26, -.6, .33, -.575);
+  k.person("#d9822b", .79, -.53, .07, "#e0b48c");   // angler up front, orange jacket
+  k.box("#2f5fa8", .755, -.65, .825, -.625);
+  k.line("#3a3a3a", Math.max(1.5, L * .002), .32, -.45, .12, -.95);   // rods, lines down to the water
+  k.line("#3a3a3a", Math.max(1.5, L * .002), .82, -.5, .98, -.97);
+  k.line("rgba(60,60,60,.6)", 1, .12, -.95, .05, 0);
+  k.line("rgba(60,60,60,.6)", 1, .98, -.97, 1.0, -.1);
+  k.box("#222", .93, -.36, .945, -.32);   // bow trolling motor
+  k.text("#1e4f8a", "WALLEYE", .45, -.13, .06);
+}
+function artWakeSurf(x, L, H, k, light) {   // a wake surf boat with its tower, and a surfer riding the wake behind it
+  const B = .38;   // the boat starts here; behind it is the wake and the surfer
+  const wake = new Path2D();   // the big surf wake
+  wake.moveTo(0, 0); wake.quadraticCurveTo(L * .1, 0, L * .2, -.12 * H); wake.quadraticCurveTo(L * .27, -.3 * H, L * .3, -.28 * H);
+  wake.quadraticCurveTo(L * .34, -.1 * H, L * (B + .02), 0); wake.closePath();
+  k.fill("rgba(120,190,210,.9)", wake);
+  x.beginPath(); x.moveTo(L * .2, -.12 * H); x.quadraticCurveTo(L * .27, -.3 * H, L * .3, -.28 * H); x.strokeStyle = "#ffffff"; x.lineWidth = H * .012; x.stroke();
+  k.poly("#f2c14e", .19, -.2, .29, -.27, .3, -.25, .2, -.18);   // board
+  k.line("#1d2b3a", Math.max(3, H * .02), .22, -.23, .235, -.38, .25, -.53);   // surfer: legs, body, arms out
+  k.line("#1d2b3a", Math.max(3, H * .02), .275, -.25, .26, -.38, .25, -.53);
+  k.line("#1d2b3a", Math.max(3, H * .016), .2, -.58, .25, -.5, .31, -.55);
+  k.circ("#d9a77c", .252, -.6, .035);
+  const hull = new Path2D();
+  hull.moveTo(L * B, 0); hull.lineTo(L * .88, 0); hull.quadraticCurveTo(L * .98, -.05 * H, L, -.3 * H);
+  hull.lineTo(L * (B - .01), -.3 * H); hull.closePath();
+  k.fill("#1a1a1f", hull);
+  k.poly("#d6402b", B, -.12, .93, -.15, .97, -.2, B, -.18);   // swoosh
+  k.box("#f2f2f2", B - .01, -.33, .97, -.3);
+  k.poly("#2c3946", .62, -.33, .66, -.45, .76, -.45, .79, -.33);   // windshield
+  const tw = Math.max(3, H * .02);   // the tower
+  k.line("#222", tw, .52, -.33, .56, -.75, .68, -.75, .7, -.33);
+  k.box("#222", .55, -.78, .69, -.74);
+  k.circ("#333", .54, -.7, .03); k.circ("#333", .7, -.7, .03);   // speakers
+  k.poly("#4aa3df", .6, -.8, .64, -.8, .64, -.97, .6, -.97);   // boards in the rack
+  k.person("#f2c14e", .5, -.4, .04); k.person("#e85d4a", .58, -.4, .04);   // friends aboard
+  k.text("#f2f2f2", "SURF'S UP", .63, -.08, .055);
+}
+function artPontoon(x, L, H, k, light) {   // a pontoon boat: fenced deck, bimini top, a crowd out for a cruise
+  k.box(light ? "#b8c0c8" : "#d4dbe2", .08, -.16, .92, -.02); k.circ(light ? "#b8c0c8" : "#d4dbe2", .92, -.09, .07);   // the tube
+  k.circ(light ? "#b8c0c8" : "#d4dbe2", .08, -.09, .07);
+  k.box("#555c63", .05, -.2, .97, -.16);   // deck
+  k.box("#e8e2d0", .06, -.42, .96, -.2);   // fence panels
+  k.box("#2a5d8f", .06, -.25, .96, -.2); k.box("#9aa2ab", .06, -.43, .96, -.42);
+  for (let i = 0; i <= 9; i++) k.box("#cfc8b4", .06 + i * .1, -.42, .065 + i * .1, -.2);
+  k.text("#2a5d8f", "LAKE DAYS", .5, -.32, .06);
+  const shirts = ["#e85d4a", "#f2c14e", "#4aa3df", "#6cc070", "#c46ad6", "#ffffff"], r = boatSeed(3);
+  for (let i = 0; i < 9; i++) k.person(shirts[Math.floor(r() * 6)], .14 + i * .085, -.46 - r() * .02, .05);
+  k.box("#333", .0, -.36, .05, -.16); k.box("#333", .02, -.16, .035, .02);   // outboard
+  for (const px of [.12, .4, .66, .9]) k.line("#c0c6cc", Math.max(2, L * .002), px, -.42, px, -.74);
+  k.poly("#2a5d8f", .1, -.74, .92, -.74, .9, -.8, .12, -.8);   // bimini top
+  k.line("#c0c6cc", Math.max(2, L * .002), .03, -.42, .03, -.97);
+  k.poly("#c8102e", .03, -.97, .1, -.95, .03, -.92); k.box("#fff", .03, -.93, .065, -.925);   // a flag
+}
+// len: length as a share of screen widths. secs: seconds to cross one screen width. dir: 1 heads right, -1 left, 0 either.
+// smoke / gulls: where in the picture (share of length, share of height) to puff smoke or circle gulls
+const BOATS = {
+  container: { len: 2, secs: 20, dir: 1, art: artContainer, smoke: [.06, -.8] },
+  cutter: { len: 1.7, secs: 14, dir: 0, art: artCutter, smoke: [.365, -.68] },
+  sportfish: { len: 1.3, secs: 9, dir: 0, art: artSportfish },
+  shrimper: { len: 1.4, secs: 18, dir: 0, art: artShrimper, smoke: [.565, -.66], gulls: [.15, -.6] },
+  tour: { len: 1.5, secs: 16, dir: 0, art: artTour },
+  tow: { len: 2.6, secs: 20, dir: -1, art: artTow, smoke: [.924, -.36] },
+  lakefish: { len: 1.15, secs: 13, dir: 0, art: artLakeFish },
+  wakesurf: { len: 1.5, secs: 12, dir: 0, art: artWakeSurf, bowOnly: true },
+  pontoon: { len: 1.3, secs: 16, dir: 0, art: artPontoon },
+};
+const BOAT_LIST = { spi: ["container", "cutter", "sportfish", "shrimper", "tour", "tow"], spirit: ["lakefish", "wakesurf", "pontoon"] };
+const BOAT_NAMES = { spi: "Container ship, Coast Guard cutter, sport fisher, shrimp boat, dolphin watch boat, tug towing an old carrier",
+                     spirit: "Walleye boat, wake surf boat, pontoon" };
+function boatArt(sp, W, H, mir, light) {
+  const key = `${sp}${W}x${H}${mir}${light}`;
+  if (FX.boatArt && FX.boatArt.key === key) return FX.boatArt.c;
+  const L = W * BOATS[sp].len, c = document.createElement("canvas"), x = c.getContext("2d");
+  c.width = Math.ceil(L); c.height = Math.ceil(H);
+  if (mir) { x.translate(L, 0); x.scale(-1, 1); }
+  x.translate(0, H);
+  BOATS[sp].art(x, L, H, boatKit(x, L, H, mir), light);
+  FX.boatArt = { key, c };
   return c;
 }
 function bigShip(e, now, sec, P) {
-  const W = innerWidth, wl = P ? P.y0 : cv.clientHeight, H = wl, L = W * 2, p = (now - e.t0) / e.dur;
-  const x0 = -L + (W + L) * p;   // stern from off the left edge until the bow clears the right
-  const art = shipArt(W, Math.round(H), !!state.light), al = state.light ? .17 : .22;
-  const bob = Math.sin(sec * .7) * H * .004, roll = Math.sin(sec * .45) * .003;
+  const b = BOATS[e.sp], W = innerWidth, wl = P ? P.y0 : cv.clientHeight, H = Math.round(wl), L = W * b.len, p = (now - e.t0) / e.dur, d = e.dir;
+  const x0 = d > 0 ? -L + (W + L) * p : W - (W + L) * p;   // left edge of the picture
+  const X = f => d > 0 ? x0 + f * L : x0 + (1 - f) * L;   // a spot along the boat (share of length from stern) on screen
+  const art = boatArt(e.sp, W, H, d < 0, !!state.light), al = state.light ? .17 : .22;
+  const bob = Math.sin(sec * (b.len < 1.6 ? 1.3 : .7)) * H * (b.len < 1.6 ? .008 : .004), roll = Math.sin(sec * .45) * .003;
   ctx.save(); ctx.globalAlpha = al;
   ctx.translate(x0 + L / 2, bob); ctx.rotate(roll); ctx.drawImage(art, -L / 2, 0, L, H);
   ctx.restore();
-  ctx.save(); ctx.globalAlpha = al * 1.8; ctx.fillStyle = "#fff";   // bow wave and wake
-  ctx.beginPath(); ctx.ellipse(x0 + L * .97, wl - H * .01, L * .025, H * .018, 0, 0, 7); ctx.fill();
-  for (let k = 0; k < 6; k++) {
-    ctx.globalAlpha = al * 1.4 / (k + 1);
-    ctx.beginPath(); ctx.ellipse(x0 - k * L * .035, wl - H * .006, L * .03, H * .012, 0, 0, 7); ctx.fill();
+  ctx.save(); ctx.fillStyle = "#fff";   // bow wave and wake
+  ctx.globalAlpha = al * 1.8; ctx.beginPath(); ctx.ellipse(X(.97), wl - H * .01, L * .025, H * .018, 0, 0, 7); ctx.fill();
+  if (!b.bowOnly) for (let i = 0; i < 6; i++) {
+    ctx.globalAlpha = al * 1.4 / (i + 1);
+    ctx.beginPath(); ctx.ellipse(X(0) - d * i * L * .035, wl - H * .006, L * .03, H * .012, 0, 0, 7); ctx.fill();
   }
-  if (!e.smoke) e.smoke = [];   // a lazy trail of smoke from the funnel
-  if (!e.lastPuff || now - e.lastPuff > 380) { e.lastPuff = now; e.smoke.push({ t0: now, dx: rnd(-.004, .004) }); }
-  e.smoke = e.smoke.filter(s => now - s.t0 < 7000);
-  for (const s of e.smoke) {
-    const a = (now - s.t0) / 7000, fx = x0 + L * (.06 + s.dx) - a * L * .12, fy = wl - H * (.81 + a * .2);
-    ctx.globalAlpha = al * .9 * (1 - a); ctx.fillStyle = state.light ? "#555" : "#9aa3ad";
-    ctx.beginPath(); ctx.arc(fx, fy, H * (.02 + a * .07), 0, 7); ctx.fill();
+  if (b.smoke) {   // a lazy trail of smoke
+    if (!e.smoke) e.smoke = [];
+    if (!e.lastPuff || now - e.lastPuff > 380) { e.lastPuff = now; e.smoke.push({ t0: now, dx: rnd(-.004, .004) }); }
+    e.smoke = e.smoke.filter(s => now - s.t0 < 7000);
+    for (const s of e.smoke) {
+      const a = (now - s.t0) / 7000, fx = X(b.smoke[0] + s.dx) - d * a * W * .25, fy = wl + H * (b.smoke[1] - a * .2);
+      ctx.globalAlpha = al * .9 * (1 - a); ctx.fillStyle = state.light ? "#555" : "#9aa3ad";
+      ctx.beginPath(); ctx.arc(fx, fy, H * (.02 + a * .07), 0, 7); ctx.fill();
+    }
+  }
+  if (b.gulls) {   // gulls wheeling over the back deck
+    ctx.globalAlpha = Math.min(1, al * 3); ctx.strokeStyle = state.light ? "#333" : "#e8ecf0"; ctx.lineWidth = Math.max(1.5, H * .004); ctx.lineCap = "round";
+    for (let i = 0; i < 6; i++) {
+      const a = sec * (.5 + i * .07) + i * 1.7, gx = X(b.gulls[0]) + Math.cos(a) * W * (.06 + i * .015), gy = wl + H * b.gulls[1] + Math.sin(a * 1.3) * H * .08 - i * H * .03;
+      const s = H * .025, fl = Math.sin(sec * 6 + i) * .5;
+      ctx.beginPath(); ctx.moveTo(gx - s, gy - s * fl); ctx.quadraticCurveTo(gx - s * .4, gy - s * .5, gx, gy); ctx.quadraticCurveTo(gx + s * .4, gy - s * .5, gx + s, gy - s * fl); ctx.stroke();
+    }
   }
   ctx.restore();
 }
 
-// ---- the whole screen spins: winds up slowly, whirls, slows, overshoots a little and jiggles into place ----
+// ---- the whole screen spins with the night sky behind it: winds up slowly, whirls, slows, overshoots a little and
+//      jiggles into place. Sometimes it lands upside down: it settles, then turns the last half turn and settles again ----
+function nightSky() {   // stars, a faint Milky Way, and tonight's moon in its real phase (none near the new moon)
+  const W = innerWidth, H = innerHeight, c = document.createElement("canvas"), x = c.getContext("2d");
+  c.width = W; c.height = H;
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#02040c"); g.addColorStop(1, "#0c1838");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.save(); x.translate(W / 2, H / 2); x.rotate(-.5);   // Milky Way
+  const mw = x.createLinearGradient(0, -H * .25, 0, H * .25);
+  mw.addColorStop(0, "rgba(160,170,220,0)"); mw.addColorStop(.5, "rgba(160,170,220,.12)"); mw.addColorStop(1, "rgba(160,170,220,0)");
+  x.fillStyle = mw; x.fillRect(-W, -H * .25, W * 2, H * .5); x.restore();
+  for (let i = 0; i < W * H / 2500; i++) {
+    const r = Math.random() ** 3 * 1.6 + .3, tint = ["255,255,255", "200,215,255", "255,235,200"][Math.floor(Math.random() * 3)];
+    x.fillStyle = `rgba(${tint},${.4 + Math.random() * .6})`; x.beginPath(); x.arc(Math.random() * W, Math.random() * H, r, 0, 7); x.fill();
+  }
+  const age = moonAge(new Date()), lit = (1 - Math.cos(2 * Math.PI * age)) / 2;
+  if (lit > .03) {   // the moon, with its glow; the dark part only faintly lit by earthshine
+    const R = Math.min(W, H) * .07, cx = W * .8, cy = H * .2;
+    const glow = x.createRadialGradient(cx, cy, R * .8, cx, cy, R * 4);
+    glow.addColorStop(0, `rgba(230,235,255,${.18 * lit + .04})`); glow.addColorStop(1, "rgba(230,235,255,0)");
+    x.fillStyle = glow; x.fillRect(0, 0, W, H);
+    x.fillStyle = "rgba(60,66,84,.9)"; x.beginPath(); x.arc(cx, cy, R, 0, 7); x.fill();
+    const k = Math.cos(2 * Math.PI * age), side = age < .5 ? 1 : -1;   // lit on the right while waxing
+    x.beginPath();
+    for (let s = 0; s <= 40; s++) { const y = -R + 2 * R * s / 40; x.lineTo(cx + side * Math.sqrt(Math.max(R * R - y * y, 0)), cy + y); }
+    for (let s = 40; s >= 0; s--) { const y = -R + 2 * R * s / 40; x.lineTo(cx + side * k * Math.sqrt(Math.max(R * R - y * y, 0)), cy + y); }
+    x.closePath(); x.fillStyle = "#f4f1e4"; x.fill();
+    x.save(); x.clip(); x.fillStyle = "rgba(150,150,140,.35)";   // a few maria
+    for (const [mx, my, mr] of [[-.3, -.3, .28], [.2, -.1, .22], [-.1, .35, .2], [.35, .35, .14]]) { x.beginPath(); x.arc(cx + mx * R, cy + my * R, mr * R, 0, 7); x.fill(); }
+    x.restore();
+  }
+  return c.toDataURL();
+}
+const spinEase = u => (1 - Math.cos(Math.PI * clamp(u, 0, 1))) / 2;
 function spin(e, now) {
-  const t = (now - e.t0) / 1000, T = e.T, b = document.body;
+  const t = (now - e.t0) / 1000, T = e.T, b = document.body, J = 2;   // J: seconds to settle
   const W = innerWidth, H = innerHeight, diag = Math.hypot(W, H), fit = Math.min(W, H) / diag * .94;
+  if (!e.sky) { e.sky = 1; document.documentElement.style.background = `#02040c url(${nightSky()}) center / cover no-repeat`; }
+  const A = e.turns * 360 + (e.flip ? 180 : 0), settle = (s, base, ov) => [base + ov * Math.exp(-3.2 * s) * Math.cos(15 * s), 1 + .012 * Math.exp(-3.2 * s) * Math.sin(19 * s)];
   let ang, sc;
   if (t < T) {
     const u = t / T;
-    ang = (e.turns * 360 + e.ov) * (1 - Math.cos(Math.PI * u)) / 2;   // slow, fast, slow
-    sc = 1 - (1 - fit) * Math.pow(Math.sin(Math.PI * u), .6);           // shrinks while it whirls so you can see it all
-  } else {
-    const s = t - T, damp = Math.exp(-3.2 * s);
-    ang = e.turns * 360 + e.ov * damp * Math.cos(15 * s);   // settles: wobbles back and forth, smaller each time
-    sc = 1 + .012 * damp * Math.sin(19 * s);
-  }
+    ang = (A + e.ov) * spinEase(u);                                     // slow, fast, slow
+    sc = 1 - (1 - fit) * Math.pow(Math.sin(Math.PI * u), .6);      // shrinks while it whirls so you can see it all
+  } else if (!e.flip || t < T + J) [ang, sc] = settle(t - T, A, e.ov);   // settles: wobbles back and forth, smaller each time
+  else if (t < T + J + e.T2) {   // upside down! a half turn more to put it right
+    const u = (t - T - J) / e.T2;
+    ang = A + (180 + e.ov * .7) * spinEase(u);
+    sc = 1 - (1 - fit) * .85 * Math.pow(Math.sin(Math.PI * u), .6);
+  } else [ang, sc] = settle(t - T - J - e.T2, A + 180, e.ov * .7);
   b.style.transformOrigin = "50% 50%";
   b.style.transform = `rotate(${(e.dir * ang).toFixed(2)}deg) scale(${sc.toFixed(4)})`;
-  b.style.boxShadow = sc < .995 ? `0 0 ${Math.round(40 * (1 - sc) / (1 - fit))}px rgba(0,0,0,.45)` : "";
+  b.style.boxShadow = sc < .995 ? `0 0 ${Math.round(60 * (1 - sc) / (1 - fit))}px rgba(0,0,0,.6)` : "";
   FX.spinning = true;
 }
-function spinDone() { const b = document.body; b.style.transform = b.style.transformOrigin = b.style.boxShadow = ""; FX.spinning = false; }
+function spinDone() {
+  const b = document.body; b.style.transform = b.style.transformOrigin = b.style.boxShadow = "";
+  document.documentElement.style.background = ""; FX.spinning = false;
+}
 // ---- frame loop ----
 let fxRaf = 0, fxPrev = 0;
 function fxKick() { if (!fxRaf && document.visibilityState !== "hidden") fxRaf = requestAnimationFrame(fxFrame); }
@@ -2630,9 +2905,9 @@ function applyTheme() {
     const c = r.querySelector(".sw, .pick"), off = !state.anim || (r.id === "tidefxrow" && (lake || !state.showTides));
     c.disabled = off; r.classList.toggle("off", off);
     if (r.classList.contains("lakeonly")) r.hidden = !lake;
-    if (r.classList.contains("spionly")) r.hidden = lake;
   });
   document.getElementById("coldF").textContent = LOC.cold;
+  document.getElementById("boatnames").textContent = BOAT_NAMES[state.loc] + ". ▶ shows the next one";
   document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". ▶ shows the next one";
   document.getElementById("animsum").textContent = state.anim ? "On. Choose which ones and try them" : "Off";
   document.getElementById("bitename").textContent = lake ? "Muskie bite" : "Shark bite";
@@ -2675,7 +2950,7 @@ function pctList() {
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   return [["kite", "Kiteboarder"], ...(LIFE[state.loc] || LIFE.spi).map(sp => ["life:" + sp, LIFE_LABEL[sp]]),
     [cold ? "freeze" : "melt", "Melt or freeze"], ["wipe", "Wave wipe"], ["ren", "Ren and the sanderlings"],
-    ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : [["ship", "Giant ship"]]),
+    ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : []), ["ship", "Big boats"],
     ["sub", "Yellow submarine"], ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
     ["bite", lake ? "Muskie bite" : "Shark bite"], ["spin", "Screen spin"], ["chaos", "Haywire forecast"]];
 }
@@ -2692,7 +2967,7 @@ const inPct = e => {
 function playAny() {   // a random animation that's switched on here (or any of them, if none are)
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["chaos", "aChaos"], ["bite", "aBite"],
-    ["ren", "aRen"], ["sub", "aSub"], ["truck", "aTruck"], ["rocket", "aRocket"], ["mariachi", "aMariachi"], ["slot", "aSlot"], ["spin", "aSpin"], ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [["ship", "aShip"]])];
+    ["ren", "aRen"], ["sub", "aSub"], ["truck", "aTruck"], ["rocket", "aRocket"], ["mariachi", "aMariachi"], ["slot", "aSlot"], ["spin", "aSpin"], ["ship", "aShip"], ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
   const ok = all.filter(([, k]) => state[k]), list = ok.length ? ok : all, [kind] = list[Math.floor(Math.random() * list.length)];
   play(kind, kind === "life" ? { random: true } : {});
 }
@@ -2747,7 +3022,7 @@ bar.addEventListener("click", e => {
 });
 dlg.addEventListener("change", e => {
   const m = e.target.closest("[data-min]");
-  if (m) { state[m.dataset.min] = +m.value; const k = m.dataset.min === "lifeMin" ? "life" : "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
+  if (m) { state[m.dataset.min] = +m.value; const k = { lifeMin: "life", boatMin: "boat" }[m.dataset.min] || "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
   const c = e.target.closest("[data-set]"); if (!c) return;
   state[c.dataset.set] = c.checked; changed();
 });

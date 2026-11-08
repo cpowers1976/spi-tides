@@ -2673,8 +2673,8 @@ function artSportfish(x, L, H, k, light) {   // an offshore sport fishing boat: 
   k.line("#cfd5db", Math.max(1.5, L * .002), .46, -.62, .1, -.99); k.line("#cfd5db", Math.max(1.5, L * .002), .6, -.62, .3, -.99);   // outriggers
   k.box("#d0a14e", .1, -.4, .14, -.33); k.box("#9aa2ac", .115, -.33, .125, -.29);   // fighting chair
   for (const rx of [.05, .08, .17, .2]) k.line("#555", Math.max(1.5, L * .0015), rx, -.29, rx - .02, -.5);   // rods
-  k.text("#123a63", "REEL TIME", .18, -.18, .065, 'Georgia, "Times New Roman", serif');
-  k.text("#123a63", "PORT ISABEL, TX", .18, -.11, .035);
+  k.text("#123a63", "Feeling Good Louis!", .23, -.18, .058, 'Georgia, "Times New Roman", serif');
+  k.text("#123a63", "SOUTH PADRE ISLAND, TX", .23, -.11, .03);
 }
 function artShrimper(x, L, H, k, light) {   // a Gulf shrimp boat: pilothouse forward, outriggers up, nets hanging
   const hull = new Path2D();
@@ -2807,7 +2807,8 @@ function artPontoon(x, L, H, k, light) {   // a pontoon boat: fenced deck, bimin
   k.box("#e8e2d0", .06, -.42, .96, -.2);   // fence panels
   k.box("#2a5d8f", .06, -.25, .96, -.2); k.box("#9aa2ab", .06, -.43, .96, -.42);
   for (let i = 0; i <= 9; i++) k.box("#cfc8b4", .06 + i * .1, -.42, .065 + i * .1, -.2);
-  k.text("#2a5d8f", "LAKE DAYS", .5, -.32, .06);
+  k.text("#2a5d8f", "Looking Good Billy Ray!", .5, -.33, .06, 'Georgia, "Times New Roman", serif');
+  k.text("#ffffff", "SPIRIT LAKE, IA", .5, -.225, .03);
   const shirts = ["#e85d4a", "#f2c14e", "#4aa3df", "#6cc070", "#c46ad6", "#ffffff"], r = boatSeed(3);
   for (let i = 0; i < 9; i++) k.person(shirts[Math.floor(r() * 6)], .14 + i * .085, -.46 - r() * .02, .05);
   k.box("#333", .0, -.36, .05, -.16); k.box("#333", .02, -.16, .035, .02);   // outboard

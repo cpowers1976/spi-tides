@@ -300,6 +300,7 @@ function readBuoy(j) {
 const cv = document.getElementById("c");
 let ctx = cv.getContext("2d");   // swapped to the animation layers while they draw
 const mainCtx = ctx;
+let hourBoxes = [];   // tap areas of the x-axis time labels
 
 function setFont(size, bold) { ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`; }
 function text(s, x, y, size, color, ax = .5, bold = false) {
@@ -794,7 +795,12 @@ function chart(W, H, f, now, top, placeEnd) {
 
   // hour ticks, past dimming and "now" line
   const tick = n <= 30 ? [...Array(24).keys()] : n <= 50 ? [0, 3, 6, 9, 12, 15, 18, 21] : n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
-  idx.forEach((i, k) => { if (tick.includes(times[i].getHours())) text(hourLbl(times[i]), L + k * bw, pBot + f * .9, f * .9, T.gray); });
+  hourBoxes = [];   // remembered so the first two time labels can be tapped (hidden shortcuts)
+  idx.forEach((i, k) => {
+    if (!tick.includes(times[i].getHours())) return;
+    const x = L + k * bw, w = text(hourLbl(times[i]), x, pBot + f * .9, f * .9, T.gray);
+    hourBoxes.push({ x: x - Math.max(w / 2 + f * .5, f * 1.6), y: pBot, w: Math.max(w + f, f * 3.2), h: f * 1.8 });
+  });
   const xn = xt(now);
   if (state.past) rect(L, wt, xn - L, pBot - wt, T.past);
   line([xn, pBot, xn, wt], T.now, 1.4);
@@ -2197,13 +2203,30 @@ function placeHint() {   // first-time bubble pointing at the place name
   hint.style.left = `${r.left + titleBox.x + 4}px`; hint.style.top = `${r.top + titleBox.y + titleBox.h + 8}px`;
   hint.hidden = false;
 }
+const inHour = e => {   // which time label on the x axis was tapped: 0 = first, 1 = second, -1 = none
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  return hourBoxes.slice(0, 2).findIndex(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+};
+function playAny() {   // a random animation that's switched on here (or any of them, if none are)
+  const lake = !LOC.station, cold = G && G.temp < LOC.cold;
+  const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["chaos", "aChaos"], ["bite", "aBite"],
+    ["ren", "aRen"], ["sub", "aSub"], ["truck", "aTruck"], ["rocket", "aRocket"], ["slot", "aSlot"], ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
+  const ok = all.filter(([, k]) => state[k]), list = ok.length ? ok : all, [kind] = list[Math.floor(Math.random() * list.length)];
+  play(kind, kind === "life" ? { random: true } : {});
+}
 const inTitle = e => {
   if (!titleBox) return false;
   const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   return x >= titleBox.x && x <= titleBox.x + titleBox.w && y >= titleBox.y && y <= titleBox.y + titleBox.h;
 };
-cv.addEventListener("click", e => { if (inTitle(e)) menu.hidden ? openMenu() : (menu.hidden = true); else menu.hidden = true; });
-cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) ? "pointer" : "");
+cv.addEventListener("click", e => {
+  if (inTitle(e)) { menu.hidden ? openMenu() : (menu.hidden = true); return; }
+  menu.hidden = true;
+  const h = inHour(e);
+  if (h === 0) { showPage("anim"); dlg.hidden = false; }   // first time label: straight to the Animations page
+  if (h === 1) playAny();                                    // second time label: play something
+});
+cv.addEventListener("mousemove", e => cv.style.cursor = inTitle(e) || inHour(e) >= 0 ? "pointer" : "");
 hint.addEventListener("click", openMenu);
 menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); if (b) setLoc(b.dataset.loc); });
 bar.addEventListener("click", e => {

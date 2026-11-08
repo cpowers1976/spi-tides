@@ -126,6 +126,7 @@
     <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between big boats<small>Huge, faint boats passing behind the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="boatMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between other animations<small>Kiteboarder, melt or freeze, and the ones below Lively numbers. One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Beach scene<small>Ren, the Cybertruck, Starship and the mariachi band get a beach that rises from the bottom while the screen scrunches up. Off: they go by along the wave band</small></span><input type="checkbox" class="sw" data-set="aBeach"></label>
     <label class="row sub"><span>Wave band<small>Bottom edge moves with the real waves</small></span><input type="checkbox" class="sw" data-set="aWaves"></label>
     <label class="row sub"><span>Wind streaks<small>Drift with the real wind direction and speed</small></span><input type="checkbox" class="sw" data-set="aWind"></label>
     <label class="row sub"><span>Kiteboarder<small>Rides by when the wind is 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
@@ -199,7 +200,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aShip", "aSpin"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, data: null, updated: null, error: "",
@@ -1934,6 +1935,15 @@ function scrunch(k) {   // squeeze the chart, the buttons and their animation la
 }
 function beachScene(e, now, dt, sec) {
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, M = BEACH.move, lake = !LOC.station, K = BEACH_KIND[e.kind];
+  if (e.plain == null) e.plain = !on("aBeach");   // decided once, when it starts
+  if (e.plain) {   // beach scene switched off: no scrunch, they go by along the wave band
+    e.rise = 0;
+    if (e.kind === "rocket") { starshipFly(e, now); if (t > 9.6) e.dur = now - e.t0; return; }
+    const P = bandParams({ w: W, h: H }), gy = P.y0 - P.A * .2;
+    ctx.save(); const done = K.draw(e, now, dt, sec, { W, H, yb: gy, hb: H * BEACH.h, gy, t, lake }); ctx.restore();
+    if (done || t > K.max + 2) e.dur = now - e.t0;
+    return;
+  }
   if (e.down == null && (t > K.pre + K.max || e.done)) e.down = t;   // all gone: back down
   const r = e.down == null ? ease(Math.min(1, t / M)) : 1 - ease(Math.min(1, (t - e.down) / M));
   if (e.down != null && t - e.down >= M) e.dur = now - e.t0;   // done
@@ -2241,6 +2251,36 @@ function starship(e, now, g) {
     dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.88, .86, .82, .32 * (1 - q)]);
   }
   return u > CATCH + HOLD;
+}
+function starshipFly(e, now) {   // the original fly-through, for when the beach scene is off
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
+  const Lb = H * .24, Ls = H * .18, w = Lb * .12, x0 = e.x0 * W, TS = 2.8;   // separation at TS
+  if (!e.smoke) e.smoke = [];
+  const sepY = H * .78, a = 2 * (H + Lb + Ls * .2 - sepY) / (TS * TS);   // the stack's engines reach sepY at TS
+  const baseY = tt => H + Lb + Ls * .2 - a * tt * tt / 2, vSep = a * TS;
+  if (t < TS) {   // the whole stack climbing
+    const y = baseY(t);
+    if (Math.random() < .7) e.smoke.push({ x: x0 + rnd(-w, w), y: Math.min(H, y + w * 4), r: rnd(.8, 1.4) * w, t0: now, vx: rnd(-60, 60) });
+    plume(x0, y, 0, w * 7, w * 1.2);
+    ctx.save(); ctx.translate(x0, y); booster(w, Lb, false); ctx.translate(0, -Lb); ship(w, Ls); ctx.restore();
+  } else {
+    const u = t - TS;
+    if (u < .3) { ctx.fillStyle = `rgba(255,210,140,${(.3 - u) * 2})`; ctx.beginPath(); ctx.arc(x0, sepY - Lb, w * 3 * (1 + u * 6), 0, 7); ctx.fill(); }   // hot-staging flash
+    const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster
+    if (sy > -Ls * 1.5) { plume(x0, sy, 0, w * 6, w * 1.1); ctx.save(); ctx.translate(x0, sy); ship(w, Ls); ctx.restore(); }
+    // booster: coasts up and slows, then falls back; flips over for the boostback, then upright for landing
+    const g = vSep / 1.6, by = u < 3.2 ? sepY - vSep * u + g * u * u / 2 : sepY + (H + Lb * 1.2 - sepY) * ((u - 3.2) / 3.4) ** 1.4, bx = x0 + e.side * W * .08 * Math.min(1, u / 2);
+    const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
+    ctx.save(); ctx.translate(bx, by - Lb / 2); ctx.rotate(rot * e.side); ctx.translate(0, Lb / 2);
+    if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
+    if (u > 3.3) plume(0, 0, 0, w * 5, w * .8);                     // landing burn on the way down
+    booster(w, Lb, u > .5); ctx.restore();
+  }
+  e.smoke = e.smoke.filter(s => now - s.t0 < 2600);
+  for (const s of e.smoke) {   // launch smoke billowing out
+    const q = (now - s.t0) / 2600;
+    dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.85, .85, .85, .28 * (1 - q)]);
+  }
 }
 function splashes(now) {
   FX.splash = FX.splash.filter(s => now - s.t0 < 800);

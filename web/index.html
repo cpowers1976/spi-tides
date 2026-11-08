@@ -53,7 +53,13 @@
   .row.sub { padding-left: 16px; }
   .ctl { display: flex; align-items: center; gap: 12px; flex: none; }
   .try { font-size: 15px; padding: 6px 10px; }
-  #done { width: 100%; margin-top: 18px; font-size: 20px; padding: 12px; }
+  .panel[hidden] { display: none; }
+  .navrow { width: 100%; background: none; text-align: left; font-size: 20px; padding: 14px 0; border-radius: 0; }
+  .chev { font-size: 30px; color: var(--gray); line-height: 1; }
+  .phead { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .phead h2 { margin: 0; }
+  .back { font-size: 17px; padding: 8px 12px; }
+  .done { width: 100%; margin-top: 18px; font-size: 20px; padding: 12px; }
 
   /* location picker (opened by tapping the place name) */
   #locmenu { position: fixed; z-index: 5; background: var(--bg); color: var(--btntext); border: 1px solid var(--btn);
@@ -90,7 +96,7 @@
 <div id="locmenu" hidden role="menu" aria-label="Choose location"></div>
 <div id="hint" hidden>Tap here to switch location</div>
 <div id="settings" hidden>
-  <div class="panel" role="dialog" aria-label="Settings">
+  <div class="panel" role="dialog" aria-label="Settings" data-pg="main">
     <h2>Settings</h2>
     <div class="row"><span>Location</span>
       <div class="seg"><button data-loc="spi">South Padre</button><button data-loc="spirit">Big Spirit Lake</button></div></div>
@@ -102,8 +108,12 @@
     <label class="row"><span>Show waves<small>Wave height, period and water temp</small></span><input type="checkbox" class="sw" data-set="showWaves"></label>
     <div class="row"><span>Text size</span>
       <div class="seg"><button data-size="s">Small</button><button data-size="m">Medium</button><button data-size="l">Large</button></div></div>
-    <h3>Animations</h3>
-    <label class="row"><span>Animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
+    <button class="row navrow" data-page="anim"><span>Animations<small id="animsum">On</small></span><span class="chev">›</span></button>
+    <button class="done">Done</button>
+  </div>
+  <div class="panel" role="dialog" aria-label="Animations" data-pg="anim" hidden>
+    <div class="phead"><button class="back" data-page="main">‹ Settings</button><h2>Animations</h2></div>
+    <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
     <label class="row sub"><span>Wave band<small>Bottom edge moves with the real waves</small></span><input type="checkbox" class="sw" data-set="aWaves"></label>
     <label class="row sub"><span>Wind streaks<small>Drift with the real wind direction and speed</small></span><input type="checkbox" class="sw" data-set="aWind"></label>
     <label class="row sub"><span>Kiteboarder<small>Rides by every few minutes at 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
@@ -115,9 +125,11 @@
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
     <label class="row sub"><span>Ren chases sanderlings<small>Along the water's edge, every 20 to 30 min</small></span><span class="ctl"><button class="try" data-try="ren">▶</button><input type="checkbox" class="sw" data-set="aRen"></span></label>
     <label class="row sub"><span>Yellow submarine<small>Cruises by every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="sub">▶</button><input type="checkbox" class="sw" data-set="aSub"></span></label>
+    <label class="row sub"><span>Cybertruck<small>Elon drives by, waving. Every 30 to 45 min</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
+    <label class="row sub"><span>Starship launch<small>Blasts through, separates, booster comes back. About once an hour</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen, about once an hour</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up. About once an hour</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
-    <button id="done">Done</button>
+    <button class="done">Done</button>
   </div>
 </div>
 <script>
@@ -165,7 +177,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", data: null, updated: null, error: "",
@@ -749,7 +761,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN }, lifeIdx: 0 };
+             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN, bite: performance.now() + rnd(40, 70) * MIN, ren: performance.now() + rnd(4, 8) * MIN, sub: performance.now() + rnd(8, 15) * MIN, truck: performance.now() + rnd(12, 20) * MIN, rocket: performance.now() + rnd(20, 40) * MIN }, lifeIdx: 0 };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -951,11 +963,13 @@ function play(kind, opt = {}) {
     opt.way = LIFE_WAY[opt.sp]; opt.dur = { jump: 2400, swim: 11000, fly: 9000 }[opt.way];
     opt.dir = Math.random() < .5 ? -1 : 1; opt.x0 = W * rnd(.2, .6) + (opt.dir < 0 ? W * .2 : 0); opt.fish = opt.sp === "walleye"; opt.y = rnd(.12, .4);
   }
+  if (kind === "truck") opt.dir = Math.random() < .5 ? -1 : 1;
+  if (kind === "rocket") { opt.x0 = rnd(.3, .7); opt.side = Math.random() < .5 ? -1 : 1; }
   if (kind === "sub") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "ren") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400, bite: 16300, ren: 11500, sub: 15000, truck: 9000, rocket: 9600 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {
@@ -968,6 +982,14 @@ function fxSchedule(now) {
   if (now >= FX.next.life) {
     if (!on("aLife")) FX.next.life = now + MIN;
     else if (busy) FX.next.life = wait; else { FX.next.life = now + rnd(10, 15) * MIN; play("life", { random: true }); }
+  }
+  if (now >= FX.next.truck) {
+    if (!on("aTruck")) FX.next.truck = now + MIN;
+    else if (busy) FX.next.truck = wait; else { FX.next.truck = now + rnd(30, 45) * MIN; play("truck"); }
+  }
+  if (now >= FX.next.rocket) {
+    if (!on("aRocket")) FX.next.rocket = now + MIN;
+    else if (busy) FX.next.rocket = wait; else { FX.next.rocket = now + rnd(50, 70) * MIN; play("rocket"); }
   }
   if (now >= FX.next.sub) {
     if (!on("aSub")) FX.next.sub = now + MIN;
@@ -1426,6 +1448,108 @@ function submarine(e, now, dt, sec, P) {
   const look = p < .3 ? 0 : p < .38 ? ease((p - .3) / .08) : p < .72 ? 1 : p < .8 ? 1 - ease((p - .72) / .08) : 0;   // turns to look at you, then back
   yellowSub(u, sec, look); ctx.restore();
 }
+// ---- a Cybertruck cruising along the beach, driver waving ----
+function cybertruck(u, sec, wave) {   // facing +x, wheels on y = 0; u = size unit
+  const steel = ctx.createLinearGradient(0, -2.4 * u, 0, -.4 * u);
+  steel.addColorStop(0, "#e4e7ea"); steel.addColorStop(.5, "#b9bec4"); steel.addColorStop(1, "#8d939a");
+  ctx.fillStyle = steel; ctx.strokeStyle = "#5f656c"; ctx.lineWidth = Math.max(1, u * .05); ctx.lineJoin = "round";
+  ctx.beginPath();   // the famous wedge
+  ctx.moveTo(-3.6 * u, -.55 * u); ctx.lineTo(-3.6 * u, -1.45 * u); ctx.lineTo(.2 * u, -2.45 * u);
+  ctx.lineTo(3.7 * u, -1.35 * u); ctx.lineTo(3.75 * u, -.55 * u); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = "#1c2330"; ctx.beginPath();   // windows
+  ctx.moveTo(-1.6 * u, -1.6 * u); ctx.lineTo(.2 * u, -2.2 * u); ctx.lineTo(2.6 * u, -1.45 * u); ctx.lineTo(-1.6 * u, -1.45 * u); ctx.closePath(); ctx.fill();
+  ctx.save(); ctx.clip();   // the driver: dark hair, big grin, waving out the window
+  dot(.9 * u, -1.65 * u, .32 * u, [.96, .8, .66, 1]);
+  ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.ellipse(.85 * u, -1.88 * u, .34 * u, .16 * u, 0, 0, 7); ctx.fill();
+  dot(1.05 * u, -1.68 * u, .045 * u, [.1, .1, .1, 1]);
+  ctx.strokeStyle = "#7a2e2e"; ctx.lineWidth = Math.max(1, u * .05); ctx.beginPath(); ctx.arc(1, -1.58 * u, .14 * u, .2, 2.4); ctx.stroke();
+  ctx.restore();
+  ctx.lineCap = "round";   // arm out the window, waving
+  const a = -1.2 + Math.sin(wave) * .45, ex = 1.6 * u + Math.cos(a) * .7 * u, ey = -1.5 * u + Math.sin(a) * .7 * u;
+  line([1.35 * u, -1.45 * u, 1.6 * u, -1.5 * u, ex, ey], [.96, .8, .66, 1], u * .16);
+  dot(ex, ey, u * .14, [.96, .8, .66, 1]);
+  ctx.fillStyle = "#2a2f36"; ctx.fillRect(-3.6 * u, -.75 * u, 7.35 * u, .2 * u);   // lower trim
+  ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.fillRect(2.4 * u, -1.72 * u, 1.3 * u, .07 * u);   // light bar
+  ctx.fillStyle = "#e33"; ctx.fillRect(-3.62 * u, -1.42 * u, .08 * u, .5 * u);   // tail light
+  for (const x of [-2.3, 2.3]) {   // wheels with spinning spokes
+    dot(x * u, -.55 * u, .62 * u, [.1, .11, .13, 1]); dot(x * u, -.55 * u, .38 * u, [.55, .58, .62, 1]);
+    for (let k = 0; k < 3; k++) { const r = sec * 14 + k * 2.1; line([x * u, -.55 * u, x * u + Math.cos(r) * .36 * u, -.55 * u + Math.sin(r) * .36 * u], [.25, .27, .3, 1], u * .08); }
+  }
+  ctx.lineCap = "butt"; ctx.lineJoin = "miter";
+}
+function truckBy(e, now, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 1.6, p = (now - e.t0) / e.dur, d = e.dir;
+  const x = d > 0 ? -W * .15 + W * 1.3 * p : W * 1.15 - W * 1.3 * p, y = P.y0 + Math.sin(sec * 9) * 1.2;
+  if (Math.random() < .6) for (let i = 0; i < 2; i++) FX.splash.push({ x: x - d * 2.3 * u + rnd(-6, 6), y, vx: -d * rnd(60, 200), vy: rnd(-180, -60), t0: now });
+  ctx.save(); ctx.translate(x, y); if (d < 0) ctx.scale(-1, 1);
+  cybertruck(u, sec, sec * 7); ctx.restore();
+}
+
+// ---- Starship: the full stack blasts up, they separate, the ship flies off the top,
+// the booster flips, boosts back, flips upright again and drops off the bottom on its landing burn ----
+function plume(x, y, ang, len, w, a = 1) {   // flame out of the engines, pointing along ang (0 = straight down)
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+  const L = len * (.85 + Math.random() * .3), g = ctx.createLinearGradient(0, 0, 0, L);
+  g.addColorStop(0, `rgba(255,255,255,${a})`); g.addColorStop(.15, `rgba(255,230,140,${a})`);
+  g.addColorStop(.5, `rgba(255,140,40,${a * .8})`); g.addColorStop(1, "rgba(255,80,20,0)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-w * .5, 0); ctx.quadraticCurveTo(-w * .9, L * .4, 0, L); ctx.quadraticCurveTo(w * .9, L * .4, w * .5, 0); ctx.fill();
+  ctx.restore();
+}
+function steelBody(x, y, w, h) {
+  const g = ctx.createLinearGradient(x, 0, x + w, 0);
+  g.addColorStop(0, "#7f8790"); g.addColorStop(.35, "#eef1f4"); g.addColorStop(.6, "#c3c9cf"); g.addColorStop(1, "#80878f");
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+}
+function booster(w, L, finsOut) {   // engines at y = 0, pointing down; body goes up to -L
+  steelBody(-w / 2, -L, w, L);
+  ctx.fillStyle = "#2b2e33"; ctx.fillRect(-w / 2, -w * .35, w, w * .35);   // engine section
+  ctx.strokeStyle = "rgba(60,65,70,.35)"; ctx.lineWidth = 1;
+  for (let i = 1; i < 6; i++) { ctx.beginPath(); ctx.moveTo(-w / 2, -L * i / 6); ctx.lineTo(w / 2, -L * i / 6); ctx.stroke(); }
+  ctx.fillStyle = "#3a3d42";   // grid fins
+  const fy = -L + w * .5, fw = finsOut ? w * .55 : w * .3;
+  ctx.fillRect(-w / 2 - fw, fy, fw, w * .45); ctx.fillRect(w / 2, fy, fw, w * .45);
+}
+function ship(w, L) {   // engines at y = 0, nose at -L
+  steelBody(-w / 2, -L * .82, w, L * .82);
+  ctx.fillStyle = "#e9edf0"; ctx.beginPath(); ctx.moveTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L, 0, -L); ctx.quadraticCurveTo(w / 2, -L, w / 2, -L * .82); ctx.fill();   // nose
+  ctx.fillStyle = "#1d1f23"; ctx.beginPath();   // black heat-shield side
+  ctx.moveTo(-w / 2, 0); ctx.lineTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L * .99, -w * .1, -L * .99); ctx.lineTo(-w * .1, 0); ctx.fill();
+  ctx.fillStyle = "#26292e";   // flaps
+  ctx.beginPath(); ctx.moveTo(-w / 2, -L * .18); ctx.lineTo(-w * .95, -L * .08); ctx.lineTo(-w / 2, -L * .04); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(w / 2, -L * .18); ctx.lineTo(w * .95, -L * .08); ctx.lineTo(w / 2, -L * .04); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-w / 2, -L * .8); ctx.lineTo(-w * .85, -L * .72); ctx.lineTo(-w / 2, -L * .68); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(w / 2, -L * .8); ctx.lineTo(w * .85, -L * .72); ctx.lineTo(w / 2, -L * .68); ctx.fill();
+}
+function starship(e, now) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
+  const Lb = H * .24, Ls = H * .18, w = Lb * .12, x0 = e.x0 * W, TS = 2.8;   // separation at TS
+  if (!e.smoke) e.smoke = [];
+  const sepY = H * .78, a = 2 * (H + Lb + Ls * .2 - sepY) / (TS * TS);   // the stack's engines reach sepY at TS
+  const baseY = tt => H + Lb + Ls * .2 - a * tt * tt / 2, vSep = a * TS;
+  if (t < TS) {   // the whole stack climbing
+    const y = baseY(t);
+    if (Math.random() < .7) e.smoke.push({ x: x0 + rnd(-w, w), y: Math.min(H, y + w * 4), r: rnd(.8, 1.4) * w, t0: now, vx: rnd(-60, 60) });
+    plume(x0, y, 0, w * 7, w * 1.2);
+    ctx.save(); ctx.translate(x0, y); booster(w, Lb, false); ctx.translate(0, -Lb); ship(w, Ls); ctx.restore();
+  } else {
+    const u = t - TS;
+    if (u < .3) { ctx.fillStyle = `rgba(255,210,140,${(.3 - u) * 2})`; ctx.beginPath(); ctx.arc(x0, sepY - Lb, w * 3 * (1 + u * 6), 0, 7); ctx.fill(); }   // hot-staging flash
+    const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster
+    if (sy > -Ls * 1.5) { plume(x0, sy, 0, w * 6, w * 1.1); ctx.save(); ctx.translate(x0, sy); ship(w, Ls); ctx.restore(); }
+    // booster: coasts up and slows, then falls back; flips over for the boostback, then upright for landing
+    const g = vSep / 1.6, by = u < 3.2 ? sepY - vSep * u + g * u * u / 2 : sepY + (H + Lb * 1.2 - sepY) * ((u - 3.2) / 3.4) ** 1.4, bx = x0 + e.side * W * .08 * Math.min(1, u / 2);
+    const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
+    ctx.save(); ctx.translate(bx, by - Lb / 2); ctx.rotate(rot * e.side); ctx.translate(0, Lb / 2);
+    if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
+    if (u > 3.3) plume(0, 0, 0, w * 5, w * .8);                     // landing burn on the way down
+    booster(w, Lb, u > .5); ctx.restore();
+  }
+  e.smoke = e.smoke.filter(s => now - s.t0 < 2600);
+  for (const s of e.smoke) {   // launch smoke billowing out
+    const q = (now - s.t0) / 2600;
+    dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.85, .85, .85, .28 * (1 - q)]);
+  }
+}
 function splashes(now) {
   FX.splash = FX.splash.filter(s => now - s.t0 < 800);
   for (const s of FX.splash) {
@@ -1686,12 +1810,14 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, sub: 0, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, sub: 0, truck: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
     if (e.kind === "life") { e.way === "jump" ? jump(e, p, sec, P, now) : cameo(e, p, sec, P, now); busy = splashes(now) || busy; }
     if (e.kind === "sub") submarine(e, now, dt, sec, P);
+    if (e.kind === "truck") { truckBy(e, now, sec, P); busy = splashes(now) || busy; }
+    if (e.kind === "rocket") starship(e, now);
     if (e.kind === "ren") { ren(e, now, dt, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "bite") { bite(e, now, sec, P); busy = splashes(now) || busy; }
     if (e.kind === "wipe") wipe(e, p, sec);
@@ -1700,7 +1826,7 @@ function fxFrame(now) {
     if (e.kind === "chaos") chaos(e, now);
     busy = true;
   }
-  if (!FX.events.some(e => e.kind === "life" || e.kind === "bite" || e.kind === "ren")) busy = splashes(now) || busy;
+  if (!FX.events.some(e => e.kind === "life" || e.kind === "bite" || e.kind === "ren" || e.kind === "truck")) busy = splashes(now) || busy;
   ctx = mainCtx;
   if (busy) fxKick();
 }
@@ -1726,6 +1852,7 @@ function applyTheme() {
   });
   document.getElementById("coldF").textContent = LOC.cold;
   document.getElementById("lifenames").textContent = LIFE_NAMES[state.loc] + ". Every 10 to 15 min; ▶ shows the next one";
+  document.getElementById("animsum").textContent = state.anim ? "On. Choose which ones and try them" : "Off";
   document.getElementById("bitename").textContent = lake ? "Muskie bite" : "Shark bite";
   dlg.querySelectorAll("[data-size]").forEach(b => b.classList.toggle("on", b.dataset.size === state.textSize));
   dlg.querySelectorAll("[data-loc]").forEach(b => b.classList.toggle("on", b.dataset.loc === state.loc));
@@ -1775,10 +1902,16 @@ dlg.addEventListener("change", e => {
   const c = e.target.closest("[data-set]"); if (!c) return;
   state[c.dataset.set] = c.checked; changed();
 });
+function showPage(name) {   // Settings has a main page and an Animations page
+  dlg.querySelectorAll("[data-pg]").forEach(p => p.hidden = p.dataset.pg !== name);
+  const shown = dlg.querySelector(`[data-pg="${name}"]`); if (shown) shown.scrollTop = 0;
+}
 dlg.addEventListener("click", e => {
-  if (e.target === dlg || e.target.id === "done") { dlg.hidden = true; return; }
+  if (e.target === dlg || e.target.closest(".done")) { dlg.hidden = true; showPage("main"); return; }
+  const pg = e.target.closest("[data-page]");
+  if (pg) { showPage(pg.dataset.page); return; }
   const t = e.target.closest("[data-try]");
-  if (t) { e.preventDefault(); dlg.hidden = true; play(t.dataset.try); return; }
+  if (t) { e.preventDefault(); dlg.hidden = true; showPage("main"); play(t.dataset.try); return; }
   const b = e.target.closest("[data-size]");
   if (b) { state.textSize = b.dataset.size; changed(); }
   const l = e.target.closest("[data-loc]");

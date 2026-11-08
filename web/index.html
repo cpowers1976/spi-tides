@@ -1181,15 +1181,18 @@ function play(kind, opt = {}) {
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
+  if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
   FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000 }[kind], ...opt });
   fxKick();
 }
+// a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
+const beachy = k => !!BEACH_KIND[k] && state.aBeach !== false, beachNow = () => FX.events.some(e => beachy(e.kind) && !e.plain);
 function fxSchedule(now) {   // wildlife and the other animations each have their own timer, set in Settings, +/- 20%
   if (!state.anim || !G || dlg && !dlg.hidden) return;
   const busy = FX.events.some(e => e.kind !== "ship"), wait = now + 20e3;   // the big boats pass behind everything, so they don't count
   if (now >= FX.next.boat) {   // the big boats: their own timer, one at a time
     if (!on("aShip")) FX.next.boat = now + MIN;
-    else if (FX.events.some(e => e.kind === "ship" || e.kind === "spin")) FX.next.boat = wait;
+    else if (FX.events.some(e => e.kind === "ship") || beachNow()) FX.next.boat = wait;   // never during a beach scene
     else { FX.next.boat = now + gap(state.boatMin); play("ship", { random: true }); }
   }
   if (now >= FX.next.life) {
@@ -1201,7 +1204,9 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
     const pool = [["kite", on("aKite") && G.spd >= KITE], [hot, on("aMelt") && hot], ["slot", on("aSlot") && !FX.slot],
       ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake], ["spin", on("aSpin")],
       ["sub", on("aSub")], ["ren", on("aRen")], ["mariachi", on("aMariachi")], ["bite", on("aBite")], ["chaos", on("aChaos")]].filter(([, ok]) => ok).map(([k]) => k);
-    const pick = pool.length > 1 ? pool.filter(k => k !== FX.last) : pool;   // no repeats in a row
+    const boat = FX.events.some(e => e.kind === "ship");   // a boat going by: anything but the beach scenes can play over it
+    const ok = boat ? pool.filter(k => !beachy(k)) : pool;
+    const pick = ok.length > 1 ? ok.filter(k => k !== FX.last) : ok;   // no repeats in a row
     if (!pick.length) FX.next.other = now + MIN;
     else if (busy) FX.next.other = wait;
     else { FX.next.other = now + gap(state.otherMin); FX.last = pick[Math.floor(Math.random() * pick.length)]; play(FX.last); }

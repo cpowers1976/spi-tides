@@ -113,6 +113,7 @@
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span><span id="lifename">Dolphin jump</span><small>Every 10 to 15 min</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
+    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up. About once an hour</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <button id="done">Done</button>
   </div>
 </div>
@@ -161,7 +162,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", data: null, updated: null, error: "",
@@ -745,7 +746,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN } };
+             next: { kite: performance.now() + 45e3, life: performance.now() + 90e3, melt: performance.now() + 3 * MIN, chaos: performance.now() + 60 * MIN } };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -753,6 +754,7 @@ let numUntil = 0;
 const numAt = (n, t) => n.a + (n.b - n.a) * (1 - (1 - Math.min(1, (t - n.t0) / NUM_MS)) ** 3);
 function num(k, v) {
   const t = performance.now();
+  if (FX.chaos) return v;   // haywire forecast: show the wild numbers as they are
   if (v == null || !on("aNums")) { NUM[k] = { a: v, b: v, t0: 0 }; return v; }
   let n = NUM[k];
   if (!n || n.b == null) n = NUM[k] = { a: 0, b: v, t0: t };            // first reading: count up from zero
@@ -938,10 +940,11 @@ function play(kind, opt = {}) {
     });
   }
   if (kind === "freeze") opt.snap = snapshot();
+  if (kind === "chaos") opt.seed = rnd(0, 100);
   if (kind === "kite") { const [vx] = windVec(); opt.dir = Math.abs(vx) < .2 ? (Math.random() < .5 ? -1 : 1) : Math.sign(vx); }
   if (kind === "life") { opt.dir = Math.random() < .5 ? -1 : 1; opt.x0 = W * rnd(.2, .6) + (opt.dir < 0 ? W * .2 : 0); opt.fish = LOC.flag === "iowa"; }
   FX.events = FX.events.filter(e => e.kind !== kind);
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 4500, freeze: 6400, wipe: 1700, chaos: 32400 }[kind], ...opt });
   fxKick();
 }
 function fxSchedule(now) {
@@ -954,6 +957,10 @@ function fxSchedule(now) {
   if (now >= FX.next.life) {
     if (!on("aLife")) FX.next.life = now + MIN;
     else if (busy) FX.next.life = wait; else { FX.next.life = now + rnd(10, 15) * MIN; play("life"); }
+  }
+  if (now >= FX.next.chaos) {
+    if (!on("aChaos")) FX.next.chaos = now + MIN;
+    else if (busy) FX.next.chaos = wait; else { FX.next.chaos = now + rnd(50, 70) * MIN; play("chaos"); }
   }
   if (now >= FX.next.melt) {
     const kind = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null;   // hot days melt, cold days freeze
@@ -1190,6 +1197,92 @@ function wipe(e, p, sec) {
   for (let y = 0; y <= H; y += 13) dot(edge(y) + Math.sin(y * 7) * 4, y, 2 + (Math.sin(y * 3.1 + sec * 8) + 1) * 1.3, [1, 1, 1, .8]);   // foam
 }
 
+
+// ---- haywire forecast: the numbers drift slowly, then faster and faster, for 30 s until they're absurd;
+// the screen shakes and blows up, stays black 1 s, and the wave wipe brings the real data back ----
+function haywire(d, k, seed) {   // a wild copy of the data; k goes 0 -> 1. The real data is never changed.
+  const h = i => { const x = Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453; return x - Math.floor(x); };
+  const codes = [0, 3, 45, 63, 75, 95], hr = d.w.hourly, dy = d.w.daily;
+  const tide = (t, v) => v * (1 + 12 * k) + k * 15 * Math.sin(t / 3600e3 * 1.3 + seed);
+  const spd = hr.wind_speed_10m.map((v, i) => Math.max(0, v * (1 + 14 * k) + (h(i) - .3) * k * 260));
+  return {
+    curve: d.curve.map(([t, v]) => [t, tide(t, v)]),
+    hilo: d.hilo.map(([t, v, typ]) => [t, tide(t, v), typ]),
+    w: { hourly: { ...hr,
+           wind_speed_10m: spd,
+           wind_gusts_10m: hr.wind_gusts_10m.map((g, i) => spd[i] + Math.max(0, g - hr.wind_speed_10m[i]) * (1 + 10 * k) + h(i + 7) * k * 120),
+           wind_direction_10m: hr.wind_direction_10m.map((v, i) => v + k * 720 * h(i + 3)),
+           temperature_2m: hr.temperature_2m.map((v, i) => v * (1 + 2 * k) + k * (500 + 500 * h(i + 11))),
+           precipitation_probability: hr.precipitation_probability.map((v, i) => (v || 0) + k * 900 * h(i + 5)),
+           is_day: hr.is_day.map((v, i) => h(i + 9) < k - .5 ? 1 - v : v),
+           weather_code: (hr.weather_code || []).map((v, i) => h(i + 13) < k ? codes[Math.floor(h(i + 17) * 6)] : v) },
+         daily: { ...dy,
+           temperature_2m_max: dy.temperature_2m_max.map((v, i) => v + k * 900 * h(i + 21)),
+           temperature_2m_min: dy.temperature_2m_min.map((v, i) => v - k * 300 * h(i + 23)),
+           precipitation_probability_max: dy.precipitation_probability_max.map((v, i) => (v || 0) + k * 900 * h(i + 25)),
+           weather_code: dy.weather_code.map((v, i) => h(i + 27) < k ? codes[Math.floor(h(i + 29) * 6)] : v) } },
+    waves: new Map([...d.waves].map(([t, [ht, p]], i) => [t, [ht * (1 + 30 * k) + k * 60 * h(i + 31), p * (1 + 8 * k)]])),
+    water: new Map([...d.water].map(([t, v], i) => [t, v + k * 700 * h(i + 33)])),
+    buoy: d.buoy && { ...d.buoy, waveFt: d.buoy.waveFt == null ? null : d.buoy.waveFt * (1 + 40 * k),
+                      period: d.buoy.period == null ? null : d.buoy.period * (1 + 8 * k),
+                      waterF: d.buoy.waterF == null ? null : d.buoy.waterF + k * 700,
+                      lake: d.buoy.lake && { ...d.buoy.lake, waterF: d.buoy.lake.waterF + k * 700 } } };
+}
+function chaos(e, now) {
+  const W = cv.clientWidth, H = cv.clientHeight, t = (now - e.t0) / 1000;
+  if (e.wiped) return;
+  if (t < 30) {
+    const k = (t / 30) ** 3;   // starts slow, keeps speeding up
+    if (state.data && (e.n = (e.n || 0) + 1) % 2) {   // redraw the chart with wild numbers (15 times a second)
+      const real = state.data;
+      state.data = haywire(real, k, e.seed); FX.chaos = true;
+      try { draw(); } finally { state.data = real; FX.chaos = false; ctx = fctx; }
+    }
+    const a = t > 26 ? (t - 26) / 4 * 14 : 0;   // shakes harder and harder just before it blows
+    cv.style.transform = a ? `translate(${rnd(-a, a)}px,${rnd(-a, a)}px) rotate(${rnd(-a, a) * .05}deg)` : "";
+    return;
+  }
+  if (!e.snap) {   // boom: break up the wild screen, and quietly put the real data back underneath
+    e.snap = snapshot(); cv.style.transform = ""; draw(); ctx = fctx;
+    const nx = 10, ny = 7, P = [], cx = W / 2, cy = H / 2;
+    for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++)
+      P.push([W * i / nx + (i % nx ? rnd(-.3, .3) * W / nx : 0), H * j / ny + (j % ny ? rnd(-.3, .3) * H / ny : 0)]);
+    e.shards = [];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const a = P[j * (nx + 1) + i], b = P[j * (nx + 1) + i + 1], c = P[(j + 1) * (nx + 1) + i + 1], d = P[(j + 1) * (nx + 1) + i];
+      for (const tri of [[a, b, c], [a, c, d]]) {
+        const mx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3, my = (tri[0][1] + tri[1][1] + tri[2][1]) / 3;
+        const dx = mx - cx, dy = my - cy, dist = Math.hypot(dx, dy) || 1, v = rnd(500, 1300);
+        e.shards.push({ tri, mx, my, vx: dx / dist * v, vy: dy / dist * v, spin: rnd(-8, 8) });
+      }
+    }
+    e.sparks = Array.from({ length: 90 }, () => { const a = rnd(0, 7), v = rnd(200, 1100); return [Math.cos(a) * v, Math.sin(a) * v, rnd(.3, 1)]; });
+    e.black = document.createElement("canvas"); e.black.width = cv.width; e.black.height = cv.height;
+    e.black.getContext("2d").fillRect(0, 0, cv.width, cv.height);
+  }
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, innerWidth, innerHeight);
+  const u = t - 30, R = Math.hypot(W, H) / 2;
+  if (u < 1.2) {
+    for (const s of e.shards) {   // pieces fly out
+      const x = s.vx * u, y = s.vy * u + 300 * u * u;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - u / 1.1);
+      ctx.translate(s.mx + x, s.my + y); ctx.rotate(s.spin * u); ctx.translate(-s.mx, -s.my);
+      ctx.beginPath(); ctx.moveTo(...s.tri[0]); ctx.lineTo(...s.tri[1]); ctx.lineTo(...s.tri[2]); ctx.closePath(); ctx.clip();
+      ctx.drawImage(e.snap, 0, 0, W, H); ctx.restore();
+    }
+    const r = R * (.15 + 1.4 * Math.sqrt(u / 1.2)), al = Math.max(0, 1 - u / 1.2);   // fireball
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, r);
+    g.addColorStop(0, `rgba(255,255,240,${al})`); g.addColorStop(.25, `rgba(255,220,90,${al * .95})`);
+    g.addColorStop(.6, `rgba(255,110,30,${al * .7})`); g.addColorStop(1, "rgba(120,20,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, innerWidth, innerHeight);
+    if (u < .12) { ctx.fillStyle = `rgba(255,255,255,${1 - u / .12})`; ctx.fillRect(0, 0, innerWidth, innerHeight); }   // flash
+    for (const [vx, vy, life] of e.sparks) if (u < life) {
+      const q = u / life;
+      dot(W / 2 + vx * u, H / 2 + vy * u + 200 * u * u, 2.5 * (1 - q) + .5, [1, .75 + .25 * (1 - q), .3, 1 - q]);
+    }
+  }
+  if (t >= 32.2 && !e.wiped) { e.wiped = 1; play("wipe", { old: e.black }); }   // after 1 s of black, the wave brings it back
+}
 // ---- frame loop ----
 let fxRaf = 0, fxPrev = 0;
 function fxKick() { if (!fxRaf && document.visibilityState !== "hidden") fxRaf = requestAnimationFrame(fxFrame); }
@@ -1222,7 +1315,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, wipe: 1, melt: 2, freeze: 2 };   // melt and freeze cover everything else
+  const order = { kite: 0, life: 0, wipe: 1, melt: 2, freeze: 2, chaos: 2 };   // melt and freeze cover everything else
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
@@ -1230,6 +1323,7 @@ function fxFrame(now) {
     if (e.kind === "wipe") wipe(e, p, sec);
     if (e.kind === "melt") melt(e, now);
     if (e.kind === "freeze") freeze(e, now);
+    if (e.kind === "chaos") chaos(e, now);
     busy = true;
   }
   if (!FX.events.some(e => e.kind === "life")) busy = splashes(now) || busy;

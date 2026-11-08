@@ -499,6 +499,64 @@ function caret(cx, cy, s, color) {   // small "v" that says the title opens a me
   ctx.stroke(); ctx.lineCap = "butt"; ctx.lineJoin = "miter";
 }
 
+// ---- places the location reel spins through during the slot machine, with simple flags ----
+const WORLD = [
+  ["Reykjavík, Iceland", { cross: ["#02529c", "#fff", "#dc1e35"] }], ["Timbuktu, Mali", { v: ["#14b53a", "#fcd116", "#ce1126"] }],
+  ["Tokyo, Japan", { bg: "#fff", disc: ["#bc002d", .5, .3] }], ["Ulaanbaatar, Mongolia", { v: ["#c4272f", "#015197", "#c4272f"] }],
+  ["Tromsø, Norway", { cross: ["#ba0c2f", "#fff", "#00205b"] }], ["Kyiv, Ukraine", { h: ["#0057b7", "#ffd700"] }],
+  ["Cusco, Peru", { v: ["#d91023", "#fff", "#d91023"] }], ["Galway, Ireland", { v: ["#169b62", "#fff", "#ff883e"] }],
+  ["Bangkok, Thailand", { h: ["#a51931", "#f4f5f8", "#2d2a4a", "#2d2a4a", "#f4f5f8", "#a51931"] }], ["Helsinki, Finland", { cross: ["#fff", null, "#002f6c"] }],
+  ["Stockholm, Sweden", { cross: ["#006aa7", null, "#fecc00"] }], ["Copenhagen, Denmark", { cross: ["#c8102e", null, "#fff"] }],
+  ["Abuja, Nigeria", { v: ["#008751", "#fff", "#008751"] }], ["Cartagena, Colombia", { h: ["#fcd116", "#fcd116", "#003893", "#ce1126"] }],
+  ["Bali, Indonesia", { h: ["#ce1126", "#fff"] }], ["Kraków, Poland", { h: ["#fff", "#dc143c"] }], ["Salzburg, Austria", { h: ["#ed2939", "#fff", "#ed2939"] }],
+  ["Budapest, Hungary", { h: ["#ce2939", "#fff", "#477050"] }], ["Amsterdam, Netherlands", { h: ["#ae1c28", "#fff", "#21468b"] }],
+  ["Yerevan, Armenia", { h: ["#d90012", "#0033a0", "#f2a800"] }], ["Tallinn, Estonia", { h: ["#0072ce", "#000", "#fff"] }],
+  ["Vilnius, Lithuania", { h: ["#fdb913", "#006a44", "#c1272d"] }], ["Conakry, Guinea", { v: ["#ce1126", "#fcd116", "#009460"] }],
+  ["Abidjan, Côte d'Ivoire", { v: ["#f77f00", "#fff", "#009e60"] }], ["Port Louis, Mauritius", { h: ["#ea2839", "#1a206d", "#ffd500", "#00a551"] }],
+  ["Libreville, Gabon", { h: ["#009e60", "#fcd116", "#3a75c4"] }], ["Freetown, Sierra Leone", { h: ["#1eb53a", "#fff", "#0072c6"] }],
+  ["Koror, Palau", { bg: "#4aadd6", disc: ["#ffde00", .45, .3] }], ["Dhaka, Bangladesh", { bg: "#006a4e", disc: ["#f42a41", .45, .3] }],
+  ["Venice, Italy", { v: ["#009246", "#fff", "#ce2b37"] }], ["Heidelberg, Germany", { h: ["#000", "#dd0000", "#ffce00"] }],
+  ["Ushuaia, Argentina", { h: ["#74acdf", "#fff", "#74acdf"], disc: ["#f6b40e", .5, .12] }], ["Sofia, Bulgaria", { h: ["#fff", "#00966e", "#d62612"] }],
+];
+function worldFlag(spec, x, cy, h) {
+  const w = h * 1.5, y = cy - h / 2;
+  if (spec.bg) { ctx.fillStyle = spec.bg; ctx.fillRect(x, y, w, h); }
+  if (spec.h) spec.h.forEach((c, i, a) => { ctx.fillStyle = c; ctx.fillRect(x, y + h * i / a.length, w, h / a.length + .5); });
+  if (spec.v) spec.v.forEach((c, i, a) => { ctx.fillStyle = c; ctx.fillRect(x + w * i / a.length, y, w / a.length + .5, h); });
+  if (spec.cross) {   // Nordic cross: field, optional border colour, cross
+    const [field, edge, cross] = spec.cross, cx = x + w * .36;
+    ctx.fillStyle = field; ctx.fillRect(x, y, w, h);
+    if (edge) { ctx.fillStyle = edge; ctx.fillRect(cx - h * .14, y, h * .28, h); ctx.fillRect(x, cy - h * .14, w, h * .28); }
+    ctx.fillStyle = cross; ctx.fillRect(cx - h * .08, y, h * .16, h); ctx.fillRect(x, cy - h * .08, w, h * .16);
+  }
+  if (spec.disc) { const [c, px, r] = spec.disc; dot(x + w * px, cy, h * r, c.match(/\w\w/g).map(v => parseInt(v, 16) / 255).concat(1)); }
+  if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
+}
+const PLACE_T = 6.2, PLACE_A = 1.2, PLACE_D = 1.8;   // the place reel lands last, and turns slowly enough to read
+function placeReel(f, top, ps, clipR) {
+  const sl = FX.slot, t = (performance.now() - sl.t0) / 1000, N = sl.places.length;
+  const k = PLACE_A / 3 + (PLACE_T - PLACE_D - PLACE_A) + PLACE_D / 2, v = N / k;
+  const pos = t < PLACE_A ? v * t ** 3 / (3 * PLACE_A ** 2)
+    : t < PLACE_T - PLACE_D ? v * (PLACE_A / 3 + t - PLACE_A)
+    : Math.min(N, v * (PLACE_A / 3 + PLACE_T - PLACE_D - PLACE_A) + v / (2 * PLACE_D) * (PLACE_D ** 2 - Math.max(0, PLACE_T - t) ** 2));
+  const i = Math.floor(pos), fr = pos - i, row = ps * 1.6;
+  const bounce = t > PLACE_T && t < PLACE_T + .35 ? -Math.sin((t - PLACE_T) / .35 * Math.PI) * ps * .15 : 0;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, top - ps * .85, clipR, ps * 1.7); ctx.clip();
+  for (const [j, dy] of [[i, -fr * row], [i + 1, (1 - fr) * row]]) {
+    if (j > N) continue;
+    const y = top + dy + bounce;
+    if (j === N) {   // home again
+      const tw = text(LOC.name, f * 1.2, y, ps, T.text, 0, true);
+      (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, y, ps * .95);
+    } else {
+      const [name, spec] = sl.places[j], s2 = fit(name, ps, clipR - f * 1.9 - ps * 1.6, true);
+      setFont(s2, true); ctx.fillStyle = rgba(T.text); ctx.textBaseline = "middle"; ctx.fillText(name, f * 1.2, y);
+      worldFlag(spec, f * 1.9 + ctx.measureText(name).width, y, ps * .95);
+    }
+  }
+  ctx.restore();
+}
+
 let titleBox = null;   // where the place name is drawn, for tapping
 const SCALE = { s: .88, m: 1, l: 1.14 };
 function draw() {
@@ -511,9 +569,13 @@ function draw() {
   else rect(0, 0, W, H, T.bg);
   const f = Math.min(H / 46, W / 76) * (SCALE[state.textSize] || 1), now = new Date(), top = f * 2.1;
   const ps = fit(LOC.name, f * 1.5, W * .3, true);
-  const tw = text(LOC.name, f * 1.2, top, ps, T.text, 0, true);
-  (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, top, ps * .95);
-  const cx0 = f * 1.9 + tw + ps * 1.45 + ps * .65;
+  setFont(ps, true);
+  const tw = ctx.measureText(LOC.name).width, cx0 = f * 1.9 + tw + ps * 1.45 + ps * .65;
+  if (FX.slot) placeReel(f, top, ps, cx0 - ps * .6);   // slot machine: the place spins through the world first
+  else {
+    text(LOC.name, f * 1.2, top, ps, T.text, 0, true);
+    (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, top, ps * .95);
+  }
   caret(cx0, top, ps * .55, T.gray);
   const placeEnd = cx0 + ps * .45;
   titleBox = { x: f * .4, y: top - ps * .9, w: placeEnd - f * .4 + f * .4, h: ps * 1.8 };
@@ -1003,7 +1065,11 @@ function snapshot() {   // the chart as it looks now, with its background
 function play(kind, opt = {}) {
   const now = performance.now(), W = cv.clientWidth;
   if (kind === "nums") { for (const k in NUM) delete NUM[k]; draw(); return; }
-  if (kind === "slot") { FX.slot = { t0: now, end: now + 5200 }; fxKick(); return; }
+  if (kind === "slot") {
+    const pool = [...WORLD].sort(() => Math.random() - .5);
+    FX.slot = { t0: now, end: now + (PLACE_T + .6) * 1000, places: pool.slice(0, 12) };
+    fxKick(); return;
+  }
   if (kind === "wipe" && !opt.old) opt.old = snapshot();
   if (kind === "melt") {
     // smooth sag across the screen, plus a few narrow drips, so it looks like warm wax
@@ -1438,7 +1504,7 @@ function pelican(e, now, sec, P) {
 // ---- the Queen II, the Okoboji excursion boat: blue lower hull, white hull and decks with bold red bands,
 //      a long row of big tinted windows, an open top deck under a red-trimmed canopy aft, a white pilothouse
 //      with a red roof and a short red-and-white stack, flags fore and aft, and "QUEEN II" in gold on the bow ----
-function queenBoat(u, sec) {   // facing +x, origin at the waterline, centre of the boat
+function queenBoat(u, sec, dir) {   // facing +x, origin at the waterline, centre of the boat
   const red = "#c8202f", white = "#f8f8f6", blue = "#3f6f92", glass = "#27323d", edge = "rgba(60,60,60,.35)";
   const sheer = x => (x / u + 8) / 16 * .35 * u;   // decks rise a little toward the bow
   const band = (y0, y1, color) => {   // a horizontal band along the whole hull, following the sheer
@@ -1498,16 +1564,25 @@ function queenBoat(u, sec) {   // facing +x, origin at the waterline, centre of 
       for (let k = 0; k <= 6; k++) ctx.lineTo(x - k * h * .25, top + r * h / 6 + wave(k));
       for (let k = 6; k >= 0; k--) ctx.lineTo(x - k * h * .25, top + (r + 1) * h / 6 + wave(k));
       ctx.fill();
-    } else for (let c = 0; c < 3; c++) {   // Iowa: blue, white, red from the pole out
-      ctx.fillStyle = ["#1c3f94", "#fff", "#c8102e"][c]; ctx.beginPath();
-      for (let k = c * 2; k <= c * 2 + 2; k++) ctx.lineTo(x - k * h * .25, top + wave(k));
-      for (let k = c * 2 + 2; k >= c * 2; k--) ctx.lineTo(x - k * h * .25, top + h + wave(k));
-      ctx.fill();
+    } else {
+      for (let c = 0; c < 3; c++) {   // Iowa: blue, white, red from the pole out
+        ctx.fillStyle = ["#1c3f94", "#fff", "#c8102e"][c]; ctx.beginPath();
+        for (let k = c * 2; k <= c * 2 + 2; k++) ctx.lineTo(x - k * h * .25, top + wave(k));
+        for (let k = c * 2 + 2; k >= c * 2; k--) ctx.lineTo(x - k * h * .25, top + h + wave(k));
+        ctx.fill();
+      }
+      ctx.save(); ctx.translate(x - h * .75, top + h / 2 + wave(3)); ctx.scale(dir, 1);   // the eagle and "IOWA" on the white stripe, never mirrored
+      ctx.fillStyle = "#1f3a7a"; ctx.beginPath(); ctx.moveTo(-h * .24, -h * .08); ctx.quadraticCurveTo(-h * .12, -h * .32, 0, -h * .14);
+      ctx.quadraticCurveTo(h * .12, -h * .32, h * .24, -h * .08); ctx.quadraticCurveTo(0, -h * .02, -h * .24, -h * .08); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, -h * .06, h * .05, h * .09, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = "#c8102e"; ctx.font = `bold ${h * .2}px system-ui, sans-serif`; ctx.textBaseline = "middle";
+      const iw = ctx.measureText("IOWA").width; ctx.save(); ctx.scale(Math.min(1, h * .48 / iw), 1); ctx.fillText("IOWA", -iw / 2, h * .2); ctx.restore();
+      ctx.restore();
     }
     if (kind === "us") { ctx.fillStyle = "#1c3f94"; ctx.fillRect(x - h * .6, top, h * .6, h / 2); }
   };
   flag(-7.5 * u, cy(-7.5 * u), -7.7 * u, 1 * u, "us");
-  flag(7.6 * u, -4.8 * u - sheer(7.6 * u), -9.2 * u, .9 * u, "ia");
+  flag(7.6 * u, -4.8 * u - sheer(7.6 * u), -9.5 * u, 1.2 * u, "ia");
 }
 function queenII(e, now, sec, P) {
   const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * .9, p = (now - e.t0) / e.dur, d = e.dir;
@@ -1517,7 +1592,7 @@ function queenII(e, now, sec, P) {
   for (let k = 1; k <= 3; k++) { ctx.globalAlpha = .4 / k; ctx.beginPath(); ctx.ellipse(x - d * (10 + k * 2.2) * u, y - u * .15, 1.6 * u, .22 * u, 0, 0, 7); ctx.fill(); }
   ctx.globalAlpha = 1;
   ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(sec * 1.3) * .01); ctx.scale(d * 1.25, 1);   // stretched a little: she's long and low
-  queenBoat(u, sec); ctx.restore();
+  queenBoat(u, sec, d); ctx.restore();
   const bx = x + d * 5.6 * u, by = y - 1.62 * u;   // the name in gold serif, never mirrored
   ctx.font = `bold ${u * .85}px Georgia, "Times New Roman", serif`; ctx.textBaseline = "middle";
   const nm = "QUEEN II", nw = ctx.measureText(nm).width;

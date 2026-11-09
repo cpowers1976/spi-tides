@@ -161,7 +161,7 @@
     <label class="row sub"><span>Starship launch<small>A beach rises, Starship fades in on Mechazilla, launches, and the booster comes back to be caught</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <h3>Page animations</h3>
-    <label class="row sub"><span>Time between page animations<small>The whole page spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Time between page animations<small>The whole page spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned or rained on. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
@@ -170,6 +170,8 @@
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
     <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters to the night sky</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
     <label class="row sub"><span>Home run<small>Rolls up into a ball and a bat knocks it out into the night sky</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
+    <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
+    <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then the wave clears it</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -222,7 +224,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, data: null, updated: null, error: "",
@@ -1260,7 +1262,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 13800 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2958,7 +2960,7 @@ function spinDone() {
 // ---- page animations: the whole page (chart and buttons) gets crumpled and thrown in an office wastebasket, ages to dust
 //      and is swept away, is smashed like a windshield, or turns into a ball that's hit out into the night sky.
 //      They have their own timer, never play with a beach scene, and the live page fades back in at the end ----
-const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"]];
+const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"]];
 const PAGE_KIND = Object.fromEntries(PAGE_LIST.map(([k]) => [k, 1]));
 function pageSnap(scale) {   // the whole screen as it looks now: background, wave band, chart and the button bar
   const W = innerWidth, H = innerHeight, r = scale || window.devicePixelRatio || 1, s = document.createElement("canvas");
@@ -3451,6 +3453,8 @@ function pageFx(e, now, dt) {
   if (e.kind === "bat") bat(e, now);
   if (e.kind === "flip") flip(e, now);
   if (e.kind === "drivein") driveIn(e, now, now / 1000);
+  if (e.kind === "burn") burn(e, now, dt, now / 1000);
+  if (e.kind === "rain") rain(e, now, dt, now / 1000);
 }
 // ---- 5. end over end: the screen tumbles head over heels, stops back to front (everything backwards), struggles to turn
 //      over, falls back a couple of times, then flips the right way round ----
@@ -3576,7 +3580,7 @@ function driveScene(e, t, W, H, light) {   // the drive-in around the sign, in s
   ctx.save(); ctx.shadowColor = "rgba(255,255,230,.8)"; ctx.shadowBlur = 25 * light; ctx.fillStyle = "#f6f3e6"; ctx.fillRect(lx0, ly0, lx1 - lx0, ly1 - ly0); ctx.restore();
   ctx.strokeStyle = "#222"; ctx.lineWidth = H * .04; ctx.strokeRect(lx0, ly0, lx1 - lx0, ly1 - ly0);
   ctx.fillStyle = "#151515"; ctx.font = `800 ${H * .15}px system-ui, Roboto, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ["TRY LOUIS'S BIG BUNS", "FOOTLONG + FRIES $5", "WE STAY UP LATE"].forEach((s, i) => ctx.fillText(s, (lx0 + lx1) / 2, ly0 + (i + .62) * (ly1 - ly0) / 3.2));
+  ["LOUIS'S FAMOUS BURGERS", "FOOTLONG + FRIES $5", "OPEN LATE"].forEach((s, i) => ctx.fillText(s, (lx0 + lx1) / 2, ly0 + (i + .62) * (ly1 - ly0) / 3.2));
   const B = u => { const a = [-W * 1.0, H * .62], b = [W * .2, H * 1.55], c = [W * 1.55, H * .95], v = 1 - u; return [v * v * a[0] + 2 * v * u * b[0] + u * u * c[0], v * v * a[1] + 2 * v * u * b[1] + u * u * c[1]]; };
   const th = H * .46, top = [], bot = [];
   for (let i = 0; i <= 40; i++) {
@@ -3616,6 +3620,103 @@ function driveIn(e, now, sec) {
   if (t < wipeAt) scene();
   else wipe(e, clamp((t - wipeAt) / 1.7, 0, 1), sec, W, H, scene);   // the wave washes the forecast back in
 }
+// ---- 7. fire: a corner catches, scorches, and the flames spread until the whole screen has burned; the wave puts it out ----
+const BURN_CS = 8;   // size of the little squares the burning is worked out on
+function burnArt(e, W, H) {
+  e.tex = pageSnap();
+  const cx = Math.random() < .5 ? 0 : W, cy = Math.random() < .5 ? 0 : H, nx = Math.ceil(W / BURN_CS), ny = Math.ceil(H / BURN_CS);
+  const p1 = rnd(0, 7), p2 = rnd(0, 7), M = Math.min(W, H);
+  e.d = new Float32Array(nx * ny); e.nx = nx; e.ny = ny;
+  let max = 0;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {   // how far each spot is from the corner, wobbled so the edge is ragged
+    const x = i * BURN_CS, y = j * BURN_CS;
+    const v = Math.hypot(x - cx, y - cy) + M * (.09 * Math.sin(x / 60 + p1) * Math.cos(y / 47 + p2) + .05 * Math.sin(x / 23 + y / 31 + p2)) + rnd(0, M * .025);
+    e.d[j * nx + i] = v; max = Math.max(max, v);
+  }
+  e.max = max + M * .25; e.flames = []; e.smoke = []; e.front = [];
+}
+function burnScene(e, t, W, H, dt) {
+  const R = e.max * clamp((t - .4) / 9.5, 0, 1) ** 1.5, sc = 70, ew = 26;   // how far the fire has got; the scorch ahead of it; the glowing edge
+  ctx.drawImage(e.tex, 0, 0, W, H);
+  const front = [];
+  const scorch = [[], [], [], [], []], glow = [[], [], [], []], ash = [];
+  for (let j = 0; j < e.ny; j++) for (let i = 0; i < e.nx; i++) {
+    const a = R - e.d[j * e.nx + i];
+    if (a < -sc) continue;
+    const x = i * BURN_CS, y = j * BURN_CS;
+    if (a < 0) scorch[Math.min(4, Math.floor((1 + a / sc) * 5))].push(x, y);
+    else if (a < ew) { glow[Math.min(3, Math.floor(a / ew * 4))].push(x, y); if (Math.random() < .04) front.push([x, y]); }
+    else ash.push(x, y);
+  }
+  const fill = (list, col) => { if (!list.length) return; ctx.fillStyle = col; ctx.beginPath(); for (let k = 0; k < list.length; k += 2) ctx.rect(list[k], list[k + 1], BURN_CS + .5, BURN_CS + .5); ctx.fill(); };
+  scorch.forEach((l, k) => fill(l, `rgba(70,35,8,${(.15 + k * .17).toFixed(2)})`));   // browning ahead of the flames
+  fill(ash, "#0d0907");
+  ["#ffe08a", "#ff9a2e", "#e2531a", "#5a1a08"].forEach((c, k) => fill(glow[k], c));   // the glowing burning edge
+  for (let k = 0; k < 18 && ash.length; k++) {   // embers still glowing in the ashes
+    const n = Math.floor(Math.random() * ash.length / 2) * 2;
+    ctx.fillStyle = `rgba(255,${Math.floor(rnd(60, 140))},20,${rnd(.3, .8).toFixed(2)})`; ctx.fillRect(ash[n] + rnd(0, BURN_CS), ash[n + 1] + rnd(0, BURN_CS), 2, 2);
+  }
+  for (const [x, y] of front.slice(0, 60)) {   // new flames and smoke along the edge
+    e.flames.push({ x: x + rnd(0, BURN_CS), y, vx: rnd(-12, 12), vy: rnd(-90, -40), s: rnd(10, 26), age: 0, life: rnd(.5, 1.1) });
+    if (Math.random() < .3) e.smoke.push({ x, y, vx: rnd(-10, 10), vy: rnd(-50, -25), s: rnd(15, 35), age: 0, life: rnd(1.6, 3) });
+  }
+  if (e.flames.length > 900) e.flames.splice(0, e.flames.length - 900);
+  if (e.smoke.length > 300) e.smoke.splice(0, e.smoke.length - 300);
+  for (const p of e.smoke) { p.age += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.s += 14 * dt; }
+  e.smoke = e.smoke.filter(p => p.age < p.life);
+  for (const p of e.smoke) { ctx.fillStyle = `rgba(40,36,34,${(.25 * (1 - p.age / p.life)).toFixed(3)})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 7); ctx.fill(); }
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (const p of e.flames) { p.age += dt; p.x += (p.vx + Math.sin(p.age * 14 + p.y) * 30) * dt; p.y += p.vy * dt; }
+  e.flames = e.flames.filter(p => p.age < p.life);
+  for (const p of e.flames) {   // yellow at the bottom of a flame, red at the tips, flickering out
+    const q = p.age / p.life, s = p.s * (1 - q * .6), g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, s);
+    g.addColorStop(0, `rgba(255,${Math.floor(220 - q * 160)},${Math.floor(90 - q * 80)},${(.55 * (1 - q)).toFixed(3)})`); g.addColorStop(1, "rgba(255,60,0,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, s, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+function burn(e, now, dt, sec) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, wipeAt = 12.2;
+  if (!e.tex) burnArt(e, W, H);
+  if (t < wipeAt) burnScene(e, t, W, H, dt);
+  else wipe(e, clamp((t - wipeAt) / 1.7, 0, 1), sec, W, H, () => burnScene(e, t, W, H, dt));
+}
+
+// ---- 8. rain on water: the screen is a pond; a few drops, then harder and harder until you can't read it; the wave clears it ----
+function rainScene(e, t, W, H, dt) {
+  const k = clamp(t / 10.5, 0, 1), rate = 1.2 * Math.exp(k * 6.2);   // drops a second: about 1, up to about 600
+  const blur = 9 * k ** 2.2;
+  if (blur > .3 && "filter" in ctx) { ctx.filter = `blur(${blur.toFixed(1)}px)`; ctx.drawImage(e.tex, -10, -10, W + 20, H + 20); ctx.filter = "none"; }
+  else ctx.drawImage(e.tex, 0, 0, W, H);
+  ctx.fillStyle = `rgba(95,115,135,${(.5 * k ** 1.5).toFixed(3)})`; ctx.fillRect(0, 0, W, H);   // grey downpour
+  e.acc = (e.acc || 0) + rate * dt;
+  for (; e.acc >= 1; e.acc--) e.drops.push({ x: rnd(0, W), y: rnd(0, H), t0: t, big: rnd(.6, 1.4) });
+  e.drops = e.drops.filter(d => t - d.t0 < 1.6);
+  if (e.drops.length > 900) e.drops.splice(0, e.drops.length - 900);
+  const few = e.drops.length < 40;
+  for (const d of e.drops) {
+    const a = t - d.t0, r = (8 + a * 70) * d.big, al = 1 - a / 1.6;
+    if (few && a < 1.2) {   // while there are only a few, each ripple bends the picture under it like water
+      ctx.save(); ctx.beginPath(); ctx.arc(d.x, d.y, r + 6, 0, 7); ctx.arc(d.x, d.y, Math.max(0, r - 6), 0, 7, true); ctx.clip();
+      const m = 1 + .05 * al; ctx.translate(d.x, d.y); ctx.scale(m, m); ctx.translate(-d.x, -d.y); ctx.drawImage(e.tex, 0, 0, W, H); ctx.restore();
+    }
+    for (const [dr, col] of [[0, `rgba(255,255,255,${(.55 * al).toFixed(3)})`], [3, `rgba(0,10,30,${(.35 * al).toFixed(3)})`], [-9, `rgba(255,255,255,${(.25 * al).toFixed(3)})`]]) {
+      if (r + dr <= 0) continue;
+      ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(d.x, d.y, r + dr, 0, 7); ctx.stroke();
+    }
+    if (a < .18) { ctx.fillStyle = `rgba(230,240,255,${(.8 * (1 - a / .18)).toFixed(3)})`; for (let s = 0; s < 5; s++) { const sa = s / 5 * 6.283 + d.big; ctx.fillRect(d.x + Math.cos(sa) * a * 90, d.y + Math.sin(sa) * a * 90 - a * 40, 2.5, 2.5); } }   // the splash
+  }
+  ctx.strokeStyle = `rgba(210,225,245,${(.25 + .3 * k).toFixed(2)})`; ctx.lineWidth = 1.2; ctx.beginPath();   // rain falling in front
+  const n = Math.min(500, Math.round(rate * .35));
+  for (let i = 0; i < n; i++) { const x = rnd(-40, W), y = rnd(-40, H); ctx.moveTo(x, y); ctx.lineTo(x + 6, y + 26); }
+  ctx.stroke();
+}
+function rain(e, now, dt, sec) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, wipeAt = 12;
+  if (!e.tex) { e.tex = pageSnap(); e.drops = []; }
+  if (t < wipeAt) rainScene(e, t, W, H, dt);
+  else wipe(e, clamp((t - wipeAt) / 1.7, 0, 1), sec, W, H, () => rainScene(e, t, W, H, dt));
+}
 // ---- frame loop ----
 let fxRaf = 0, fxPrev = 0;
 function fxKick() { if (!fxRaf && document.visibilityState !== "hidden") fxRaf = requestAnimationFrame(fxFrame); }
@@ -3650,7 +3751,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);

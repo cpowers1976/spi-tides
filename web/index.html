@@ -171,7 +171,7 @@
     <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters to the night sky</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
     <label class="row sub"><span>Home run<small>Rolls up into a ball and a bat knocks it out into the night sky</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
-    <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then the wave clears it</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
+    <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -1262,7 +1262,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 13800 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -3684,7 +3684,8 @@ function burn(e, now, dt, sec) {
 
 // ---- 8. rain on water: the screen is a pond; a few drops, then harder and harder until you can't read it; the wave clears it ----
 function rainScene(e, t, W, H, dt) {
-  const k = clamp(t / 10.5, 0, 1), rate = 1.2 * Math.exp(k * 6.2);   // drops a second: about 1, up to about 600
+  const k = t < 13.5 ? clamp(t / 10.5, 0, 1) : clamp(1 - (t - 13.5) / 6, 0, 1) ** .8;   // builds up, pours for 3 s, then eases off to nothing
+  const rate = t > 13.5 && k < .03 ? 0 : 1.2 * Math.exp(k * 6.2);   // drops a second: about 1, up to about 600
   const blur = 9 * k ** 2.2;
   if (blur > .3 && "filter" in ctx) { ctx.filter = `blur(${blur.toFixed(1)}px)`; ctx.drawImage(e.tex, -10, -10, W + 20, H + 20); ctx.filter = "none"; }
   else ctx.drawImage(e.tex, 0, 0, W, H);
@@ -3712,10 +3713,9 @@ function rainScene(e, t, W, H, dt) {
   ctx.stroke();
 }
 function rain(e, now, dt, sec) {
-  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, wipeAt = 12;
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
   if (!e.tex) { e.tex = pageSnap(); e.drops = []; }
-  if (t < wipeAt) rainScene(e, t, W, H, dt);
-  else wipe(e, clamp((t - wipeAt) / 1.7, 0, 1), sec, W, H, () => rainScene(e, t, W, H, dt));
+  ctx.save(); ctx.globalAlpha = fadeBack(t, 19.4, 1.4); rainScene(e, t, W, H, dt); ctx.restore();   // the last ripples fade into the live page
 }
 // ---- frame loop ----
 let fxRaf = 0, fxPrev = 0;

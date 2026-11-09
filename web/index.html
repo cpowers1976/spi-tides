@@ -168,6 +168,7 @@
     <label class="row sub"><span>Rednecks in a bass boat<small>Raunchy. Mullets, cigs, wifebeaters and light beer. Empties go over the side</small></span><span class="ctl"><button class="try" data-try="bass">▶</button><input type="checkbox" class="sw" data-set="aBass"></span></label>
     <label class="row sub"><span>Fabulous party boat<small>Raunchy. Rainbow everything, a disco ball, and the boys in speedos</small></span><span class="ctl"><button class="try" data-try="fab">▶</button><input type="checkbox" class="sw" data-set="aFab"></span></label>
     <label class="row sub"><span>Dolphin watch<small>Raunchy. Someone on the top deck turns green and it all lands on the lower deck</small></span><span class="ctl"><button class="try" data-try="dolphin">▶</button><input type="checkbox" class="sw" data-set="aDolph"></span></label>
+    <label class="row sub"><span>Raft and the Coast Guard<small>Raunchy. A homemade raft drifts in from the pass. Just before it's gone, a Coast Guard boat comes in fast and they go off together</small></span><span class="ctl"><button class="try" data-try="cg">▶</button><input type="checkbox" class="sw" data-set="aCG"></span></label>
     <h3>Page animations</h3>
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned or rained on. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
@@ -233,7 +234,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", "craftMin", "partyFall", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, craftMin: 10, partyFall: false, data: null, updated: null, error: "",
@@ -1276,7 +1277,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2281,6 +2282,7 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
   const sh = .35 * w * u, arm = .17 * w * u, cupY = -1.62 * u + Math.sin(sec * 3 + ph) * .1 * u * wild;
   const swing = Math.sin(sec * 3.2 + ph) * .14 * u * wild;
   if (o.hand) pSeg([-sh, -.8 * u, -.2 * u, -.55 * u, ...o.hand], g.skin, arm);
+  else if (o.arms === "rest") pSeg([-sh, -.8 * u, -.5 * w * u, -.4 * u, -.15 * u, -.1 * u], g.skin, arm);   // hands in the lap
   else if (o.arms === "up" || o.arms === "out") {
     const up = o.arms === "up", wv = Math.sin(sec * 6 + ph) * .15 * u;
     pSeg([-sh, -.8 * u, -.62 * w * u, up ? -1.25 * u : -.85 * u, up ? -.55 * w * u - wv : -1.05 * w * u, up ? -1.75 * u : -.8 * u + wv], g.skin, arm);
@@ -2365,6 +2367,7 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
   }
   // top arm
   if (o.hand) pSeg([sh, -.8 * u, .3 * u, -.55 * u, ...o.hand], g.skin, arm);
+  else if (o.arms === "rest") pSeg([sh, -.8 * u, .5 * w * u, -.4 * u, .15 * u, -.1 * u], g.skin, arm);
   else if (o.reach) pSeg([sh, -.8 * u, .32 * w * u, -1.4 * u, .25 * u, -1.95 * u], g.skin, arm);   // up on the pole
   else if (o.arms === "up" || o.arms === "out") {
     const up = o.arms === "up", wv = Math.sin(sec * 6 + ph + 1) * .15 * u;
@@ -2887,6 +2890,68 @@ function dolphinWatch(e, now, dt, sec, P) {
   if (ewww.length) { ewww.slice(0, 2).forEach(([i], k) => { const x = lower.find(l => l[1] === +i)[0], [sx, sy] = toW(x * u, low - 2.6 * u - k * .5 * u); say(sx, sy, k ? "GROSS!" : "EWWW!", u * .34); }); }
   else if (p > .3 && p < .45) { const [sx, sy] = toW(1.1 * u, top - 2.6 * u); say(sx, sy, "I don't feel so good...", u * .3); }
   else if ((p > .1 && p < .22) || (p > .68 && p < .8)) { const [sx, sy] = toW(-1.3 * u, low - 2.6 * u); say(sx, sy, "Look! A dolphin!", u * .3); }
+  ctx.restore();
+}
+// ---- a homemade raft drifting in from the pass, and a Coast Guard boat comes in fast. They go off together; no telling how it ends ----
+const RAFTERS = [
+  { guy: true, w: 1.05, skin: "#a8724a", hair: "#1b1b1b", shirt: "#8d6e63", sleeves: true, cap: "#37474f" },
+  { w: 1.0, skin: "#c68642", hair: "#2a1a10", shirt: "#5c6bc0", sleeves: true },
+  { guy: true, w: 1.1, skin: "#8d5524", hair: "#111", shirt: "#e0e0e0", sleeves: true },
+  { w: .95, skin: "#b07a4f", hair: "#3b2214", shirt: "#c0392b", sleeves: true },
+  { guy: true, w: 1.0, skin: "#9c6b45", hair: "#222", shirt: "#455a64", sleeves: true, cap: "#6d4c41" },
+];
+const CG_CREW = { guy: true, w: 1.15, skin: "#e0ac69", hair: "#3b2214", shirt: "#ff6d00", cap: "#1a237e" };
+function cgBoat(u, sec, fast) {   // facing +x, waterline at 0
+  if (fast) for (let k = 0; k < 7; k++) { const q = (sec * 3 + k / 7) % 1; pBlob(3.6 * u + q * .6 * u, -.35 * u - Math.sin(q * Math.PI) * .9 * u, (.15 + q * .3) * u, (.1 + q * .2) * u, `rgba(255,255,255,${.75 * (1 - q)})`); }
+  ctx.fillStyle = "#f7f7f7"; ctx.beginPath(); ctx.moveTo(-4 * u, -1.1 * u); ctx.lineTo(2.8 * u, -1.2 * u); ctx.quadraticCurveTo(4.3 * u, -1.25 * u, 4.6 * u, -1.6 * u);
+  ctx.quadraticCurveTo(4.1 * u, .05 * u, 2.4 * u, .12 * u); ctx.lineTo(-4 * u, .12 * u); ctx.closePath(); ctx.fill();
+  rect(-4 * u, -.15 * u, 6.8 * u, .27 * u, [.13, .2, .3, 1]);   // dark bottom
+  ctx.save(); ctx.beginPath(); ctx.moveTo(-4 * u, -1.1 * u); ctx.lineTo(2.8 * u, -1.2 * u); ctx.quadraticCurveTo(4.3 * u, -1.25 * u, 4.6 * u, -1.6 * u); ctx.quadraticCurveTo(4.1 * u, .05 * u, 2.4 * u, .12 * u); ctx.lineTo(-4 * u, .12 * u); ctx.clip();
+  ctx.fillStyle = "#e8452c"; ctx.beginPath(); ctx.moveTo(1.4 * u, -1.3 * u); ctx.lineTo(2.2 * u, -1.3 * u); ctx.lineTo(1.6 * u, .2 * u); ctx.lineTo(.8 * u, .2 * u); ctx.fill();   // the racing stripe
+  ctx.fillStyle = "#1565c0"; ctx.beginPath(); ctx.moveTo(2.35 * u, -1.3 * u); ctx.lineTo(2.6 * u, -1.3 * u); ctx.lineTo(2 * u, .2 * u); ctx.lineTo(1.75 * u, .2 * u); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.roundRect(-1.2 * u, -2.8 * u, 3.2 * u, 1.65 * u, .2 * u); ctx.fill();   // cabin
+  ctx.fillStyle = "#37474f"; for (const x of [-.95, .1, 1.1]) { ctx.beginPath(); ctx.roundRect(x * u, -2.55 * u, .75 * u, .6 * u, .08 * u); ctx.fill(); }
+  pSeg([.4 * u, -2.8 * u, .4 * u, -3.7 * u], "#9e9e9e", .08 * u); pSeg([-.1 * u, -3.5 * u, .9 * u, -3.5 * u], "#9e9e9e", .08 * u);   // mast
+  ctx.fillStyle = "#212121"; ctx.fillRect(-.6 * u, -2.98 * u, 1.9 * u, .16 * u);   // light bar
+  const on = Math.floor(sec * 4) % 2;
+  pBlob(-.4 * u, -2.92 * u, .14 * u, .1 * u, on ? "#2979ff" : "#0d2a66"); pBlob(1.1 * u, -2.92 * u, .14 * u, .1 * u, on ? "#0d2a66" : "#2979ff");
+  if (on) pBlob(-.4 * u, -2.92 * u, .45 * u, .3 * u, "rgba(41,121,255,.3)"); else pBlob(1.1 * u, -2.92 * u, .45 * u, .3 * u, "rgba(41,121,255,.3)");
+  ctx.fillStyle = "#212121"; ctx.fillRect(-4 * u, -1.35 * u, 3 * u, .1 * u);   // stern rail
+  for (let x = -3.9; x < -1; x += .7) pSeg([x * u, -1.1 * u, x * u, -1.35 * u], "#9e9e9e", .05 * u);
+}
+function coastGuard(e, now, dt, sec, P) {
+  const W = cv.clientWidth, f = G ? G.f : cv.clientHeight / 46, u = f * 1.8, p = (now - e.t0) / e.dur, d = e.dir, wl = P.y0, fade = p > .95 ? 1 - (p - .95) / .05 : 1;
+  const RL = 5 * u, rspan = W + 1.3 * RL, rx = d > 0 ? -.65 * RL + rspan * p : W + .65 * RL - rspan * p;   // the raft drifts across, slowly
+  const ry = wl + Math.sin(sec * 1.4) * .1 * u, rot = Math.sin(sec * 1.1) * .04, toW = (lx, ly) => [rx + d * lx, ry + ly];
+  // the Coast Guard: comes in fast from behind at about 70% of the way, then slows alongside and goes with them
+  const ca = .62, cb = .78, q = clamp((p - ca) / (cb - ca), 0, 1), back = 9 * u, beside = -1.5 * u;
+  const cxL = -back - W * .6 * (1 - ease(q)) + (beside + back) * ease(q);   // in raft coordinates
+  ctx.save(); ctx.globalAlpha = fade;
+  if (p > ca) {   // behind the raft (further out), so it's drawn first
+    const [cx, cy] = toW(cxL, -.35 * u);
+    ctx.save(); ctx.translate(cx, cy + Math.sin(sec * 1.6) * .05 * u); ctx.rotate(q < 1 ? -.03 : 0); if (d < 0) ctx.scale(-1, 1);
+    ctx.save(); ctx.translate(-3.2 * u, -1.1 * u); person(CG_CREW, u * .8, sec, 1, { still: true, arms: q >= 1 ? "out" : "rest", d }); ctx.restore();
+    ctx.save(); ctx.translate(-2.1 * u, -1.1 * u); person({ ...CG_CREW, skin: "#8d5524", hair: "#111" }, u * .8, sec, 2, { still: true, arms: "rest", d }); ctx.restore();
+    cgBoat(u, sec, q < 1); ctx.restore();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#1a237e"; ctx.font = `bold ${Math.round(.3 * u)}px system-ui, sans-serif`;
+    const [tx, ty] = toW(cxL - 1.3 * u, -.9 * u); ctx.fillText("U.S. COAST GUARD", tx, ty);
+  }
+  ctx.save(); ctx.translate(rx, ry); ctx.rotate(rot); if (d < 0) ctx.scale(-1, 1);
+  // people sitting close together
+  [[-1.7, 0], [-.85, 1], [0, 2], [.85, 3], [1.6, 4]].forEach(([x, i]) => {
+    ctx.save(); ctx.translate(x * u, -.55 * u);
+    person(RAFTERS[i], u * .75, sec, i, { sit: true, still: true, d, arms: p > ca + .02 && i % 2 === 0 ? "up" : "rest", empty: true }); ctx.restore();
+  });
+  // makeshift mast with a tarp for a sail
+  pSeg([-.4 * u, -.5 * u, -.4 * u, -3.4 * u], "#795548", .1 * u);
+  ctx.fillStyle = "#4f6f8f"; ctx.beginPath(); ctx.moveTo(-.35 * u, -3.3 * u); ctx.quadraticCurveTo(.6 * u + Math.sin(sec * 1.3) * .15 * u, -2.4 * u, -.35 * u, -1.4 * u); ctx.fill();
+  // the raft: old tubes and boards lashed together
+  for (const x of [-1.8, -.6, .6, 1.8]) { pBlob(x * u, -.15 * u, .65 * u, .32 * u, "#2b2b2b"); pBlob(x * u - .15 * u, -.25 * u, .25 * u, .08 * u, "rgba(255,255,255,.15)"); }
+  for (const [x, w, a] of [[-2.4, 1.6, .05], [-.8, 1.7, -.04], [.8, 1.6, .06]]) { ctx.save(); ctx.translate((x + w / 2) * u, -.48 * u); ctx.rotate(a); ctx.fillStyle = "#a1887f"; ctx.fillRect(-w / 2 * u, -.1 * u, w * u, .2 * u); ctx.restore(); }
+  ctx.strokeStyle = "#d7ccc8"; ctx.lineWidth = Math.max(1, .04 * u);
+  for (const x of [-1.8, -.6, .6, 1.8]) { ctx.beginPath(); ctx.moveTo((x - .2) * u, -.6 * u); ctx.lineTo((x + .2) * u, -.3 * u); ctx.moveTo((x + .2) * u, -.6 * u); ctx.lineTo((x - .2) * u, -.3 * u); ctx.stroke(); }   // rope
+  ctx.restore();
   ctx.restore();
 }
 // ---- a Cybertruck cruising along the beach, driver waving ----
@@ -3638,9 +3703,9 @@ function spinDone() {
 const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"]];
 const PAGE_KIND = Object.fromEntries(PAGE_LIST.map(([k]) => [k, 1]));
 const CRAFT_LIST = [["sub", "aSub", "Yellow submarine"], ["party", "aParty", "Bachelorette pontoon"], ["jetski", "aJet", "Jet ski crash"], ["surf", "aSurf", "Wake surf bros"],
-  ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"]];   // the Boats group
-const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch };
-const RAUNCHY = { party: 1, jetski: 1, surf: 1, bass: 1, fab: 1, dolphin: 1 }, tame = k => !RAUNCHY[k] || state.aRaunchy;   // raunchy ones only play when "Show raunchy animations" is on
+  ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"], ["cg", "aCG", "Raft and the Coast Guard"]];   // the Boats group
+const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch, cg: coastGuard };
+const RAUNCHY = { party: 1, jetski: 1, surf: 1, bass: 1, fab: 1, dolphin: 1, cg: 1 }, tame = k => !RAUNCHY[k] || state.aRaunchy;   // raunchy ones only play when "Show raunchy animations" is on
 function pageSnap(scale) {   // the whole screen as it looks now: background, wave band, chart and the button bar
   const W = innerWidth, H = innerHeight, r = scale || window.devicePixelRatio || 1, s = document.createElement("canvas");
   s.width = Math.round(W * r); s.height = Math.round(H * r);
@@ -4430,7 +4495,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);

@@ -173,6 +173,11 @@
     <label class="row sub"><span>Salmon troller Good News<small>Out of Juneau, Alaska. Two fishermen in orange rain gear land salmon under their very own rain cloud</small></span><span class="ctl"><button class="try" data-try="troller">▶</button><input type="checkbox" class="sw" data-set="aTroll"></span></label>
     <label class="row sub"><span>Dhow<small>Cargo piled sky high with a goat on top. The wind dies, so out comes a leaf blower. It works a little too well</small></span><span class="ctl"><button class="try" data-try="dhow">▶</button><input type="checkbox" class="sw" data-set="aDhow"></span></label>
     <label class="row sub"><span>Spanish galleon<small>Capitán Crispín, breakfast-cereal hero, fires the breakfast cannons. Cereal everywhere</small></span><span class="ctl"><button class="try" data-try="galleon">▶</button><input type="checkbox" class="sw" data-set="aGalleon"></span></label>
+    <h3>Aircraft</h3>
+    <label class="row sub"><span>Time between aircraft<small>Things that fly over the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="airMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Paramotor<small>Buzzes in under a very colorful wing, makes a big U-turn and heads back out the way it came</small></span><span class="ctl"><button class="try" data-try="para">▶</button><input type="checkbox" class="sw" data-set="aPara"></span></label>
+    <label class="row sub"><span>Coast Guard helicopter<small>An orange MH-65 Dolphin goes by on patrol, rescue swimmer waving from the door</small></span><span class="ctl"><button class="try" data-try="helo">▶</button><input type="checkbox" class="sw" data-set="aHelo"></span></label>
+    <label class="row sub"><span>Sightseeing helicopter<small>A Robinson R44 tour goes by slowly. The tourists are taking pictures of you</small></span><span class="ctl"><button class="try" data-try="r44">▶</button><input type="checkbox" class="sw" data-set="aR44"></span></label>
     <h3>Page animations</h3>
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
@@ -239,10 +244,10 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG", "aPirate", "aTroll", "aDhow", "aGalleon", "aLiner"];   // one switch per animation
-const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", "craftMin", "partyFall", ...FXKEYS];
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG", "aPirate", "aTroll", "aDhow", "aGalleon", "aLiner", "aPara", "aHelo", "aR44"];   // one switch per animation
+const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", "craftMin", "airMin", "partyFall", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
-                textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, craftMin: 10, partyFall: false, data: null, updated: null, error: "",
+                textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, craftMin: 10, airMin: 10, partyFall: false, data: null, updated: null, error: "",
                 // animations start off if the device asks for reduced motion (Android: Remove animations)
                 anim: !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) };
 for (const k of FXKEYS) state[k] = true;
@@ -1051,7 +1056,7 @@ const bctx = fxb.getContext("2d"), fctx = fxf.getContext("2d");
 const MIN = 60e3, rnd = (a, b) => a + Math.random() * (b - a), gap = m => m * MIN * rnd(.8, 1.2), clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const ease = p => p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
 const FX = { streaks: [], drops: [], clouds: [], stars: [], splash: [], events: [], flash: 0, nextFlash: 0, tideFlood: 0,
-             next: { life: performance.now() + Math.min(90e3, gap(state.lifeMin)), other: performance.now() + Math.min(3 * MIN, gap(state.otherMin)), boat: performance.now() + Math.min(60e3, gap(state.boatMin)), page: performance.now() + Math.min(4 * MIN, gap(state.pageMin)), craft: performance.now() + Math.min(3 * MIN, gap(state.craftMin)) }, last: "", lifeIdx: 0, boatIdx: 0, slot: null };
+             next: { life: performance.now() + Math.min(90e3, gap(state.lifeMin)), other: performance.now() + Math.min(3 * MIN, gap(state.otherMin)), boat: performance.now() + Math.min(60e3, gap(state.boatMin)), page: performance.now() + Math.min(4 * MIN, gap(state.pageMin)), craft: performance.now() + Math.min(3 * MIN, gap(state.craftMin)), air: performance.now() + Math.min(5 * MIN, gap(state.airMin)) }, last: "", lifeIdx: 0, boatIdx: 0, slot: null };
 
 // numbers that count up to their new value
 const NUM = {}, NUM_MS = 1400;
@@ -1265,6 +1270,7 @@ function play(kind, opt = {}) {
   if (kind === "party") {   // takes turns: sick over the back, then falls in
     if (!opt.mode) { state.partyFall = !state.partyFall; save(); opt.mode = state.partyFall ? "fall" : "vomit"; }
   }
+  if (kind in AIR_DRAW) { opt.dir = Math.random() < .5 ? -1 : 1; opt.y = kind === "para" ? rnd(.5, .6) : rnd(.28, .42); }
   if (kind in CRAFT_DRAW) { opt.puke = []; opt.fall = null; opt.dir = Math.random() < .5 ? -1 : 1; }
   if (kind === "jetski") { opt.pass = opt.pass ?? Math.random() < .5; opt.xc = rnd(.42, .58); }
   if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
@@ -1282,7 +1288,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -1316,6 +1322,12 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
     if (!pick.length) FX.next.craft = now + MIN;
     else if (FX.events.some(e => e.kind !== "ship")) FX.next.craft = wait;
     else { FX.next.craft = now + gap(state.craftMin); FX.lastCraft = pick[Math.floor(Math.random() * pick.length)]; play(FX.lastCraft); }
+  }
+  if (now >= FX.next.air) {   // the aircraft: their own timer, and only when nothing else (but a big boat) is playing
+    const pool = AIR_LIST.filter(([, k]) => on(k)).map(([kind]) => kind), pick = pool.length > 1 ? pool.filter(k => k !== FX.lastAir) : pool;
+    if (!pick.length) FX.next.air = now + MIN;
+    else if (FX.events.some(e => e.kind !== "ship")) FX.next.air = wait;
+    else { FX.next.air = now + gap(state.airMin); FX.lastAir = pick[Math.floor(Math.random() * pick.length)]; play(FX.lastAir); }
   }
   if (now >= FX.next.page) {   // the page animations: their own timer, and only when nothing else (but a boat) is playing
     const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null;   // melt or freeze, when it's hot or cold enough
@@ -4077,6 +4089,155 @@ function spinDone() {
   const b = document.body; b.style.transform = b.style.transformOrigin = b.style.boxShadow = "";
   document.documentElement.style.background = ""; FX.spinning = false;
 }
+// ---- aircraft: they fly over the forecast on their own timer ----
+// 1. a paramotor buzzes in under a very colorful wing, makes a big U-turn away from you, and heads back out the side it came in
+const PARA_CELLS = ["#e53935", "#fb8c00", "#fdd835", "#7cb342", "#00acc1", "#1e88e5", "#5e35b1", "#d81b60"];
+const PARA_PILOT = { guy: true, w: 1.15, skin: "#e8b48a", hair: "#5d4037", shirt: "#ffb300", sleeves: true, pants: "#37474f", shades: true, cap: "#fafafa" };
+function paraWing(rx, ry, c, sec) {   // the canopy: an arch of colored cells around 0,0 (rx: how wide it looks from here)
+  const n = 16, a0 = Math.PI + .22, a1 = 2 * Math.PI - .22, pt = (a, r) => [Math.cos(a) * rx * r, Math.sin(a) * ry * r];
+  const ri = 1 - c / ry;
+  for (let i = 0; i < n; i++) {
+    const a = a0 + (a1 - a0) * i / n, b = a0 + (a1 - a0) * (i + 1) / n, rip = 1 + Math.sin(sec * 7 + i) * .012;
+    ctx.fillStyle = PARA_CELLS[(i + (i >= n / 2 ? 1 : 0)) % PARA_CELLS.length]; ctx.beginPath();
+    ctx.moveTo(...pt(a, rip)); ctx.lineTo(...pt(b, rip)); ctx.lineTo(...pt(b, ri)); ctx.lineTo(...pt(a, ri)); ctx.closePath(); ctx.fill();
+    if (i % 2) { ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.fill(); }
+  }
+  ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = Math.max(1, c * .08);
+  ctx.beginPath(); for (let i = 0; i <= 40; i++) ctx.lineTo(...pt(a0 + (a1 - a0) * i / 40, 1)); for (let i = 40; i >= 0; i--) ctx.lineTo(...pt(a0 + (a1 - a0) * i / 40, ri)); ctx.closePath(); ctx.stroke();
+  return Array.from({ length: 7 }, (_, i) => pt(a0 + (a1 - a0) * (i + .5) / 7, ri));   // where the lines hang from
+}
+function paramotor(e, now, dt, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 1.7, p = (now - e.t0) / e.dur, d = e.dir;
+  const P1 = .38, P2 = .6, xT = .64 * W, vIn = (xT + .15 * W) / P1, R = vIn * (P2 - P1) / Math.PI;
+  let x, th;   // x as if it came in from the left; th: which way it's heading (0 = along the screen, PI/2 = away from you, PI = back)
+  if (p < P1) { x = -.15 * W + vIn * p; th = 0; }
+  else if (p < P2) { th = Math.PI * (p - P1) / (P2 - P1); x = xT + R * Math.sin(th); }
+  else { th = Math.PI; x = xT - (xT + .25 * W) * (p - P2) / (.98 - P2); }
+  const z = (1 - Math.cos(th)) / 2, sc = 1 - .3 * z, X = d > 0 ? x : W - x, Y = H * e.y + z * H * .07 + Math.sin(sec * 1.4) * .15 * u;
+  const k = Math.cos(th), side = Math.abs(Math.sin(th)), face = d * (k >= 0 ? 1 : -1), bank = d * .18 * Math.sin(th) + Math.sin(sec * .9) * .03;
+  ctx.save(); ctx.translate(X, Y); ctx.scale(sc, sc); ctx.rotate(bank);
+  // the wing, way up on its lines: looks narrow from the side and opens out wide as it turns away from you
+  ctx.save(); ctx.translate(0, -7 * u); ctx.rotate(-bank * .5);
+  const tips = paraWing((2.2 + 4 * side) * u, (1.2 + .5 * side) * u, .6 * u, sec);
+  ctx.strokeStyle = "rgba(150,150,150,.85)"; ctx.lineWidth = Math.max(1, .03 * u);
+  const hx = .45 * u * Math.max(.4, Math.abs(k));
+  for (const [tx, ty] of tips) { ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx < 0 ? -hx : hx, 4.6 * u); ctx.stroke(); }
+  ctx.restore();
+  // the motor on his back: a round cage with a spinning prop, side on at first and full round from behind
+  const cage = () => {
+    const cx = -face * .75 * u * (1 - side), cy = -.95 * u, rx = 1.3 * u * (.18 + .82 * side), ry = 1.3 * u;
+    pBlob(cx, cy, rx * .92, ry * .92, "rgba(200,200,200,.28)");   // the prop, a blur
+    if (side > .3) { ctx.save(); ctx.translate(cx, cy); ctx.scale(rx / ry, 1); ctx.rotate(sec * 40); pSeg([-ry * .85, 0, ry * .85, 0], "rgba(80,60,40,.35)", .12 * u); ctx.restore(); }
+    ctx.strokeStyle = "#cfd8dc"; ctx.lineWidth = Math.max(1.5, .09 * u); ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 7); ctx.stroke();
+    ctx.lineWidth = Math.max(1, .03 * u); for (const a of [0, 1.05, 2.1]) { ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * rx, cy + Math.sin(a) * ry); ctx.lineTo(cx - Math.cos(a) * rx, cy - Math.sin(a) * ry); ctx.stroke(); }
+    pBlob(cx, cy, .28 * u, .28 * u, "#455a64");   // the engine
+  };
+  if (side < .55) cage();
+  ctx.save(); ctx.scale(face * Math.max(.4, Math.abs(k)), 1);
+  pSeg([-.45 * u, -.8 * u, -.45 * u, -2.4 * u], "#555", .05 * u); pSeg([.45 * u, -.8 * u, .45 * u, -2.4 * u], "#555", .05 * u);   // risers
+  const wave = (p > .06 && p < .16) || (p > .8 && p < .9);
+  person(PARA_PILOT, u, sec, 0, { sit: true, still: true, arms: wave ? "out" : "up", d: face });
+  ctx.restore();
+  if (side >= .55) cage();
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = .7; ctx.fillStyle = PARA_CELLS[5]; ctx.font = `italic 800 ${Math.round(.55 * u * sc)}px system-ui, sans-serif`; ctx.textAlign = "center";
+  ctx.fillText("bzzzzzzz", X - face * 2.6 * u * sc * Math.max(.3, Math.abs(k)) + Math.sin(sec * 30) * 1.5, Y - .6 * u * sc); ctx.restore();
+  if (p > .06 && p < .16) say(X + d * .5 * u, Y - 3.6 * u, "Wheee!", f * .64);
+  if (p > .8 && p < .9) say(X, Y - 3.4 * u * sc, "See ya!", f * .64);
+}
+
+// 2. a Coast Guard MH-65 Dolphin goes by on patrol: orange, white racing stripe, a shrouded tail fan, rescue swimmer waving from the door
+const SWIMMER = { guy: true, w: 1.2, skin: "#d9a07a", hair: "#3e2723", shirt: "#ff6d00", sleeves: true, pants: "#212121", cap: "#fafafa" };
+function dolphinHelo(e, now, dt, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.3, p = (now - e.t0) / e.dur, d = e.dir;
+  const x0 = -.25 * W + 1.5 * W * p, X = d > 0 ? x0 : W - x0, Y = H * e.y + Math.sin(sec * 1.7) * .12 * u, OR = "#e8492b";
+  ctx.save(); ctx.translate(X, Y); if (d < 0) ctx.scale(-1, 1); ctx.rotate(.07);   // nose down, moving along
+  // tail boom, the fin with its shrouded fan (the fenestron) and the little tailplane
+  ctx.fillStyle = OR; ctx.beginPath(); ctx.moveTo(-1.4 * u, -1.55 * u); ctx.lineTo(-5.6 * u, -1.15 * u); ctx.lineTo(-5.6 * u, -.65 * u); ctx.lineTo(-1.4 * u, -.2 * u); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-4.9 * u, -1.1 * u); ctx.lineTo(-5.5 * u, -2.6 * u); ctx.lineTo(-6.3 * u, -2.6 * u); ctx.lineTo(-6.5 * u, -.8 * u); ctx.lineTo(-5.4 * u, -.55 * u); ctx.closePath(); ctx.fill();
+  pBlob(-5.75 * u, -1.35 * u, .55 * u, .55 * u, "#b23a20"); pBlob(-5.75 * u, -1.35 * u, .42 * u, .42 * u, "#3a3a3a");
+  ctx.save(); ctx.translate(-5.75 * u, -1.35 * u); ctx.rotate(sec * 25); for (let i = 0; i < 5; i++) { ctx.rotate(1.2566); pSeg([0, 0, .38 * u, 0], "rgba(200,200,200,.5)", .06 * u); } ctx.restore();
+  pSeg([-4.6 * u, -.75 * u, -3.7 * u, -.85 * u], OR, .18 * u); pSeg([-3.75 * u, -1.15 * u, -3.7 * u, -.5 * u], OR, .12 * u);
+  ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.round(.32 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.save(); ctx.translate(-3.2 * u, -.88 * u); ctx.rotate(-.09); ctx.scale(d, 1); ctx.fillText("U.S. COAST GUARD", 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(-5.8 * u, -2.25 * u); ctx.scale(d, 1); ctx.font = `bold ${Math.round(.3 * u)}px system-ui, sans-serif`; ctx.fillText("6524", 0, 0); ctx.restore();
+  // the fuselage: rounded nose, engine hump on top
+  ctx.fillStyle = OR; ctx.beginPath(); ctx.moveTo(3.9 * u, .2 * u); ctx.quadraticCurveTo(4.4 * u, -.6 * u, 3.4 * u, -1.25 * u); ctx.quadraticCurveTo(2.4 * u, -1.8 * u, 1.2 * u, -1.75 * u);
+  ctx.lineTo(1 * u, -2.15 * u); ctx.quadraticCurveTo(-.3 * u, -2.5 * u, -1.6 * u, -2 * u); ctx.lineTo(-1.8 * u, -1.5 * u); ctx.lineTo(-1.8 * u, -.15 * u);
+  ctx.quadraticCurveTo(.5 * u, .9 * u, 2.8 * u, .85 * u); ctx.quadraticCurveTo(3.6 * u, .8 * u, 3.9 * u, .2 * u); ctx.closePath(); ctx.fill();
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.moveTo(-.9 * u, -2.6 * u); ctx.lineTo(-.25 * u, -2.6 * u); ctx.lineTo(-1.25 * u, 1 * u); ctx.lineTo(-1.9 * u, 1 * u); ctx.fill();   // racing stripe: wide white, thin blue
+  ctx.fillStyle = "#1e3a8a"; ctx.beginPath(); ctx.moveTo(-.05 * u, -2.6 * u); ctx.lineTo(.2 * u, -2.6 * u); ctx.lineTo(-.8 * u, 1 * u); ctx.lineTo(-1.05 * u, 1 * u); ctx.fill();
+  pBlob(1 * u, -2.3 * u, 2.2 * u, .25 * u, "#f5f5f5");   // white engine cowling
+  ctx.restore();
+  // windscreen and the open cabin door with the rescue swimmer
+  ctx.fillStyle = "#8ec9ef"; ctx.beginPath(); ctx.moveTo(3.95 * u, -.35 * u); ctx.quadraticCurveTo(3.8 * u, -1.05 * u, 3 * u, -1.4 * u); ctx.lineTo(2.55 * u, -1.45 * u); ctx.lineTo(2.6 * u, -.4 * u); ctx.closePath(); ctx.fill();
+  pBlob(2.75 * u, -.95 * u, .2 * u, .22 * u, "#ffffff");   // pilot's helmet
+  ctx.fillStyle = "#263238"; ctx.beginPath(); ctx.roundRect(.15 * u, -1.45 * u, 1.9 * u, 1.75 * u, .12 * u); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.rect(.15 * u, -1.45 * u, 1.9 * u, 1.75 * u); ctx.clip(); ctx.translate(1.1 * u, .55 * u);
+  person(SWIMMER, .62 * u, sec, 0, { still: true, arms: "out", d }); ctx.restore();
+  pSeg([2.05 * u, -1.6 * u, 2.6 * u, -1.6 * u, 2.6 * u, -1.25 * u], "#9e9e9e", .1 * u);   // the rescue hoist over the door
+  pBlob(-1.5 * u, -1.1 * u, .3 * u, .25 * u, "#8ec9ef");   // a little window aft
+  // wheels
+  for (const [wx, wy, r] of [[2.6, 1.05, .22], [-.9, .75, .26]]) { pSeg([wx * u, (wy - .35) * u, wx * u, wy * u], "#424242", .08 * u); pBlob(wx * u, wy * u, r * u, r * u, "#212121"); }
+  // the rotor: mast, hub and the blades as a blur seen edge on
+  pSeg([.3 * u, -2.4 * u, .3 * u, -2.8 * u], "#424242", .2 * u);
+  pBlob(.3 * u, -2.85 * u, 5.4 * u, .16 * u, "rgba(150,150,150,.35)");
+  const bl = Math.cos(sec * 26) * 5.2 * u; pSeg([.3 * u - bl, -2.85 * u, .3 * u + bl, -2.85 * u], "rgba(40,40,40,.55)", .1 * u);
+  pBlob(.3 * u, -2.85 * u, .25 * u, .12 * u, "#333");
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = .7; ctx.fillStyle = "#90a4ae"; ctx.font = `italic 800 ${Math.round(.5 * u)}px system-ui, sans-serif`; ctx.textAlign = "center";
+  ctx.fillText("wop wop wop", X - d * 5 * u, Y - 3.4 * u + Math.sin(sec * 20) * 1.5); ctx.restore();
+}
+
+// 3. a Robinson R44 on a sightseeing tour goes by slowly, stops to hover, and the tourists take pictures of the forecast
+const R44_PEOPLE = [{ skin: "#e8b48a", hair: "#4e342e" }, { skin: "#f1c27d", hair: "#e0b25a" }, { skin: "#8d5524", hair: "#1b1b1b" }];
+const R44_V = [[0, 1], [.36, 1], [.44, .06], [.62, .06], [.7, 1], [1, 1]];   // how fast it goes: slows to hover in the middle
+function r44Tour(e, now, dt, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.2, p = (now - e.t0) / e.dur, d = e.dir;
+  const x0 = -.2 * W + 1.4 * W * warp(R44_V, p), X = d > 0 ? x0 : W - x0, hov = p > .42 && p < .64;
+  const tilt = hov ? -.02 + Math.sin(sec * 1.2) * .015 : .09, Y = H * e.y + Math.sin(sec * 1.5) * .15 * u;
+  ctx.save(); ctx.translate(X, Y); if (d < 0) ctx.scale(-1, 1); ctx.rotate(tilt);
+  // tail boom, fins and the little two-blade tail rotor
+  pSeg([-.6 * u, -1 * u, -5.3 * u, -1.35 * u], "#fafafa", .3 * u);
+  ctx.fillStyle = "#d32f2f"; ctx.beginPath(); ctx.moveTo(-4.9 * u, -1.35 * u); ctx.lineTo(-5.6 * u, -2.5 * u); ctx.lineTo(-5.9 * u, -2.45 * u); ctx.lineTo(-5.45 * u, -1.3 * u); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-4.95 * u, -1.3 * u); ctx.lineTo(-5.5 * u, -.6 * u); ctx.lineTo(-5.75 * u, -.65 * u); ctx.lineTo(-5.4 * u, -1.35 * u); ctx.fill();
+  ctx.save(); ctx.translate(-5.45 * u, -1.5 * u); ctx.rotate(sec * 35); pSeg([-.75 * u, 0, .75 * u, 0], "rgba(60,60,60,.6)", .08 * u); ctx.restore();
+  pBlob(-5.45 * u, -1.5 * u, .78 * u, .78 * u, "rgba(120,120,120,.12)");
+  ctx.fillStyle = "#d32f2f"; ctx.font = `bold ${Math.round(.34 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  // the open engine bay behind the cabin, mast and skids
+  ctx.fillStyle = "#9e9e9e"; ctx.beginPath(); ctx.roundRect(-1.2 * u, -1.6 * u, 1.4 * u, 1.2 * u, .15 * u); ctx.fill();
+  pSeg([-1.1 * u, -1.1 * u, .1 * u, -1.1 * u], "#616161", .08 * u); pBlob(-.5 * u, -.8 * u, .3 * u, .2 * u, "#757575");
+  pSeg([.5 * u, -1.9 * u, .5 * u, -2.55 * u], "#616161", .16 * u);
+  for (const sx of [-.3, 1.9]) pSeg([sx * u, .4 * u, (sx - .1) * u, 1.1 * u], "#9e9e9e", .1 * u);
+  pSeg([-1.2 * u, 1.1 * u, 2.6 * u, 1.1 * u, 3 * u, .85 * u], "#bdbdbd", .13 * u);
+  // the cabin: a white egg with a big glass bubble, two up front and two tourists in back
+  pBlob(1 * u, -.55 * u, 2 * u, 1.35 * u, "#fafafa");
+  ctx.save(); ctx.beginPath(); ctx.ellipse(1 * u, -.55 * u, 2 * u, 1.35 * u, 0, 0, 7); ctx.clip();
+  ctx.fillStyle = "rgba(140,200,240,.85)"; ctx.beginPath(); ctx.moveTo(.1 * u, -.3 * u); ctx.lineTo(.1 * u, -2 * u); ctx.lineTo(3.2 * u, -2 * u); ctx.lineTo(3.2 * u, .1 * u); ctx.quadraticCurveTo(2 * u, -.35 * u, .1 * u, -.3 * u); ctx.fill();
+  for (const [i, hx] of [[0, .7], [1, 1.75], [2, 2.6]]) { const g = R44_PEOPLE[i]; pBlob(hx * u, -.55 * u, .32 * u, .4 * u, "rgba(40,50,70,.6)"); pBlob(hx * u, -1.1 * u, .26 * u, .28 * u, g.skin); pBlob(hx * u - .04 * u, -1.28 * u, .26 * u, .14 * u, g.hair); }
+  pSeg([2.4 * u, -1.35 * u, 2.95 * u, -1.35 * u], "#111", .07 * u);   // the pilot's headset
+  pSeg([.1 * u, -2 * u, .1 * u, -.3 * u], "#e0e0e0", .1 * u);   // door frame
+  ctx.restore();
+  ctx.fillStyle = "#d32f2f"; ctx.beginPath(); ctx.moveTo(-1 * u, -.15 * u); ctx.quadraticCurveTo(1.2 * u, -.25 * u, 2.95 * u, .1 * u); ctx.lineTo(2.85 * u, .3 * u); ctx.quadraticCurveTo(1.2 * u, -.02 * u, -1 * u, .1 * u); ctx.fill();   // red stripe
+  ctx.save(); ctx.translate(1 * u, .32 * u); ctx.scale(d, 1); ctx.fillStyle = "#1565c0"; ctx.font = `bold ${Math.round(.3 * u)}px system-ui, sans-serif`; ctx.fillText("SKY TOURS", 0, 0); ctx.restore();
+  // phones out the window when it hovers, with flashes
+  if (hov) for (const [i, hx] of [[0, .7], [1, 1.75]]) {
+    const px = (hx + .35) * u, py = -1.15 * u; ctx.fillStyle = "#212121"; ctx.fillRect(px - .12 * u, py - .2 * u, .24 * u, .4 * u);
+    if ((sec * 1.3 + i * .45) % 1 < .08) { ctx.save(); ctx.globalAlpha = .9; pBlob(px, py, .7 * u, .7 * u, "rgba(255,255,255,.75)"); pBlob(px, py, .25 * u, .25 * u, "#fff"); ctx.restore(); }
+  }
+  // the main rotor: two long blades, a blur seen edge on
+  pBlob(.5 * u, -2.6 * u, 4.8 * u, .14 * u, "rgba(150,150,150,.35)");
+  const bl = Math.cos(sec * 22) * 4.6 * u; pSeg([.5 * u - bl, -2.6 * u, .5 * u + bl, -2.6 * u], "rgba(40,40,40,.55)", .09 * u);
+  pBlob(.5 * u, -2.6 * u, .2 * u, .1 * u, "#333");
+  ctx.restore();
+  const s = (lx, ly, t) => say(X + d * lx * u, Y + ly * u, t, f * .64);
+  if (p > .12 && p < .3) s(2.5, -3.6, "And on your left... the forecast!");
+  if (p > .45 && p < .55) s(1.2, -3.6, "Ooh! Get one of the wave heights!");
+  if (p > .55 && p < .64) s(1.2, -3.6, "Is that the tide? It's beautiful!");
+  if (p > .75 && p < .9) s(2.5, -3.6, "Next stop: the 10-day!");
+}
+
 // ---- page animations: the whole page (chart and buttons) gets crumpled and thrown in an office wastebasket, ages to dust
 //      and is swept away, is smashed like a windshield, or turns into a ball that's hit out into the night sky.
 //      They have their own timer, never play with a beach scene, and the live page fades back in at the end ----
@@ -4086,6 +4247,8 @@ const CRAFT_LIST = [["sub", "aSub", "Yellow submarine"], ["party", "aParty", "Ba
   ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"], ["cg", "aCG", "Raft and the Coast Guard"],
   ["pirate", "aPirate", "Pirate ship"], ["troller", "aTroll", "Salmon troller Good News"], ["dhow", "aDhow", "Dhow"], ["galleon", "aGalleon", "Spanish galleon"]];   // the Boats group
 const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch, cg: coastGuard, pirate: pirateShip, troller: trollerBoat, dhow: dhowBoat, galleon: galleon };
+const AIR_LIST = [["para", "aPara", "Paramotor"], ["helo", "aHelo", "Coast Guard helicopter"], ["r44", "aR44", "Sightseeing helicopter"]];   // the Aircraft group
+const AIR_DRAW = { para: paramotor, helo: dolphinHelo, r44: r44Tour };
 const RAUNCHY = { party: 1, jetski: 1, surf: 1, bass: 1, fab: 1, dolphin: 1, cg: 1 }, tame = k => !RAUNCHY[k] || state.aRaunchy;   // raunchy ones only play when "Show raunchy animations" is on
 // ---- 9. iceberg: the Titanic steams along the water behind the forecast, comes out in front of it just before it hits an
 //      iceberg, and sinks bow first. The stern goes down last and drags the whole screen down with it, then the wave brings it back ----
@@ -4999,13 +5162,14 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, pirate: 0, troller: 0, dhow: 0, galleon: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3, liner: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, pirate: 0, troller: 0, dhow: 0, galleon: 0, para: 0, helo: 0, r44: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3, liner: 3 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
     if (e.kind === "life") { e.way === "jump" ? jump(e, p, sec, P, now) : e.way === "dive" ? pelican(e, now, sec, P) : e.way === "drift" ? manOWar(e, p, sec) : cameo(e, p, sec, P, now); busy = splashes(now) || busy; }
     if (e.kind === "sub") submarine(e, now, dt, sec, P);
     if (CRAFT_DRAW[e.kind]) CRAFT_DRAW[e.kind](e, now, dt, sec, P);
+    if (AIR_DRAW[e.kind]) AIR_DRAW[e.kind](e, now, dt, sec, P);
     if (e.kind === "queen") queenII(e, now, sec, P);
     if (e.kind === "coaster") coaster(e, now, dt);
 
@@ -5098,7 +5262,7 @@ function pctList() {
   return [["kite", "Kiteboarder"], ...(LIFE[state.loc] || LIFE.spi).map(sp => ["life:" + sp, LIFE_LABEL[sp]]),
     [cold ? "freeze" : "melt", "Melt or freeze"], ["wipe", "Wave wipe"], ["ren", "Ren and the sanderlings"],
     ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : []), ["ship", "Big boats"],
-    ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, , n]) => [k, n]), ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
+    ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, , n]) => [k, n]), ...AIR_LIST.map(([k, , n]) => [k, n]), ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
     ["bite", lake ? "Muskie bite" : "Shark bite"], ...PAGE_LIST.map(([k, , n]) => [k, n])];
 }
 const LIFE_LABEL = { dolphin: "Dolphin", redfish: "Redfish", seaturtle: "Sea turtle", stingray: "Stingray", pelican: "Pelican dive", manowar: "Man o' war",
@@ -5114,7 +5278,7 @@ const inPct = e => {
 function playAny() {   // a random animation that's switched on here (or any of them, if none are)
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["bite", "aBite"],
-    ["ren", "aRen"], ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, s]) => [k, s]), ["truck", "aTruck"], ["rocket", "aRocket"], ["mariachi", "aMariachi"], ["slot", "aSlot"], ["ship", "aShip"], ...PAGE_LIST.map(([k, s]) => [k, s]), ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
+    ["ren", "aRen"], ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, s]) => [k, s]), ...AIR_LIST.map(([k, s]) => [k, s]), ["truck", "aTruck"], ["rocket", "aRocket"], ["mariachi", "aMariachi"], ["slot", "aSlot"], ["ship", "aShip"], ...PAGE_LIST.map(([k, s]) => [k, s]), ...(lake ? [["queen", "aQueen"], ["coaster", "aCoaster"]] : [])];
   const ok = all.filter(([, k]) => state[k]), list = ok.length ? ok : all, [kind] = list[Math.floor(Math.random() * list.length)];
   play(kind, kind === "life" ? { random: true } : {});
 }
@@ -5171,7 +5335,7 @@ dlg.addEventListener("change", e => {
   if (e.target.dataset.rot) { state.rotSec = +e.target.value; save(); rotTimer(); return; }
   if (e.target.dataset.set === "rotate") { setRotate(e.target.checked); return; }
   const m = e.target.closest("[data-min]");
-  if (m) { state[m.dataset.min] = +m.value; const k = { lifeMin: "life", boatMin: "boat", pageMin: "page", craftMin: "craft" }[m.dataset.min] || "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
+  if (m) { state[m.dataset.min] = +m.value; const k = { lifeMin: "life", boatMin: "boat", pageMin: "page", craftMin: "craft", airMin: "air" }[m.dataset.min] || "other"; FX.next[k] = performance.now() + gap(state[m.dataset.min]); changed(); return; }
   const c = e.target.closest("[data-set]"); if (!c) return;
   state[c.dataset.set] = c.checked; changed();
 });

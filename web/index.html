@@ -137,7 +137,7 @@
   <div class="panel" role="dialog" aria-label="Animations" data-pg="anim" hidden>
     <div class="phead"><button class="back" data-page="main">‹ Settings</button><h2>Animations</h2></div>
     <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
-    <label class="row sub"><span>Show raunchy animations<small>The party boats in Boats (not the submarine, pirate ship, troller, dhow or galleon). Off: they never play on their own (▶ still shows them)</small></span><input type="checkbox" class="sw" data-set="aRaunchy"></label>
+    <label class="row sub"><span>Show raunchy animations<small>The party boats in Boats (not the submarine, pirate ship, troller, dhow or galleon) and the Coast Guard bachelorette rescue. Off: they never play on their own (▶ still shows them)</small></span><input type="checkbox" class="sw" data-set="aRaunchy"></label>
     <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between big boats<small>Huge, faint boats passing behind the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="boatMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between other animations<small>Kiteboarder and the ones below Lively numbers (not the page animations). One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -176,7 +176,7 @@
     <h3>Aircraft</h3>
     <label class="row sub"><span>Time between aircraft<small>Things that fly over the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="airMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Paramotor<small>Buzzes in under a very colorful wing, makes a big U-turn and heads back out the way it came</small></span><span class="ctl"><button class="try" data-try="para">▶</button><input type="checkbox" class="sw" data-set="aPara"></span></label>
-    <label class="row sub"><span>Coast Guard helicopter<small>An orange MH-65 Dolphin goes by on patrol, rescue swimmer waving from the door</small></span><span class="ctl"><button class="try" data-try="helo">▶</button><input type="checkbox" class="sw" data-set="aHelo"></span></label>
+    <label class="row sub"><span>Coast Guard helicopter<small>An MH-65 Dolphin on patrol. Sometimes it stops to hoist up someone who fell off a boat. If it's one of the bachelorettes (raunchy), the helicopter really struggles</small></span><span class="ctl"><button class="try" data-try="helo" data-mode="patrol">▶ Fly by</button><button class="try" data-try="helo" data-mode="rescue">▶ Rescue</button><button class="try" data-try="helo" data-mode="bride">▶ Bachelorette</button><input type="checkbox" class="sw" data-set="aHelo"></span></label>
     <label class="row sub"><span>Sightseeing helicopter<small>A Robinson R44 tour goes by slowly. The tourists are taking pictures of you</small></span><span class="ctl"><button class="try" data-try="r44">▶</button><input type="checkbox" class="sw" data-set="aR44"></span></label>
     <h3>Page animations</h3>
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -1271,6 +1271,11 @@ function play(kind, opt = {}) {
     if (!opt.mode) { state.partyFall = !state.partyFall; save(); opt.mode = state.partyFall ? "fall" : "vomit"; }
   }
   if (kind in AIR_DRAW) { opt.dir = Math.random() < .5 ? -1 : 1; opt.y = kind === "para" ? rnd(.5, .6) : rnd(.28, .42); }
+  if (kind === "helo") {   // usually a patrol flyby; sometimes a rescue (the bachelorette one is raunchy)
+    if (!opt.mode) { const r = Math.random(); opt.mode = r < .45 ? "patrol" : r < .7 && state.aRaunchy ? "bride" : "rescue"; }
+    if (opt.mode !== "patrol") opt.y = rnd(.42, .5);
+    opt.who = Math.random() < .5 ? 0 : 1; opt.dur = { patrol: 13000, rescue: 36000, bride: 46000 }[opt.mode];
+  }
   if (kind in CRAFT_DRAW) { opt.puke = []; opt.fall = null; opt.dir = Math.random() < .5 ? -1 : 1; }
   if (kind === "jetski") { opt.pass = opt.pass ?? Math.random() < .5; opt.xc = rnd(.42, .58); }
   if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
@@ -4146,48 +4151,144 @@ function paramotor(e, now, dt, sec, P) {
   if (p > .8 && p < .9) say(X, Y - 3.4 * u * sc, "See ya!", f * .64);
 }
 
-// 2. a Coast Guard MH-65 Dolphin goes by on patrol: orange, white racing stripe, a shrouded tail fan, rescue swimmer waving from the door
-const SWIMMER = { guy: true, w: 1.2, skin: "#d9a07a", hair: "#3e2723", shirt: "#ff6d00", sleeves: true, pants: "#212121", cap: "#fafafa" };
-function dolphinHelo(e, now, dt, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.3, p = (now - e.t0) / e.dur, d = e.dir;
-  const x0 = -.25 * W + 1.5 * W * p, X = d > 0 ? x0 : W - x0, Y = H * e.y + Math.sin(sec * 1.7) * .12 * u, OR = "#e8492b";
-  ctx.save(); ctx.translate(X, Y); if (d < 0) ctx.scale(-1, 1); ctx.rotate(.07);   // nose down, moving along
-  // tail boom, the fin with its shrouded fan (the fenestron) and the little tailplane
-  ctx.fillStyle = OR; ctx.beginPath(); ctx.moveTo(-1.4 * u, -1.55 * u); ctx.lineTo(-5.6 * u, -1.15 * u); ctx.lineTo(-5.6 * u, -.65 * u); ctx.lineTo(-1.4 * u, -.2 * u); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(-4.9 * u, -1.1 * u); ctx.lineTo(-5.5 * u, -2.6 * u); ctx.lineTo(-6.3 * u, -2.6 * u); ctx.lineTo(-6.5 * u, -.8 * u); ctx.lineTo(-5.4 * u, -.55 * u); ctx.closePath(); ctx.fill();
-  pBlob(-5.75 * u, -1.35 * u, .55 * u, .55 * u, "#b23a20"); pBlob(-5.75 * u, -1.35 * u, .42 * u, .42 * u, "#3a3a3a");
-  ctx.save(); ctx.translate(-5.75 * u, -1.35 * u); ctx.rotate(sec * 25); for (let i = 0; i < 5; i++) { ctx.rotate(1.2566); pSeg([0, 0, .38 * u, 0], "rgba(200,200,200,.5)", .06 * u); } ctx.restore();
-  pSeg([-4.6 * u, -.75 * u, -3.7 * u, -.85 * u], OR, .18 * u); pSeg([-3.75 * u, -1.15 * u, -3.7 * u, -.5 * u], OR, .12 * u);
-  ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.round(.32 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.save(); ctx.translate(-3.2 * u, -.88 * u); ctx.rotate(-.09); ctx.scale(d, 1); ctx.fillText("U.S. COAST GUARD", 0, 0); ctx.restore();
-  ctx.save(); ctx.translate(-5.8 * u, -2.25 * u); ctx.scale(d, 1); ctx.font = `bold ${Math.round(.3 * u)}px system-ui, sans-serif`; ctx.fillText("6524", 0, 0); ctx.restore();
-  // the fuselage: rounded nose, engine hump on top
-  ctx.fillStyle = OR; ctx.beginPath(); ctx.moveTo(3.9 * u, .2 * u); ctx.quadraticCurveTo(4.4 * u, -.6 * u, 3.4 * u, -1.25 * u); ctx.quadraticCurveTo(2.4 * u, -1.8 * u, 1.2 * u, -1.75 * u);
-  ctx.lineTo(1 * u, -2.15 * u); ctx.quadraticCurveTo(-.3 * u, -2.5 * u, -1.6 * u, -2 * u); ctx.lineTo(-1.8 * u, -1.5 * u); ctx.lineTo(-1.8 * u, -.15 * u);
-  ctx.quadraticCurveTo(.5 * u, .9 * u, 2.8 * u, .85 * u); ctx.quadraticCurveTo(3.6 * u, .8 * u, 3.9 * u, .2 * u); ctx.closePath(); ctx.fill();
-  ctx.save(); ctx.clip();
-  ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.moveTo(-.9 * u, -2.6 * u); ctx.lineTo(-.25 * u, -2.6 * u); ctx.lineTo(-1.25 * u, 1 * u); ctx.lineTo(-1.9 * u, 1 * u); ctx.fill();   // racing stripe: wide white, thin blue
-  ctx.fillStyle = "#1e3a8a"; ctx.beginPath(); ctx.moveTo(-.05 * u, -2.6 * u); ctx.lineTo(.2 * u, -2.6 * u); ctx.lineTo(-.8 * u, 1 * u); ctx.lineTo(-1.05 * u, 1 * u); ctx.fill();
-  pBlob(1 * u, -2.3 * u, 2.2 * u, .25 * u, "#f5f5f5");   // white engine cowling
+// 2. a Coast Guard MH-65 Dolphin. Usually it just goes by on patrol. Sometimes it stops to hoist someone who fell off a boat:
+//    the rescue swimmer goes down on the cable, grabs them, and they're both winched up. When it's one of the bachelorettes (raunchy),
+//    the helicopter really struggles: it sags toward the water, shudders, and limps off
+const SWIMMER = { guy: true, w: 1.2, skin: "#d9a07a", hair: "#3e2723", shirt: "#1c1c1c", sleeves: true, pants: "#1c1c1c", cap: "#ffd600", shades: true };
+const MECH = { guy: true, w: 1.2, skin: "#f1c27d", hair: "#5d4037", shirt: "#ff7043", sleeves: true, pants: "#ff7043", cap: "#fafafa" };
+const OVERBOARD = [{ guy: true, w: 1.25, skin: "#e8b48a", hair: "#795548", shirt: "#ff9800", trunks: "#1565c0", cap: "#c62828" },
+  { guy: true, w: 1.4, skin: "#8d5524", hair: "#1b1b1b", shirt: "#ffb300", trunks: "#2e7d32" }];
+const BIG_GIRL = { w: 2.05, skin: "#c68642", suit: "#7b5cff", hair: "#2a1a10", hat: "#ffffff" };
+function finFeet(s) { for (const x of [-.22, .22]) pBlob(x * s, -.03 * s, .3 * s, .08 * s, "#ffd600"); }
+function dolphinBody(u, sec, e, crew) {   // the helicopter, facing +x, origin about the middle of the cabin floor
+  const OR = "#e04a24", DK = "#b5391b";
+  // fin with the shrouded fan, tailplane with its end fins
+  ctx.fillStyle = OR; ctx.beginPath(); ctx.moveTo(-5 * u, -1.65 * u); ctx.lineTo(-5.85 * u, -3.35 * u); ctx.lineTo(-6.5 * u, -3.35 * u); ctx.lineTo(-6.65 * u, -.65 * u); ctx.lineTo(-5.3 * u, -.95 * u); ctx.closePath(); ctx.fill();
+  pBlob(-6 * u, -1.45 * u, .66 * u, .66 * u, DK); pBlob(-6 * u, -1.45 * u, .5 * u, .5 * u, "#2b2b2b");
+  ctx.save(); ctx.translate(-6 * u, -1.45 * u); ctx.rotate(sec * 30); for (let i = 0; i < 10; i++) { ctx.rotate(.628); pSeg([.08 * u, 0, .46 * u, 0], "rgba(190,190,190,.45)", .05 * u); } ctx.restore();
+  pBlob(-6 * u, -1.45 * u, .1 * u, .1 * u, "#777");
+  if (Math.sin(sec * 6) > .6) pBlob(-6.15 * u, -3.4 * u, .1 * u, .1 * u, "#ff1744");   // anti-collision light
+  pSeg([-4.4 * u, -1.2 * u, -5.25 * u, -1.15 * u], OR, .16 * u); pSeg([-5.2 * u, -1.55 * u, -5.2 * u, -.75 * u], OR, .14 * u);
+  // fuselage: pointed nose, engine fairing on top, the boom tapering back
+  const body = () => { ctx.beginPath(); ctx.moveTo(4.65 * u, -.3 * u); ctx.quadraticCurveTo(4.1 * u, -.75 * u, 3.4 * u, -1 * u); ctx.quadraticCurveTo(2.9 * u, -1.75 * u, 2.3 * u, -1.95 * u);
+    ctx.lineTo(.9 * u, -2.05 * u); ctx.quadraticCurveTo(.75 * u, -2.55 * u, .3 * u, -2.55 * u); ctx.lineTo(-1.2 * u, -2.55 * u); ctx.quadraticCurveTo(-1.8 * u, -2.5 * u, -2 * u, -2.05 * u);
+    ctx.lineTo(-5.45 * u, -1.6 * u); ctx.lineTo(-5.45 * u, -1.05 * u); ctx.lineTo(-2.1 * u, -.55 * u); ctx.quadraticCurveTo(.4 * u, .4 * u, 3 * u, .25 * u); ctx.quadraticCurveTo(4.35 * u, .12 * u, 4.65 * u, -.3 * u); ctx.closePath(); };
+  ctx.fillStyle = OR; body(); ctx.fill();
+  ctx.save(); body(); ctx.clip();
+  const g = ctx.createLinearGradient(0, -2.6 * u, 0, .4 * u); g.addColorStop(0, "rgba(255,255,255,.18)"); g.addColorStop(.5, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(0,0,0,.18)"); ctx.fillStyle = g; ctx.fillRect(-6 * u, -3 * u, 11 * u, 3.5 * u);
+  ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.moveTo(-1.55 * u, -2.7 * u); ctx.lineTo(-.85 * u, -2.7 * u); ctx.lineTo(-1.75 * u, .6 * u); ctx.lineTo(-2.45 * u, .6 * u); ctx.fill();   // the racing stripe
+  ctx.fillStyle = "#1a3b8c"; ctx.beginPath(); ctx.moveTo(-.72 * u, -2.7 * u); ctx.lineTo(-.5 * u, -2.7 * u); ctx.lineTo(-1.4 * u, .6 * u); ctx.lineTo(-1.62 * u, .6 * u); ctx.fill();
+  pBlob(-1.85 * u, -1.05 * u, .2 * u, .2 * u, "#1a3b8c"); pBlob(-1.85 * u, -1.05 * u, .12 * u, .14 * u, "#fafafa");   // the shield
+  pBlob(4.65 * u, -.3 * u, .5 * u, .45 * u, "#222");   // black nose tip
   ctx.restore();
-  // windscreen and the open cabin door with the rescue swimmer
-  ctx.fillStyle = "#8ec9ef"; ctx.beginPath(); ctx.moveTo(3.95 * u, -.35 * u); ctx.quadraticCurveTo(3.8 * u, -1.05 * u, 3 * u, -1.4 * u); ctx.lineTo(2.55 * u, -1.45 * u); ctx.lineTo(2.6 * u, -.4 * u); ctx.closePath(); ctx.fill();
-  pBlob(2.75 * u, -.95 * u, .2 * u, .22 * u, "#ffffff");   // pilot's helmet
-  ctx.fillStyle = "#263238"; ctx.beginPath(); ctx.roundRect(.15 * u, -1.45 * u, 1.9 * u, 1.75 * u, .12 * u); ctx.fill();
-  ctx.save(); ctx.beginPath(); ctx.rect(.15 * u, -1.45 * u, 1.9 * u, 1.75 * u); ctx.clip(); ctx.translate(1.1 * u, .55 * u);
-  person(SWIMMER, .62 * u, sec, 0, { still: true, arms: "out", d }); ctx.restore();
-  pSeg([2.05 * u, -1.6 * u, 2.6 * u, -1.6 * u, 2.6 * u, -1.25 * u], "#9e9e9e", .1 * u);   // the rescue hoist over the door
-  pBlob(-1.5 * u, -1.1 * u, .3 * u, .25 * u, "#8ec9ef");   // a little window aft
-  // wheels
-  for (const [wx, wy, r] of [[2.6, 1.05, .22], [-.9, .75, .26]]) { pSeg([wx * u, (wy - .35) * u, wx * u, wy * u], "#424242", .08 * u); pBlob(wx * u, wy * u, r * u, r * u, "#212121"); }
-  // the rotor: mast, hub and the blades as a blur seen edge on
-  pSeg([.3 * u, -2.4 * u, .3 * u, -2.8 * u], "#424242", .2 * u);
-  pBlob(.3 * u, -2.85 * u, 5.4 * u, .16 * u, "rgba(150,150,150,.35)");
-  const bl = Math.cos(sec * 26) * 5.2 * u; pSeg([.3 * u - bl, -2.85 * u, .3 * u + bl, -2.85 * u], "rgba(40,40,40,.55)", .1 * u);
-  pBlob(.3 * u, -2.85 * u, .25 * u, .12 * u, "#333");
+  ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = Math.max(1, .04 * u); body(); ctx.stroke();
+  for (const x of [-.95, -.45]) pBlob(x * u, -2.42 * u, .22 * u, .12 * u, "#3a3a3a");   // engine exhausts
+  // windscreen and cockpit window, pilot
+  ctx.fillStyle = "#7fbde6"; ctx.beginPath(); ctx.moveTo(3.95 * u, -.62 * u); ctx.quadraticCurveTo(3.35 * u, -1.2 * u, 2.45 * u, -1.75 * u); ctx.lineTo(2.25 * u, -1.75 * u); ctx.lineTo(2.25 * u, -.75 * u); ctx.closePath(); ctx.fill();
+  pSeg([3.1 * u, -1.35 * u, 3.1 * u, -.7 * u], OR, .07 * u);
+  pBlob(2.75 * u, -.95 * u, .2 * u, .22 * u, "#f1c27d"); pBlob(2.7 * u, -1.12 * u, .26 * u, .2 * u, "#fafafa");   // the pilot: helmet and dark visor
+  ctx.fillStyle = "#263238"; ctx.beginPath(); ctx.roundRect(2.72 * u, -1.1 * u, .28 * u, .12 * u, .05 * u); ctx.fill();
+  // the cabin door slid back, the open doorway, the crew
+  ctx.fillStyle = OR; ctx.beginPath(); ctx.roundRect(-1.45 * u, -1.7 * u, 1.55 * u, 1.75 * u, .12 * u); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.stroke();
+  pBlob(-.65 * u, -1.15 * u, .32 * u, .3 * u, "#7fbde6");
+  ctx.fillStyle = "#1f2a30"; ctx.beginPath(); ctx.roundRect(.2 * u, -1.75 * u, 1.85 * u, 1.85 * u, .12 * u); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.rect(.2 * u, -1.75 * u, 1.85 * u, 1.85 * u); ctx.clip();
+  crew(); ctx.restore();
+  // the hoist arm over the door
+  pSeg([1.7 * u, -2.05 * u, 2.95 * u, -2.05 * u, 2.95 * u, -1.8 * u], "#9e9e9e", .12 * u); pBlob(2.95 * u, -1.78 * u, .1 * u, .08 * u, "#616161");
+  // sponson, wheels, the camera ball under the nose
+  pBlob(.7 * u, .2 * u, 1.15 * u, .32 * u, DK);
+  for (const [wx, wy, r] of [[.7, .55, .3], [3.25, .55, .2]]) { pSeg([wx * u, (wy - .4) * u, wx * u, wy * u], "#424242", .09 * u); pBlob(wx * u, wy * u, r * u, r * u, "#1b1b1b"); pBlob(wx * u, wy * u, r * .4 * u, r * .4 * u, "#888"); }
+  pBlob(3.75 * u, .3 * u, .22 * u, .22 * u, "#37474f"); pBlob(3.85 * u, .3 * u, .08 * u, .08 * u, "#90caf9");
+  ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.round(.32 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.save(); ctx.translate(-3.6 * u, -1.15 * u); ctx.rotate(-.12); ctx.scale(e.dir, 1); ctx.fillText("U.S. COAST GUARD", 0, 0); ctx.restore();
+  ctx.save(); ctx.translate(-6.1 * u, -2.6 * u); ctx.scale(e.dir, 1); ctx.font = `bold ${Math.round(.3 * u)}px system-ui, sans-serif`; ctx.fillText("6524", 0, 0); ctx.restore();
+}
+function dolphinRotor(u, sec, droop) {   // four blades: a blur seen edge on, the tips drooping when it's straining
+  pSeg([.25 * u, -2.5 * u, .25 * u, -2.95 * u], "#424242", .22 * u);
+  pBlob(.25 * u, -3 * u - droop * .2 * u, 5.6 * u, .18 * u + droop * .15 * u, "rgba(150,150,150,.35)");
+  for (const ph of [0, 1.57]) { const c = Math.cos(sec * 24 + ph) * 5.5 * u;
+    ctx.strokeStyle = "rgba(40,40,40,.6)"; ctx.lineWidth = Math.max(1, .1 * u); ctx.beginPath(); ctx.moveTo(.25 * u - c, -3 * u + droop * .5 * u * Math.abs(c) / (5.5 * u)); ctx.lineTo(.25 * u, -3 * u); ctx.lineTo(.25 * u + c, -3 * u + droop * .5 * u * Math.abs(c) / (5.5 * u)); ctx.stroke(); }
+  pBlob(.25 * u, -3 * u, .28 * u, .14 * u, "#333");
+}
+function dolphinHelo(e, now, dt, sec, P) {
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.1, p = (now - e.t0) / e.dur, d = e.dir;
+  const s = .62 * u, big = e.mode === "bride", rescue = e.mode !== "patrol";
+  let x0, sag = 0, hov = false;
+  if (!rescue) x0 = -.25 * W + 1.5 * W * p;
+  else {   // fly in, hover for the rescue, fly off
+    const xc = .4 * W, ease = q => q * q * (3 - 2 * q);
+    if (p < .18) x0 = -.25 * W + (xc + .25 * W) * (1 - (1 - p / .18) ** 2);
+    else if (p < .72) { x0 = xc; hov = true; }
+    else { const q = (p - .72) / .28; x0 = xc + 1.1 * W * q * q * (big ? .8 : 1); }
+    if (big) sag = p < .44 ? 0 : p < .64 ? ease((p - .44) / .2) : p < .76 ? 1 : Math.max(.35, 1 - (p - .76) * 2.5);
+  }
+  const X = d > 0 ? x0 : W - x0, wob = Math.sin(sec * 7) * .2 * u * sag;
+  const Y = H * e.y + Math.sin(sec * 1.7) * .12 * u + sag * 3.6 * u + wob;
+  const r = (!rescue ? .07 : p < .14 ? .1 : p < .2 ? -.06 : hov ? Math.sin(sec * .9) * .015 : .1) + Math.sin(sec * 5.3) * .1 * sag;
+  const toW = (lx, ly) => [X + d * (lx * Math.cos(r) - ly * Math.sin(r)), Y + lx * Math.sin(r) + ly * Math.cos(r)];
+  // where the swimmer is: in the door, on the cable going down, in the water, coming up together, back inside
+  const [hx, hy] = toW(2.95 * u, -1.75 * u), wy = P.y0, drop = wy - hy - .3 * s;
+  let L = 0, who = "door";   // cable let out, and who's on it
+  if (rescue) {
+    const up0 = .44, up1 = big ? .66 : .6;
+    if (p >= .24 && p < .36) { L = drop * (p - .24) / .12; who = "down"; }
+    else if (p >= .36 && p < up0) { L = drop; who = "water"; }
+    else if (p >= up0 && p < up1) { const q = (p - up0) / (up1 - up0); L = drop * (1 - q) + (big ? Math.sin(sec * 9) * .15 * s * Math.sin(q * Math.PI) : 0); who = "up"; }
+    else if (p >= up1 && p < .72) who = "in";
+    else if (p >= .72) who = "inside";
+  }
+  const victim = big ? BIG_GIRL : OVERBOARD[e.who || 0];
+  // the one who fell in: bobbing and waving until they're picked up
+  if (rescue && (who === "door" || who === "down")) {
+    const vx = d > 0 ? .4 * W + d * 2.95 * u : W - .4 * W + d * 2.95 * u, by = wy + Math.sin(sec * 2.2) * .08 * u;
+    ctx.save(); ctx.beginPath(); ctx.rect(vx - 3 * s, by - 5 * s, 6 * s, 5 * s); ctx.clip(); ctx.translate(vx, by + 1.75 * s);
+    person(victim, s, sec, 1, { arms: "up", still: true, d }); ctx.restore();
+    pBlob(vx, by, 1 * s + Math.sin(sec * 6) * .1 * s, .18 * s, "rgba(255,255,255,.75)");
+    if (p > .02 && p < .3) say(vx, by - 3.3 * s, big ? "Help! I fell off the party boat!" : "Help! My boat left without me!", f * .64);
+  }
+  // the cable and whoever's on it
+  if (L > 0 || who === "water") {
+    const ky = hy + L; pSeg([hx, hy, hx, ky], "#cfd8dc", .03 * u); pBlob(hx, ky, .1 * s, .14 * s, "#757575");
+    if (who === "down") { ctx.save(); ctx.translate(hx - .1 * s, ky + 2.55 * s); person(SWIMMER, s, sec, 0, { arms: "up", still: true, d }); finFeet(s); ctx.restore(); }
+    if (who === "water") {
+      const by = wy + Math.sin(sec * 2.2) * .08 * u;
+      ctx.save(); ctx.beginPath(); ctx.rect(hx - 4 * s, by - 5 * s, 8 * s, 5 * s); ctx.clip();
+      ctx.save(); ctx.translate(hx - .7 * s, by + 1.6 * s); person(SWIMMER, s, sec, 0, { arms: "out", still: true, d }); ctx.restore();
+      ctx.save(); ctx.translate(hx + .8 * s, by + 1.7 * s); person(victim, s, sec, 1, { arms: "out", still: true, d }); ctx.restore(); ctx.restore();
+      pBlob(hx, by, 2.4 * s + Math.sin(sec * 5) * .2 * s, .25 * s, "rgba(255,255,255,.8)");   // rotor wash
+      if (p < .4) say(hx - .7 * s, by - 3.2 * s, "Gotcha! You're OK.", f * .64); else say(hx + .8 * s, by - 3.4 * s, big ? "WOOO! A real hero!" : "Thank you!", f * .64);
+    }
+    if (who === "up") {
+      ctx.save(); ctx.translate(hx - .55 * s, ky + 2.55 * s); person(SWIMMER, s, sec, 0, { arms: "up", still: true, d }); finFeet(s); ctx.restore();
+      ctx.save(); ctx.translate(hx + .6 * s * (big ? 1.4 : 1), ky + 2.6 * s); person(victim, s, sec, 1, { arms: "up", still: true, d }); ctx.restore();
+      pSeg([hx, ky, hx - .55 * s, ky + .9 * s], "#ffd600", .06 * s); pSeg([hx, ky, hx + .6 * s * (big ? 1.4 : 1), ky + .9 * s], "#ffd600", .06 * s);   // the slings
+    }
+  }
+  if (big && sag > .05) {   // smoke from the engines
+    for (let k = 0; k < 6; k++) { const q = (sec * .8 + k / 6) % 1, [sx, sy] = toW(-.7 * u - q * 2.5 * u, -2.5 * u - q * 1.2 * u); pBlob(sx, sy, (.2 + q * .6) * u * sag, (.15 + q * .4) * u * sag, `rgba(90,90,90,${.5 * (1 - q) * sag})`); }
+  }
+  ctx.save(); ctx.translate(X, Y); if (d < 0) ctx.scale(-1, 1); ctx.rotate(r);
+  dolphinBody(u, sec, e, () => {
+    ctx.save(); ctx.translate(1.55 * u, .05 * u); person(MECH, s, sec, 2, { arms: who === "door" && !rescue ? "out" : "rest", still: true, d }); ctx.restore();
+    if (who === "door") { ctx.save(); ctx.translate(.7 * u, -.25 * u); person(SWIMMER, s, sec, 0, { sit: true, still: true, arms: "rest", d }); ctx.restore(); }
+    if (who === "in" || who === "inside") {
+      ctx.save(); ctx.translate(.75 * u, .05 * u); person(SWIMMER, s, sec, 0, { still: true, arms: "rest", d }); ctx.restore();
+      ctx.save(); ctx.translate(1.2 * u, .05 * u); person(victim, s, sec, 1, { still: true, arms: p > .8 ? "up" : "rest", d }); ctx.restore();
+    }
+  });
+  dolphinRotor(u, sec, sag);
   ctx.restore();
   ctx.save(); ctx.globalAlpha = .7; ctx.fillStyle = "#90a4ae"; ctx.font = `italic 800 ${Math.round(.5 * u)}px system-ui, sans-serif`; ctx.textAlign = "center";
-  ctx.fillText("wop wop wop", X - d * 5 * u, Y - 3.4 * u + Math.sin(sec * 20) * 1.5); ctx.restore();
+  ctx.fillText(sag > .3 ? "wop...  wop...  wop..." : "wop wop wop", X - d * 5 * u, Y - 3.7 * u + Math.sin(sec * 20) * 1.5); ctx.restore();
+  if (big) {   // it's a struggle
+    const [mx, my] = toW(1.2 * u, -2.4 * u), [px, py] = toW(3.2 * u, -2.6 * u);
+    if (p > .47 && p < .55) say(px, py - .8 * u, "Full power!", f * .64);
+    if (p > .55 && p < .64) say(mx, my - .8 * u, "Hoist is maxed out!", f * .64);
+    if (sag > .5 && Math.sin(sec * 10) > 0) { ctx.fillStyle = "#ff1744"; ctx.font = `900 ${Math.round(.42 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.fillText("LOW ROTOR RPM", X, Y + 1.5 * u); }
+    if (p > .8 && p < .93) say(px, py - .8 * u, "Can we do that again?!", f * .64);
+    for (let k = 0; k < 3 && sag > .4; k++) { const q = (sec * 1.5 + k / 3) % 1, [sx, sy] = toW(2.62 * u, -1.5 * u); pBlob(sx + d * (.2 + k * .15) * u, sy - .2 * u + q * .8 * u, .05 * u, .08 * u, `rgba(120,190,255,${1 - q})`); }   // the pilot sweating
+  } else if (rescue && p > .8 && p < .93) { const [mx, my] = toW(1.2 * u, -2.4 * u); say(mx, my - .8 * u, "Thanks, Coast Guard!", f * .64); }
 }
 
 // 3. a Robinson R44 on a sightseeing tour goes by slowly, stops to hover, and the tourists take pictures of the forecast

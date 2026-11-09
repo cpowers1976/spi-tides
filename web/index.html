@@ -3638,20 +3638,20 @@ function burnArt(e, W, H) {
 function burnScene(e, t, W, H, dt) {
   const R = e.max * clamp((t - .4) / 9.5, 0, 1) ** 1.5, sc = 70, ew = 26;   // how far the fire has got; the scorch ahead of it; the glowing edge
   ctx.drawImage(e.tex, 0, 0, W, H);
-  const front = [];
-  const scorch = [[], [], [], [], []], glow = [[], [], [], []], ash = [];
-  for (let j = 0; j < e.ny; j++) for (let i = 0; i < e.nx; i++) {
-    const a = R - e.d[j * e.nx + i];
-    if (a < -sc) continue;
-    const x = i * BURN_CS, y = j * BURN_CS;
-    if (a < 0) scorch[Math.min(4, Math.floor((1 + a / sc) * 5))].push(x, y);
-    else if (a < ew) { glow[Math.min(3, Math.floor(a / ew * 4))].push(x, y); if (Math.random() < .04) front.push([x, y]); }
-    else ash.push(x, y);
+  const front = [], ash = [];
+  if (!e.low) { e.low = document.createElement("canvas"); e.low.width = e.nx; e.low.height = e.ny; e.img = e.low.getContext("2d").createImageData(e.nx, e.ny); }
+  const px = e.img.data, GLOW = [[255, 224, 138], [255, 154, 46], [226, 83, 26], [90, 26, 8]];
+  for (let j = 0; j < e.ny; j++) for (let i = 0; i < e.nx; i++) {   // one pixel per little square, stretched smoothly over the screen
+    const c = j * e.nx + i, a = R - e.d[c], o = c * 4;
+    let r = 0, g = 0, b = 0, al = 0;
+    if (a < -sc) al = 0;
+    else if (a < 0) { r = 70; g = 35; b = 8; al = 255 * (.15 + .7 * (1 + a / sc)); }   // browning ahead of the flames
+    else if (a < ew) { [r, g, b] = GLOW[Math.min(3, Math.floor(a / ew * 4))]; al = 255; if (Math.random() < .04) front.push([i * BURN_CS, j * BURN_CS]); }   // the glowing edge
+    else { r = 13; g = 9; b = 7; al = 255; if (Math.random() < .01) ash.push(i * BURN_CS, j * BURN_CS); }
+    px[o] = r; px[o + 1] = g; px[o + 2] = b; px[o + 3] = al;
   }
-  const fill = (list, col) => { if (!list.length) return; ctx.fillStyle = col; ctx.beginPath(); for (let k = 0; k < list.length; k += 2) ctx.rect(list[k], list[k + 1], BURN_CS + .5, BURN_CS + .5); ctx.fill(); };
-  scorch.forEach((l, k) => fill(l, `rgba(70,35,8,${(.15 + k * .17).toFixed(2)})`));   // browning ahead of the flames
-  fill(ash, "#0d0907");
-  ["#ffe08a", "#ff9a2e", "#e2531a", "#5a1a08"].forEach((c, k) => fill(glow[k], c));   // the glowing burning edge
+  e.low.getContext("2d").putImageData(e.img, 0, 0);
+  ctx.save(); ctx.imageSmoothingEnabled = true; ctx.drawImage(e.low, 0, 0, e.nx * BURN_CS, e.ny * BURN_CS); ctx.restore();
   for (let k = 0; k < 18 && ash.length; k++) {   // embers still glowing in the ashes
     const n = Math.floor(Math.random() * ash.length / 2) * 2;
     ctx.fillStyle = `rgba(255,${Math.floor(rnd(60, 140))},20,${rnd(.3, .8).toFixed(2)})`; ctx.fillRect(ash[n] + rnd(0, BURN_CS), ash[n + 1] + rnd(0, BURN_CS), 2, 2);

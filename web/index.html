@@ -2344,6 +2344,8 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
     ctx.stroke();
   }
   if (!g.guy) { pBlob(-.19 * u, -1.17 * u, .06 * u, .04 * u, "rgba(255,90,120,.45)"); pBlob(.19 * u, -1.17 * u, .06 * u, .04 * u, "rgba(255,90,120,.45)"); }
+  if (g.chinBeard) { ctx.fillStyle = g.chinBeard; ctx.beginPath(); ctx.moveTo(-.27 * u, -1.2 * u); ctx.quadraticCurveTo(-.25 * u, -.92 * u, 0, -.9 * u); ctx.quadraticCurveTo(.25 * u, -.92 * u, .27 * u, -1.2 * u);
+    ctx.quadraticCurveTo(.15 * u, -1.06 * u, 0, -1.08 * u); ctx.quadraticCurveTo(-.15 * u, -1.06 * u, -.27 * u, -1.2 * u); ctx.fill(); }   // a short beard along the jaw, face showing
   if (g.beard) { pBlob(0, -1.07 * u, .27 * u, .2 * u, g.beard); pBlob(-.2 * u, -1.2 * u, .1 * u, .14 * u, g.beard); pBlob(.2 * u, -1.2 * u, .1 * u, .14 * u, g.beard); }
   if (g.patch) { pSeg([-.3 * u, -1.42 * u, .3 * u, -1.2 * u], "#111", .03 * u); pBlob(.11 * u, -1.28 * u, .08 * u, .07 * u, "#111"); }
   if (g.monocle) { ctx.strokeStyle = "#d4af37"; ctx.lineWidth = Math.max(1, .03 * u); ctx.beginPath(); ctx.arc(.11 * u, -1.28 * u, .09 * u, 0, 7); ctx.stroke(); pSeg([.2 * u, -1.27 * u, .28 * u, -.95 * u], "#d4af37", .015 * u); }
@@ -3100,7 +3102,7 @@ function pirateShip(e, now, dt, sec, P) {
 //      their very own, and every so often a salmon comes over the rail ----
 const TROLLERS = [   // Casey (white hair) and his cousin (dark hair and a beard), in orange rain gear
   { guy: true, w: 1.25, skin: "#f3cfb3", hair: "#f2f2f2", shirt: "#ff6d00", sleeves: true, sleeve: "#ff6d00", pants: "#ff6d00" },
-  { guy: true, w: 1.3, skin: "#efc6a4", hair: "#2b1d14", beard: "#2b1d14", shirt: "#ff6d00", sleeves: true, sleeve: "#ff6d00", pants: "#ff6d00" },
+  { guy: true, w: 1.3, skin: "#f3cfb3", hair: "#3b2a1e", chinBeard: "#3b2a1e", stache: true, shirt: "#ff6d00", sleeves: true, sleeve: "#ff6d00", pants: "#ff6d00" },
 ];
 const TROLL_GREEN = "#1b4332";
 function salmon(l) {   // facing +x, centred on 0,0; l = half length
@@ -4128,6 +4130,30 @@ function seaStrip(W, H, top, sec, a) {   // the sea across the bottom of the scr
   for (let r = 0; r < 5; r++) { const y = top + 6 + r * (H - top) / 5; ctx.beginPath(); for (let x = 0; x <= W; x += 12) ctx.lineTo(x, y + Math.sin(x / 40 + sec * 1.5 + r) * 2.5); ctx.stroke(); }
   ctx.restore();
 }
+function suckDown(dr, q, W, H, after) {   // the page is sucked down into one point, like a sheet pulled into a drain, crumpling as it goes
+  const { V, tris } = dr.mesh, D = dr.D, [sx, sy] = dr.S, R = Math.hypot(Math.max(sx, W - sx), Math.max(sy, H - sy)), cell = W / 24, K = [], F = [];
+  for (let i = 0; i < V.length; i++) {
+    const [x, y] = V[i], dx = x - sx, dy = y - sy, r = Math.hypot(dx, dy) / R;
+    const k = clamp(q * 1.55 - r * .55, 0, 1), e2 = k * k * (3 - 2 * k);   // the middle goes first, the corners last
+    const a0 = Math.atan2(dy, dx), a = a0 + e2 * (1.3 - r) * .9, rr = Math.hypot(dx, dy) * (1 - e2);   // spirals in
+    const fold = Math.sin(a0 * 14 + r * 6), w = Math.sin(Math.PI * k) * cell * .9 * fold;   // gathers into radial folds, like cloth into a drain
+    D[i] = [sx + Math.cos(a) * rr - Math.sin(a) * w, sy + Math.sin(a) * rr * (1 - e2 * .3) + Math.cos(a) * w + e2 * cell * .6];
+    K[i] = k; F[i] = fold;
+  }
+  const order = tris.map((tr, n) => [n, (K[tr[0]] + K[tr[1]] + K[tr[2]]) / 3]).sort((a, b) => b[1] - a[1]);   // the deepest first
+  const hole = ctx.createRadialGradient(sx, sy, 0, sx, sy, cell * 6 * Math.min(1, q * 3));   // the dark of the drain
+  hole.addColorStop(0, "rgba(0,0,0,.95)"); hole.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = hole; ctx.fillRect(0, 0, W, H);
+  for (const [n, k] of order) {
+    if (k >= .995) continue;
+    const [a, b, c, sh] = tris[n], d = [D[a], D[b], D[c]];
+    if (area2(...d) < 0) { ctx.fillStyle = "#cfd8dc"; ctx.beginPath(); ctx.moveTo(...d[0]); ctx.lineTo(...d[1]); ctx.lineTo(...d[2]); ctx.fill(); }
+    else texTri(dr.page, [V[a], V[b], V[c]], d);
+    ctx.beginPath(); ctx.moveTo(...d[0]); ctx.lineTo(...d[1]); ctx.lineTo(...d[2]); ctx.closePath();
+    const f = (F[a] + F[b] + F[c]) / 3, s2 = Math.sin(Math.PI * k), dark = k * .7 + Math.max(0, f) * .4 * s2;   // further down = darker; one side of each fold in shadow
+    ctx.fillStyle = f < 0 && k < .7 ? `rgba(255,255,255,${(-f * .22 * s2).toFixed(3)})` : `rgba(0,0,0,${Math.min(.95, dark).toFixed(3)})`; ctx.fill();
+  }
+  after();
+}
 function liner(e, now, dt, sec, P) {
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, f = G ? G.f : H / 46, u = f * 2;
   const T1 = 5.5, T2 = 8, Thit = 8.6, Tdip = 10.2, Tup = 13.6, Tslide = 16.8, Tdrag = 17.6, Tgone = 20.6, Twipe = 21.8;
@@ -4160,18 +4186,16 @@ function liner(e, now, dt, sec, P) {
     ctx.save(); ctx.translate(bgx, wy); iceberg(bw, bh); ctx.restore();
   };
   if (!e.drag && t > Tdrag) {   // the stern's still up: as it goes, it takes the whole screen down with it
-    e.drag = { t, y0: sternY, sky: nightSkyCanvas() };
-    const c = pageSnap(), r = c.width / W, keep = ctx; ctx = c.getContext("2d"); ctx.scale(r, r); scene(); ctx = keep; e.drag.page = c;
+    const [sx] = toW(-.5 * L, -.095 * L);
+    e.drag = { t, y0: sternY, sky: nightSkyCanvas(), S: [clamp(sx, W * .15, W * .85), seaY], mesh: grid(24, 16, W, H), D: [] };
+    const c = pageSnap(1), r = c.width / W, keep = ctx; ctx = c.getContext("2d"); ctx.scale(r, r); scene(); ctx = keep; e.drag.page = c;
   }
   if (t >= Twipe) { wipe(e, clamp((t - Twipe) / 1.7, 0, 1), sec, W, H, () => ctx.drawImage(e.drag.sky, 0, 0, W, H)); return; }
   if (e.drag) {
-    const q = clamp((t - e.drag.t) / (Tgone - Tdrag), 0, 1), dy = H * 1.3 * q * q;   // slow at first, then gone
+    const q = clamp((t - e.drag.t) / (Tgone - Tdrag), 0, 1);
     ctx.drawImage(e.drag.sky, 0, 0, W, H);
-    if (q < 1) {
-      ctx.save(); ctx.translate(0, dy);
-      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 30; ctx.drawImage(e.drag.page, 0, 0, W, H); ctx.shadowBlur = 0;
-      ship(seaY); ctx.restore();   // the ship rides down with it, still slipping under
-    }
+    if (q < 1) suckDown(e.drag, q, W, H, () => { ctx.save(); ctx.globalAlpha *= 1 - clamp(q * 2.5, 0, 1); ship(seaY); ctx.restore(); });
+
     return;
   }
   scene();

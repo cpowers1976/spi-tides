@@ -186,7 +186,7 @@
     <label class="row sub"><span>Home run<small>Rolls up into a ball and a bat knocks it out into the night sky</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
     <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
-    <label class="row sub"><span>Iceberg<small>An old ocean liner comes out in front of the forecast and hits an iceberg. It sinks bow first and the stern drags the whole screen down with it</small></span><span class="ctl"><button class="try" data-try="liner">▶</button><input type="checkbox" class="sw" data-set="aLiner"></span></label>
+    <label class="row sub"><span>Iceberg<small>The Titanic comes out in front of the forecast and hits an iceberg. It sinks bow first and the stern drags the whole screen down with it</small></span><span class="ctl"><button class="try" data-try="liner">▶</button><input type="checkbox" class="sw" data-set="aLiner"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -4085,7 +4085,7 @@ const CRAFT_LIST = [["sub", "aSub", "Yellow submarine"], ["party", "aParty", "Ba
   ["pirate", "aPirate", "Pirate ship"], ["troller", "aTroll", "Salmon troller Good News"], ["dhow", "aDhow", "Dhow"], ["galleon", "aGalleon", "Spanish galleon"]];   // the Boats group
 const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch, cg: coastGuard, pirate: pirateShip, troller: trollerBoat, dhow: dhowBoat, galleon: galleon };
 const RAUNCHY = { party: 1, jetski: 1, surf: 1, bass: 1, fab: 1, dolphin: 1, cg: 1 }, tame = k => !RAUNCHY[k] || state.aRaunchy;   // raunchy ones only play when "Show raunchy animations" is on
-// ---- 9. iceberg: an old ocean liner steams along the water behind the forecast, comes out in front of it just before it hits an
+// ---- 9. iceberg: the Titanic steams along the water behind the forecast, comes out in front of it just before it hits an
 //      iceberg, and sinks bow first. The stern goes down last and drags the whole screen down with it, then the wave brings it back ----
 function linerArt(L, sec, lit, smoke) {   // facing +x, waterline at 0, from -L/2 to L/2
   const h = L * .095, hull = () => { ctx.beginPath(); ctx.moveTo(-.5 * L, -h); ctx.lineTo(.47 * L, -h * 1.12); ctx.lineTo(.5 * L, -h * 1.2);
@@ -4110,7 +4110,7 @@ function linerArt(L, sec, lit, smoke) {   // facing +x, waterline at 0, from -L/
   pSeg([-.6 * L, -.9 * h, .6 * L, -.9 * h], "#d4a017", .004 * L);
   for (const y of [-.62, -.32]) for (let x = -.46; x < .45; x += .016) pBlob(x * L, y * h, .0035 * L, .0035 * L, lit ? "#ffe082" : "#263238");
   ctx.restore();
-  ctx.save(); ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.max(7, Math.round(.2 * h))}px Georgia, serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("S.S. UNSINKABLE", .38 * L, -.78 * h); ctx.restore();
+  ctx.save(); ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.max(7, Math.round(.2 * h))}px Georgia, serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("TITANIC", .38 * L, -.78 * h); ctx.restore();
 }
 function iceberg(w, h) {   // base on 0, centred on x = 0
   const pts = [[-.5, 0], [-.44, -.32], [-.33, -.4], [-.25, -.78], [-.12, -.7], [-.02, -1], [.1, -.84], [.18, -.88], [.26, -.56], [.36, -.62], [.45, -.28], [.5, 0]];

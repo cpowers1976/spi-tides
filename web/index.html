@@ -137,7 +137,7 @@
   <div class="panel" role="dialog" aria-label="Animations" data-pg="anim" hidden>
     <div class="phead"><button class="back" data-page="main">‹ Settings</button><h2>Animations</h2></div>
     <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
-    <label class="row sub"><span>Show raunchy animations<small>The party boats in Boats (not the submarine). Off: they never play on their own (▶ still shows them)</small></span><input type="checkbox" class="sw" data-set="aRaunchy"></label>
+    <label class="row sub"><span>Show raunchy animations<small>The party boats in Boats (not the submarine, pirate ship, troller, dhow or galleon). Off: they never play on their own (▶ still shows them)</small></span><input type="checkbox" class="sw" data-set="aRaunchy"></label>
     <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between big boats<small>Huge, faint boats passing behind the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="boatMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between other animations<small>Kiteboarder and the ones below Lively numbers (not the page animations). One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -169,8 +169,12 @@
     <label class="row sub"><span>Fabulous party boat<small>Raunchy. Rainbow everything, a disco ball, and the boys in speedos</small></span><span class="ctl"><button class="try" data-try="fab">▶</button><input type="checkbox" class="sw" data-set="aFab"></span></label>
     <label class="row sub"><span>Dolphin watch<small>Raunchy. Someone on the top deck turns green and it all lands on the lower deck</small></span><span class="ctl"><button class="try" data-try="dolphin">▶</button><input type="checkbox" class="sw" data-set="aDolph"></span></label>
     <label class="row sub"><span>Raft and the Coast Guard<small>Raunchy. A homemade raft drifts in from the pass. Just before it's gone, a Coast Guard boat comes in fast and they go off together</small></span><span class="ctl"><button class="try" data-try="cg">▶</button><input type="checkbox" class="sw" data-set="aCG"></span></label>
+    <label class="row sub"><span>Pirate ship<small>The captain fires the bow cannon. BOOM! The ball just drops out the end, plop. The parrot has notes</small></span><span class="ctl"><button class="try" data-try="pirate">▶</button><input type="checkbox" class="sw" data-set="aPirate"></span></label>
+    <label class="row sub"><span>Salmon troller Good News<small>Out of Juneau, Alaska. Two fishermen in orange rain gear land salmon under their very own rain cloud</small></span><span class="ctl"><button class="try" data-try="troller">▶</button><input type="checkbox" class="sw" data-set="aTroll"></span></label>
+    <label class="row sub"><span>Dhow<small>Cargo piled sky high with a goat on top. The wind dies, so out comes a leaf blower. It works a little too well</small></span><span class="ctl"><button class="try" data-try="dhow">▶</button><input type="checkbox" class="sw" data-set="aDhow"></span></label>
+    <label class="row sub"><span>Spanish galleon<small>Capitán Crispín, breakfast-cereal hero, fires the breakfast cannons. Cereal everywhere</small></span><span class="ctl"><button class="try" data-try="galleon">▶</button><input type="checkbox" class="sw" data-set="aGalleon"></span></label>
     <h3>Page animations</h3>
-    <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned or rained on. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
@@ -182,6 +186,7 @@
     <label class="row sub"><span>Home run<small>Rolls up into a ball and a bat knocks it out into the night sky</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
     <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
+    <label class="row sub"><span>Iceberg<small>An old ocean liner comes out in front of the forecast and hits an iceberg. It sinks bow first and the stern drags the whole screen down with it</small></span><span class="ctl"><button class="try" data-try="liner">▶</button><input type="checkbox" class="sw" data-set="aLiner"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -234,7 +239,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG", "aPirate", "aTroll", "aDhow", "aGalleon", "aLiner"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", "craftMin", "partyFall", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, craftMin: 10, partyFall: false, data: null, updated: null, error: "",
@@ -1277,7 +1282,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2254,17 +2259,17 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
   // g: w (body width), skin, hair, hairdo (long, short, mullet, bald), guy, suit (bikini), speedo, trunks, shirt (tank top), hat (cowboy), cap, capBack, bucket,
   //    shades, stache, cig, can, boa, bride.  o: lean (tips over at the feet), bend (at the waist), wild, still, sit, reach (hand up a pole), sick, empty,
   //    hand ([x, y] from the hips: both hands there, e.g. handlebars), arms ("up", "flex", "out", "rod", "camera"), ko (knocked out), green (0..1), splats, d (un-mirrors words)
-  const w = g.w || 1.2, wild = o.wild || 1, d = o.d || 1, hairdo = g.hairdo || (g.guy ? "short" : "long");
+  const w = g.w || 1.2, armC = g.sleeve || g.skin, legC = g.pants || g.skin, wild = o.wild || 1, d = o.d || 1, hairdo = g.hairdo || (g.guy ? "short" : "long");
   const bob = o.still || o.sit ? 0 : Math.abs(Math.sin(sec * 5 + ph)) * .09 * u * Math.min(wild, 1.8), sway = o.still ? 0 : Math.sin(sec * 2.6 + ph) * .07 * wild;
   ctx.save(); ctx.rotate(o.lean || 0); ctx.translate(0, -bob);
   ctx.lineCap = "round"; ctx.lineJoin = "round";
   const hx = .17 * w * u, kick = o.still ? 0 : Math.sin(sec * 5 + ph) * .07 * u * wild;
   if (o.sit) {
-    for (const s of [-1, 1]) pSeg([s * hx * .6, 0, .62 * u + s * .05 * u, -.08 * u, .66 * u + s * .05 * u, .55 * u], g.skin, .3 * w * u);
+    for (const s of [-1, 1]) pSeg([s * hx * .6, 0, .62 * u + s * .05 * u, -.08 * u, .66 * u + s * .05 * u, .55 * u], legC, .3 * w * u);
     if (g.trunks) { ctx.fillStyle = g.trunks; ctx.beginPath(); ctx.roundRect(-.4 * w * u, -.2 * u, .4 * w * u + .6 * u, .36 * u, .12 * u); ctx.fill(); }
   } else {
-    pSeg([-hx, -1 * u, -hx * 1.1, -.06 * u], g.skin, .3 * w * u);   // legs
-    pSeg([hx, -1 * u, hx * 1.1 + kick, -.06 * u + Math.min(0, kick)], g.skin, .3 * w * u);
+    pSeg([-hx, -1 * u, -hx * 1.1, -.06 * u], legC, .3 * w * u);   // legs
+    pSeg([hx, -1 * u, hx * 1.1 + kick, -.06 * u + Math.min(0, kick)], legC, .3 * w * u);
     if (g.trunks) {   // board shorts
       ctx.fillStyle = g.trunks; ctx.beginPath(); ctx.roundRect(-.43 * w * u, -1.12 * u, .86 * w * u, .62 * u, .08 * u); ctx.fill();
       pSeg([0, -.9 * u, 0, -.52 * u], "rgba(0,0,0,.25)", .03 * u); pSeg([-.4 * w * u, -.62 * u, .4 * w * u, -.62 * u], "rgba(255,255,255,.45)", .05 * u);
@@ -2281,14 +2286,14 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
   if (hairdo === "mullet") pBlob(-.02 * u, -.98 * u, .3 * u, .3 * u, g.hair);   // business in front, party in the back
   const sh = .35 * w * u, arm = .17 * w * u, cupY = -1.62 * u + Math.sin(sec * 3 + ph) * .1 * u * wild;
   const swing = Math.sin(sec * 3.2 + ph) * .14 * u * wild;
-  if (o.hand) pSeg([-sh, -.8 * u, -.2 * u, -.55 * u, ...o.hand], g.skin, arm);
-  else if (o.arms === "rest") pSeg([-sh, -.8 * u, -.5 * w * u, -.4 * u, -.15 * u, -.1 * u], g.skin, arm);   // hands in the lap
+  if (o.hand) pSeg([-sh, -.8 * u, -.2 * u, -.55 * u, ...o.hand], armC, arm);
+  else if (o.arms === "rest") pSeg([-sh, -.8 * u, -.5 * w * u, -.4 * u, -.15 * u, -.1 * u], armC, arm);   // hands in the lap
   else if (o.arms === "up" || o.arms === "out") {
     const up = o.arms === "up", wv = Math.sin(sec * 6 + ph) * .15 * u;
-    pSeg([-sh, -.8 * u, -.62 * w * u, up ? -1.25 * u : -.85 * u, up ? -.55 * w * u - wv : -1.05 * w * u, up ? -1.75 * u : -.8 * u + wv], g.skin, arm);
+    pSeg([-sh, -.8 * u, -.62 * w * u, up ? -1.25 * u : -.85 * u, up ? -.55 * w * u - wv : -1.05 * w * u, up ? -1.75 * u : -.8 * u + wv], armC, arm);
   } else if (o.arms === "flex") {
-    pSeg([-sh, -.8 * u, -.75 * w * u, -.85 * u, -.68 * w * u, -1.35 * u], g.skin, arm); pBlob(-.7 * w * u, -.98 * u, .13 * w * u, .11 * u, g.skin);
-  } else pSeg([-sh, -.8 * u, -.55 * w * u, -.55 * u, -.58 * w * u, -.3 * u + swing], g.skin, arm);   // lower arm, swinging
+    pSeg([-sh, -.8 * u, -.75 * w * u, -.85 * u, -.68 * w * u, -1.35 * u], armC, arm); pBlob(-.7 * w * u, -.98 * u, .13 * w * u, .11 * u, g.skin);
+  } else pSeg([-sh, -.8 * u, -.55 * w * u, -.55 * u, -.58 * w * u, -.3 * u + swing], armC, arm);   // lower arm, swinging
   pBlob(0, -.42 * u, .38 * w * u, .55 * u, g.skin);   // body
   pBlob(0, -.24 * u, .42 * w * u, .3 * u, g.skin);    // belly
   if (g.guy && !g.shirt) {   // pecs and a belly button
@@ -2309,6 +2314,9 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
     ctx.quadraticCurveTo(-.47 * w * u, -.1 * u, -.37 * w * u, .03 * u); ctx.lineTo(.37 * w * u, .03 * u); ctx.quadraticCurveTo(.47 * w * u, -.1 * u, .37 * w * u, -.62 * u);
     ctx.lineTo(.22 * w * u, -.94 * u); ctx.lineTo(.1 * w * u, -.94 * u); ctx.quadraticCurveTo(0, -.74 * u, -.1 * w * u, -.94 * u); ctx.closePath(); ctx.fill();
     if (g.sleeves) for (const s of [-1, 1]) pBlob(s * .4 * w * u, -.8 * u, .15 * w * u, .14 * u, g.shirt);
+    if (g.epaulets) for (const s of [-1, 1]) { pBlob(s * .4 * w * u, -.9 * u, .2 * w * u, .08 * u, g.epaulets); for (let i = -2; i <= 2; i++) pSeg([s * (.4 * w + i * .05) * u, -.86 * u, s * (.4 * w + i * .06) * u, -.7 * u], g.epaulets, .025 * u); }
+    if (g.buttons) for (let i = 0; i < 4; i++) pBlob(0, (-.75 + i * .2) * u, .035 * u, .035 * u, g.buttons);
+    if (g.stripes) for (let i = 0; i < 4; i++) pSeg([-.36 * w * u, (-.7 + i * .2) * u, .36 * w * u, (-.7 + i * .2) * u], g.stripes, .06 * u);
     if (g.flowers) for (const [x, y] of [[-.2, -.6], [.15, -.35], [-.1, -.15], [.22, -.75]]) pBlob(x * w * u, y * u, .07 * u, .07 * u, g.flowers);
     if (g.stain) pBlob(.12 * w * u, -.35 * u, .08 * u, .06 * u, "rgba(150,110,40,.35)");
   }
@@ -2336,6 +2344,14 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
     ctx.stroke();
   }
   if (!g.guy) { pBlob(-.19 * u, -1.17 * u, .06 * u, .04 * u, "rgba(255,90,120,.45)"); pBlob(.19 * u, -1.17 * u, .06 * u, .04 * u, "rgba(255,90,120,.45)"); }
+  if (g.beard) { pBlob(0, -1.07 * u, .27 * u, .2 * u, g.beard); pBlob(-.2 * u, -1.2 * u, .1 * u, .14 * u, g.beard); pBlob(.2 * u, -1.2 * u, .1 * u, .14 * u, g.beard); }
+  if (g.patch) { pSeg([-.3 * u, -1.42 * u, .3 * u, -1.2 * u], "#111", .03 * u); pBlob(.11 * u, -1.28 * u, .08 * u, .07 * u, "#111"); }
+  if (g.monocle) { ctx.strokeStyle = "#d4af37"; ctx.lineWidth = Math.max(1, .03 * u); ctx.beginPath(); ctx.arc(.11 * u, -1.28 * u, .09 * u, 0, 7); ctx.stroke(); pSeg([.2 * u, -1.27 * u, .28 * u, -.95 * u], "#d4af37", .015 * u); }
+  if (g.handlebar) {   // a big curly moustache
+    ctx.strokeStyle = g.handlebar; ctx.lineWidth = Math.max(1.5, .09 * u); ctx.lineCap = "round";
+    for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(0, -1.14 * u); ctx.quadraticCurveTo(s * .2 * u, -1.2 * u, s * .33 * u, -1.12 * u); ctx.quadraticCurveTo(s * .45 * u, -1.05 * u, s * .42 * u, -1.22 * u); ctx.stroke(); }
+  }
+  if (g.cheeks) for (const s of [-1, 1]) pBlob(s * .2 * u, -1.18 * u, .08 * u, .06 * u, "rgba(255,80,80,.55)");
   if (g.stache) { ctx.fillStyle = g.hair; ctx.beginPath(); ctx.ellipse(0, -1.13 * u, .15 * u, .045 * u, 0, Math.PI, 0); ctx.fill(); }
   if (o.sick || o.ko) pBlob(0, -1.1 * u, .07 * u, o.ko ? .05 * u : .1 * u, "#5a1a1a");   // mouth: open
   else if (o.green) pSeg([-.08 * u, -1.1 * u, -.03 * u, -1.13 * u, .03 * u, -1.09 * u, .08 * u, -1.12 * u], "#5a1a1a", .03 * u);   // queasy
@@ -2343,6 +2359,32 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
   if (g.cig && !o.ko) {   // cigarette and smoke
     pSeg([.06 * u, -1.12 * u, .32 * u, -1.08 * u], "#f2f2f2", .05 * u); pBlob(.33 * u, -1.08 * u, .03 * u, .03 * u, "#ff6a1a");
     for (let k = 0; k < 3; k++) { const q = (sec * .5 + k / 3) % 1; pBlob(.36 * u + q * .25 * u + Math.sin(q * 6) * .05 * u, -1.15 * u - q * .9 * u, (.05 + q * .1) * u, (.05 + q * .1) * u, `rgba(210,210,210,${.5 * (1 - q)})`); }
+  }
+  if (o.soot) {   // a cannon went off in their face
+    pBlob(0, -1.27 * u, .31 * u, .32 * u, "rgba(25,25,25,.88)");
+    for (const ex of [-.11, .11]) { pBlob(ex * u, -1.29 * u, .055 * u, .055 * u, "#fff"); pBlob(ex * u, -1.29 * u, .022 * u, .022 * u, "#111"); }
+    for (let i = 0; i < 9; i++) { const a = -Math.PI * (.1 + .8 * i / 8); pSeg([Math.cos(a) * .25 * u, -1.27 * u + Math.sin(a) * .25 * u, Math.cos(a) * .55 * u, -1.27 * u + Math.sin(a) * .55 * u], "#333", .05 * u); }
+  }
+  if (g.tricorn) {   // pirate hat
+    ctx.fillStyle = g.tricorn; ctx.beginPath(); ctx.moveTo(-.58 * u, -1.45 * u); ctx.quadraticCurveTo(-.3 * u, -1.62 * u, -.35 * u, -1.95 * u);
+    ctx.quadraticCurveTo(0, -1.72 * u, .35 * u, -1.95 * u); ctx.quadraticCurveTo(.3 * u, -1.62 * u, .58 * u, -1.45 * u); ctx.quadraticCurveTo(0, -1.58 * u, -.58 * u, -1.45 * u); ctx.fill();
+    pSeg([-.5 * u, -1.48 * u, 0, -1.56 * u, .5 * u, -1.48 * u], "#d4af37", .04 * u);
+    pBlob(0, -1.73 * u, .08 * u, .07 * u, "#fff"); pSeg([-.09 * u, -1.62 * u, .09 * u, -1.66 * u], "#fff", .03 * u); pSeg([.09 * u, -1.62 * u, -.09 * u, -1.66 * u], "#fff", .03 * u);
+  }
+  if (g.bandana) { ctx.fillStyle = g.bandana; ctx.beginPath(); ctx.ellipse(0, -1.42 * u, .32 * u, .22 * u, 0, Math.PI, 0); ctx.fill(); pSeg([-.3 * u, -1.42 * u, -.48 * u, -1.25 * u], g.bandana, .07 * u); }
+  if (g.sou) {   // sou'wester rain hat
+    ctx.fillStyle = g.sou; ctx.beginPath(); ctx.ellipse(0, -1.45 * u, .31 * u, .27 * u, 0, Math.PI, 0); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-.5 * u, -1.38 * u); ctx.quadraticCurveTo(0, -1.52 * u, .5 * u, -1.38 * u); ctx.lineTo(.42 * u, -1.32 * u); ctx.quadraticCurveTo(0, -1.42 * u, -.42 * u, -1.32 * u); ctx.fill();
+  }
+  if (g.beanie) { ctx.fillStyle = g.beanie; ctx.beginPath(); ctx.ellipse(0, -1.45 * u, .31 * u, .29 * u, 0, Math.PI, 0); ctx.fill(); pSeg([-.3 * u, -1.46 * u, .3 * u, -1.46 * u], g.beanie, .1 * u); }
+  if (g.morion) {   // a shiny Spanish helmet with a crest and a big plume
+    ctx.fillStyle = g.plume || "#e53935";
+    ctx.beginPath(); ctx.moveTo(-.05 * u, -1.9 * u); ctx.quadraticCurveTo(-.7 * u, -2.6 * u + Math.sin(sec * 3) * .05 * u, -.55 * u, -1.7 * u); ctx.quadraticCurveTo(-.3 * u, -2.1 * u, -.05 * u, -1.9 * u); ctx.fill();
+    const mg = ctx.createLinearGradient(0, -2 * u, 0, -1.4 * u); mg.addColorStop(0, "#f5f5f5"); mg.addColorStop(1, "#9aa3ad");
+    ctx.fillStyle = mg; ctx.beginPath(); ctx.ellipse(0, -1.5 * u, .32 * u, .4 * u, 0, Math.PI, 0); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-.62 * u, -1.38 * u); ctx.quadraticCurveTo(0, -1.62 * u, .62 * u, -1.38 * u); ctx.quadraticCurveTo(.6 * u, -1.5 * u, .45 * u, -1.52 * u); ctx.lineTo(-.45 * u, -1.52 * u); ctx.quadraticCurveTo(-.6 * u, -1.5 * u, -.62 * u, -1.38 * u); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-.2 * u, -1.85 * u); ctx.quadraticCurveTo(0, -2.15 * u, .2 * u, -1.85 * u); ctx.fill();
+    pSeg([-.42 * u, -1.5 * u, .42 * u, -1.5 * u], "#d4af37", .04 * u);
   }
   if (g.hat) {   // cowboy hat
     pBlob(0, -1.5 * u, .52 * u, .09 * u, g.hat);
@@ -2366,26 +2408,26 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
     pBlob(0, -1.66 * u, .04 * u, .04 * u, "#ff4f9a");
   }
   // top arm
-  if (o.hand) pSeg([sh, -.8 * u, .3 * u, -.55 * u, ...o.hand], g.skin, arm);
-  else if (o.arms === "rest") pSeg([sh, -.8 * u, .5 * w * u, -.4 * u, .15 * u, -.1 * u], g.skin, arm);
-  else if (o.reach) pSeg([sh, -.8 * u, .32 * w * u, -1.4 * u, .25 * u, -1.95 * u], g.skin, arm);   // up on the pole
+  if (o.hand) pSeg([sh, -.8 * u, .3 * u, -.55 * u, ...o.hand], armC, arm);
+  else if (o.arms === "rest") pSeg([sh, -.8 * u, .5 * w * u, -.4 * u, .15 * u, -.1 * u], armC, arm);
+  else if (o.reach) pSeg([sh, -.8 * u, .32 * w * u, -1.4 * u, .25 * u, -1.95 * u], armC, arm);   // up on the pole
   else if (o.arms === "up" || o.arms === "out") {
     const up = o.arms === "up", wv = Math.sin(sec * 6 + ph + 1) * .15 * u;
-    pSeg([sh, -.8 * u, .62 * w * u, up ? -1.25 * u : -.85 * u, up ? .55 * w * u + wv : 1.05 * w * u, up ? -1.75 * u : -.8 * u - wv], g.skin, arm);
-  } else if (o.arms === "flex") { pSeg([sh, -.8 * u, .75 * w * u, -.85 * u, .68 * w * u, -1.35 * u], g.skin, arm); pBlob(.7 * w * u, -.98 * u, .13 * w * u, .11 * u, g.skin); }
+    pSeg([sh, -.8 * u, .62 * w * u, up ? -1.25 * u : -.85 * u, up ? .55 * w * u + wv : 1.05 * w * u, up ? -1.75 * u : -.8 * u - wv], armC, arm);
+  } else if (o.arms === "flex") { pSeg([sh, -.8 * u, .75 * w * u, -.85 * u, .68 * w * u, -1.35 * u], armC, arm); pBlob(.7 * w * u, -.98 * u, .13 * w * u, .11 * u, g.skin); }
   else if (o.arms === "rod") {   // fishing: rod out over the water, line down to a bobber
     const hand = [.55 * w * u + .1 * u, -.65 * u], bend = Math.sin(sec * 1.7 + ph) * .1, tip = [hand[0] + 2.1 * u, hand[1] - 1.5 * u + bend * u];
-    pSeg([sh, -.8 * u, .6 * w * u, -.5 * u, ...hand], g.skin, arm);
+    pSeg([sh, -.8 * u, .6 * w * u, -.5 * u, ...hand], armC, arm);
     ctx.strokeStyle = "#3a2a1a"; ctx.lineWidth = Math.max(1, .05 * u); ctx.beginPath(); ctx.moveTo(hand[0] - .3 * u, hand[1] + .2 * u); ctx.quadraticCurveTo(hand[0] + 1.2 * u, hand[1] - 1.2 * u, ...tip); ctx.stroke();
     const bob2 = [tip[0] + .5 * u, (o.water || 2.5 * u) + Math.sin(sec * 2) * .05 * u];
     ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(...tip); ctx.quadraticCurveTo(tip[0] + .5 * u, tip[1] + 1 * u, ...bob2); ctx.stroke();
     pBlob(bob2[0], bob2[1] - .05 * u, .08 * u, .08 * u, "#e33"); pBlob(bob2[0], bob2[1] + .03 * u, .08 * u, .04 * u, "#fff");
   } else if (o.arms === "camera") {   // holding a camera up to the face
-    pSeg([sh, -.8 * u, .45 * w * u, -1.0 * u, .15 * u, -1.25 * u], g.skin, arm);
+    pSeg([sh, -.8 * u, .45 * w * u, -1.0 * u, .15 * u, -1.25 * u], armC, arm);
     ctx.fillStyle = "#1c1c1c"; ctx.fillRect(-.22 * u, -1.42 * u, .44 * u, .28 * u); pBlob(0, -1.28 * u, .09 * u, .09 * u, "#5a7a9a");
   } else if (!o.sick) {   // drink in the air
     const hand = [.5 * w * u + .12 * u, cupY];
-    pSeg([sh, -.8 * u, .62 * w * u, -1.05 * u, ...hand], g.skin, arm);
+    pSeg([sh, -.8 * u, .62 * w * u, -1.05 * u, ...hand], armC, arm);
     if (o.empty) {}
     else if (g.can) {   // a light beer
       ctx.fillStyle = "#c9d8e8"; ctx.fillRect(hand[0] - .08 * u, hand[1] - .22 * u, .16 * u, .3 * u);
@@ -2396,7 +2438,7 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
       ctx.lineTo(hand[0] + .08 * u, hand[1] + .08 * u); ctx.lineTo(hand[0] - .08 * u, hand[1] + .08 * u); ctx.fill();
       pSeg([hand[0] - .11 * u, hand[1] - .2 * u, hand[0] + .11 * u, hand[1] - .2 * u], "#fff", .04 * u);
     }
-  } else pSeg([sh, -.8 * u, .55 * w * u, -.6 * u, .45 * w * u, -.35 * u], g.skin, arm);   // holding the stomach
+  } else pSeg([sh, -.8 * u, .55 * w * u, -.6 * u, .45 * w * u, -.35 * u], armC, arm);   // holding the stomach
   if (o.splats) for (const [x, y, r, c] of o.splats) pBlob(x * u, y * u, r * u, r * .75 * u, c || "#a4c639");   // whatever landed on them
   ctx.restore();
   ctx.lineCap = "butt"; ctx.lineJoin = "miter";
@@ -2952,6 +2994,342 @@ function coastGuard(e, now, dt, sec, P) {
   ctx.strokeStyle = "#d7ccc8"; ctx.lineWidth = Math.max(1, .04 * u);
   for (const x of [-1.8, -.6, .6, 1.8]) { ctx.beginPath(); ctx.moveTo((x - .2) * u, -.6 * u); ctx.lineTo((x + .2) * u, -.3 * u); ctx.moveTo((x + .2) * u, -.6 * u); ctx.lineTo((x - .2) * u, -.3 * u); ctx.stroke(); }   // rope
   ctx.restore();
+  ctx.restore();
+}
+// ---- a pirate ship: the captain fires the bow cannon. BOOM! The ball just drops out into the water, and the parrot has notes ----
+const PIRATES = [
+  { guy: true, w: 1.35, skin: "#e8b48a", hair: "#2a1a10", beard: "#2a1a10", tricorn: "#1b1b1b", patch: true, shirt: "#b71c1c", sleeves: true, sleeve: "#b71c1c", buttons: "#d4af37", pants: "#3e2723" },   // the captain
+  { guy: true, w: 1.1, skin: "#c68642", hair: "#111", bandana: "#d32f2f", shirt: "#fafafa", stripes: "#1565c0", sleeves: true, pants: "#37474f", stache: "#111" },   // at the wheel
+  { guy: true, w: 1.5, skin: "#ffdbac", hair: "#a0522d", hairdo: "bald", bandana: "#2e7d32", beard: "#a0522d", shirt: "#fafafa", stripes: "#c62828", pants: "#5d4037" },
+];
+function squareSail(x, top, bot, w, col, patches, sec, ph) {   // a square sail on its yard, seen from the side, bellied out a little
+  const b = Math.sin(sec * 1.4 + ph) * .04 * w;
+  pSeg([x - w * .58, top, x + w * .58, top], "#4e342e", Math.max(2, w * .05));   // the yard
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x - w / 2, top); ctx.lineTo(x + w / 2, top);
+  ctx.quadraticCurveTo(x + w / 2 + w * .08 + b, (top + bot) / 2, x + w * .45, bot); ctx.quadraticCurveTo(x, bot + w * .08, x - w * .45, bot);
+  ctx.quadraticCurveTo(x - w / 2 - w * .08 - b, (top + bot) / 2, x - w / 2, top); ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,.12)"; ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - w / 2 + w * i / 4, top); ctx.lineTo(x - w * .45 + w * .9 * i / 4, bot + w * .03); ctx.stroke(); }
+  for (const [px, py, pw, ph2, pc] of patches || []) { ctx.fillStyle = pc; ctx.fillRect(x + px * w, top + py * (bot - top), pw * w, ph2 * (bot - top)); }
+}
+function jollyRoger(x, y, s, sec) {   // a waving black flag with a skull and crossbones, flying back toward -x
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.moveTo(x, y);
+  for (let i = 0; i <= 8; i++) ctx.lineTo(x - s * 1.5 * i / 8, y + Math.sin(sec * 5 - i * .8) * s * .08 * i / 8);
+  for (let i = 8; i >= 0; i--) ctx.lineTo(x - s * 1.5 * i / 8, y + s + Math.sin(sec * 5 - i * .8) * s * .08 * i / 8);
+  ctx.fill();
+  const cx = x - s * .72, cy = y + s * .45 + Math.sin(sec * 5 - 4) * s * .04;
+  pSeg([cx - s * .35, cy + s * .05, cx + s * .35, cy + s * .4], "#fff", s * .08); pSeg([cx + s * .35, cy + s * .05, cx - s * .35, cy + s * .4], "#fff", s * .08);
+  pBlob(cx, cy, s * .2, s * .2, "#fff"); pBlob(cx, cy + s * .17, s * .12, s * .08, "#fff");
+  pBlob(cx - s * .07, cy, s * .05, s * .05, "#111"); pBlob(cx + s * .07, cy, s * .05, s * .05, "#111");
+}
+function parrot(x, y, s, sec, talk) {   // a green parrot sitting up, facing +x
+  pBlob(x - s * .1, y + s * .55, s * .18, s * .5, "#1565c0", .3);   // tail
+  pBlob(x, y, s * .32, s * .45, "#43a047"); pBlob(x - s * .08, y + s * .05, s * .2, s * .32, "#2e7d32", .2);   // body and wing
+  pBlob(x + s * .08, y - s * .45, s * .24, s * .24, "#e53935");   // head
+  pBlob(x + s * .14, y - s * .5, s * .07, s * .07, "#fff"); pBlob(x + s * .16, y - s * .5, s * .035, s * .035, "#111");
+  ctx.fillStyle = "#ffca28"; ctx.beginPath(); ctx.moveTo(x + s * .28, y - s * .52); ctx.quadraticCurveTo(x + s * .52, y - s * .5, x + s * .38, y - s * .3);
+  ctx.lineTo(x + s * .28, y - s * (talk ? .26 : .36)); ctx.fill();
+}
+function pirateShip(e, now, dt, sec, P) {
+  const f = G ? G.f : cv.clientHeight / 46, u = f * 1.7, L = 13 * u, C = crossing(e, now, P, L), { p, d, vel, bx, wl, fade } = C;
+  const by = wl - .1 * u + Math.sin(sec * 1.2) * .1 * u, rot = Math.sin(sec * 1.2 + .8) * .025, toW = (lx, ly) => [bx + d * lx, by + ly];
+  const pf = .5, fired = p >= pf, tb = e.t0 + pf * e.dur;   // when it goes off
+  ctx.save(); ctx.globalAlpha = fade;
+  ctx.save(); ctx.translate(bx, by); ctx.rotate(rot); if (d < 0) ctx.scale(-1, 1);
+  // masts, sails, rigging and the flag (behind everyone)
+  pSeg([-5.6 * u, -3.6 * u, 0, -11 * u, 7.4 * u, -3.7 * u], "rgba(40,30,20,.55)", .03 * u); pSeg([0, -11 * u, 3.2 * u, -9.3 * u], "rgba(40,30,20,.55)", .03 * u);
+  pSeg([0, -1.8 * u, 0, -11 * u], "#5d4037", .22 * u); pSeg([3.2 * u, -1.8 * u, 3.2 * u, -9.3 * u], "#5d4037", .2 * u);
+  const sail = "#efe3c6", patch = "#c8b48c";
+  squareSail(0, -3.2 * u, -6.4 * u, 4.6 * u, sail, [[.12, .5, .14, .22, patch], [-.3, .2, .1, .16, "#b9c7a5"]], sec, 0);
+  squareSail(0, -6.9 * u, -9.2 * u, 3.6 * u, sail, [[-.1, .35, .12, .3, patch]], sec, 1);
+  squareSail(3.2 * u, -3.4 * u, -6 * u, 3.6 * u, sail, [[.05, .1, .1, .25, "#d9c27f"]], sec, 2);
+  squareSail(3.2 * u, -6.5 * u, -8.5 * u, 2.8 * u, sail, [], sec, 3);
+  jollyRoger(-.1 * u, -11.1 * u, 1.3 * u, sec);
+  pSeg([5.6 * u, -3.1 * u, 8 * u, -4.2 * u], "#5d4037", .16 * u);   // bowsprit
+  // the crew (the hull hides their legs)
+  const soot = fired;
+  ctx.save(); ctx.translate(-4.6 * u, -3.5 * u); person(PIRATES[1], u * .85, sec, 1, { hand: [.9 * u, -.45 * u], still: true, d }); ctx.restore();   // at the wheel
+  ctx.save(); ctx.translate(-1.6 * u, -1.9 * u); person(PIRATES[2], u * .95, sec, 2, { arms: p > pf && p < pf + .1 ? "up" : "rest", still: true, d }); ctx.restore();
+  ctx.save(); ctx.translate(1.9 * u, -1.9 * u); person(PIRATES[0], u, sec, 0, { arms: p > .38 && p < pf ? "out" : "rest", soot, still: p > pf && p < pf + .03, d }); ctx.restore();
+  parrot(2.35 * u, -4.05 * u, .75 * u, sec, (p > .12 && p < .2) || (p > .55 && p < .62));
+  // the ship's wheel
+  ctx.strokeStyle = "#6d4c41"; ctx.lineWidth = Math.max(1, .08 * u); ctx.beginPath(); ctx.arc(-3.75 * u, -4.25 * u, .45 * u, 0, 7); ctx.stroke();
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 4 + sec * .3; pSeg([-3.75 * u + Math.cos(a) * .6 * u, -4.25 * u + Math.sin(a) * .6 * u, -3.75 * u - Math.cos(a) * .6 * u, -4.25 * u - Math.sin(a) * .6 * u], "#6d4c41", .06 * u); }
+  // the bow cannon, poking over the rail
+  const kick = fired ? Math.max(0, 1 - (now - tb) / 300) * .5 * u : 0;
+  pSeg([3.4 * u - kick, -2.35 * u, 4.9 * u - kick, -2.75 * u], "#212121", .42 * u); pBlob(4.95 * u - kick, -2.76 * u, .1 * u, .26 * u, "#000", -.25);
+  if (p > .45 && !fired) for (let i = 0; i < 5; i++) pBlob(3.35 * u + rnd(-.15, .15) * u, -2.6 * u + rnd(-.3, 0) * u, .06 * u, .06 * u, i % 2 ? "#ffeb3b" : "#ff6d00");   // the fuse fizzing
+  // the hull
+  const hg = ctx.createLinearGradient(0, -3.5 * u, 0, .3 * u); hg.addColorStop(0, "#8d5a32"); hg.addColorStop(1, "#4e2e16");
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(-6 * u, -3.6 * u); ctx.lineTo(-3.3 * u, -3.6 * u); ctx.lineTo(-3.2 * u, -2.1 * u); ctx.lineTo(4.2 * u, -2.1 * u);
+  ctx.quadraticCurveTo(5.2 * u, -2.2 * u, 5.7 * u, -3.1 * u); ctx.quadraticCurveTo(5.4 * u, -.2 * u, 3.5 * u, .25 * u); ctx.lineTo(-4.4 * u, .25 * u);
+  ctx.quadraticCurveTo(-5.6 * u, 0, -6 * u, -3.6 * u); ctx.fill();
+  for (const y of [-.55, -.95, -1.7]) pSeg([-5.5 * u, y * u, 4.9 * u, y * u], "rgba(0,0,0,.25)", .03 * u);   // planks
+  pSeg([-5.7 * u, -1.32 * u, 5.2 * u, -1.32 * u], "#d4a017", .26 * u);
+  for (const x of [-3.2, -1.7, -.2, 1.3, 2.8]) rect(x * u, -1.45 * u, .42 * u, .3 * u, [.08, .05, .03, 1]);   // gun ports
+  for (const x of [-5.5, -5]) rect(x * u, -3.2 * u, .3 * u, .35 * u, [1, .85, .4, 1]);   // stern windows
+  pSeg([-6 * u, -4.1 * u, -3.3 * u, -4.1 * u], "#5d4037", .07 * u); for (let x = -5.9; x < -3.3; x += .5) pSeg([x * u, -3.6 * u, x * u, -4.1 * u], "#5d4037", .06 * u);
+  if (fired && now - tb < 1600) {   // BOOM: smoke, flash and a comic-book bang
+    const q = (now - tb) / 1600;
+    if (q < .25) { ctx.fillStyle = "#ffeb3b"; ctx.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * 6.283, r = (i % 2 ? .8 : 1.7) * u * (1 + q); ctx.lineTo(5.4 * u + Math.cos(a) * r, -2.9 * u + Math.sin(a) * r); } ctx.fill(); }
+    for (let i = 0; i < 7; i++) { const a = i * 1.7; pBlob(5 * u + Math.cos(a) * q * 1.6 * u, -2.9 * u + Math.sin(a) * q * 1.1 * u - q * u, (.5 + q * 1.1) * u, (.45 + q * .9) * u, `rgba(120,120,120,${.75 * (1 - q)})`); }
+  }
+  ctx.restore();
+  if (fired && now - tb < 250) { ctx.save(); ctx.translate(...toW(5.4 * u, -2.9 * u)); ctx.rotate(-.2); ctx.fillStyle = "#d50000"; ctx.font = `900 ${Math.round(.9 * u)}px Impact, system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("BOOM!", 0, 0); ctx.restore(); }
+  // the cannonball: it just drops out of the end, plop
+  if (fired) {
+    if (!e.ball) { const [x, y] = toW(5.05 * u, -2.75 * u); e.ball = { x, y, vx: vel + d * 40, vy: -30 }; }
+    const b = e.ball;
+    if (!b.wet) { b.vy += 900 * dt; b.x += b.vx * dt; b.y += b.vy * dt; pBlob(b.x, b.y, .22 * u, .22 * u, "#111"); pBlob(b.x - .07 * u, b.y - .07 * u, .06 * u, .06 * u, "rgba(255,255,255,.4)");
+      if (b.y > wl) { b.wet = now; for (let i = 0; i < 10; i++) FX.splash.push({ x: b.x, y: wl, vx: rnd(-60, 60), vy: rnd(-200, -80), t0: now }); } }
+    else if (now - b.wet < 1300) { ctx.fillStyle = "#fff"; ctx.font = `italic bold ${Math.round(.45 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.fillText("plop", b.x, wl - .6 * u - (now - b.wet) / 1300 * .5 * u); }
+  }
+  const say2 = (lx, ly, s) => { const [x, y] = toW(lx * u, ly * u); say(x, y, s, f * .64); };
+  if (p > .12 && p < .2) say2(2.8, -5.9, "Squawk! Pieces of eight!");
+  if (p > .26 && p < .34) say2(1.9, -5.9, "Ready the cannon!");
+  if (p > .4 && p < .47) say2(1.9, -5.9, "FIRE!!");
+  if (p > .555 && p < .62) say2(2.8, -5.9, "Squawk! Nice shot, Cap'n!");
+  if (p > .64 && p < .72) say2(1.9, -5.9, "...Arr.");
+  if (p > .78 && p < .87) say2(-4.6, -6.6, "Same time tomorrow, Cap'n?");
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#f3d27a"; ctx.font = `italic bold ${Math.round(.34 * u)}px Georgia, serif`;
+  const [tx, ty] = toW(-4.6 * u, -2.6 * u); ctx.fillText("The Soggy Doubloon", tx, ty);
+  ctx.restore();
+}
+
+// ---- the salmon troller Good News, out of Juneau, Alaska: two fishermen in orange rain gear, poles out, a little rain cloud of
+//      their very own, and every so often a salmon comes over the rail ----
+const TROLLERS = [
+  { guy: true, w: 1.3, skin: "#f1c27d", hair: "#6d4c41", beard: "#6d4c41", sou: "#ff6d00", shirt: "#ff6d00", sleeves: true, sleeve: "#ff6d00", pants: "#ff6d00" },
+  { guy: true, w: 1.2, skin: "#e0ac69", hair: "#222", beanie: "#1b4332", shirt: "#ff6d00", sleeves: true, sleeve: "#ff6d00", pants: "#ff6d00", stache: true },
+];
+const TROLL_GREEN = "#1b4332";
+function salmon(l) {   // facing +x, centred on 0,0; l = half length
+  ctx.fillStyle = "#cfd8dc"; ctx.beginPath(); ctx.ellipse(0, 0, l, l * .3, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#455a64"; ctx.beginPath(); ctx.ellipse(0, -l * .1, l * .95, l * .2, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = "#cfd8dc"; ctx.beginPath(); ctx.moveTo(-l * .85, 0); ctx.lineTo(-l * 1.35, -l * .35); ctx.lineTo(-l * 1.25, 0); ctx.lineTo(-l * 1.35, l * .35); ctx.fill();
+  for (let i = 0; i < 5; i++) pBlob(-l * .4 + i * l * .2, -l * .15, l * .03, l * .03, "#263238");
+  pBlob(l * .7, -l * .05, l * .06, l * .06, "#111");
+}
+function trollerBoat(e, now, dt, sec, P) {
+  const f = G ? G.f : cv.clientHeight / 46, u = f * 1.9, L = 11.5 * u, C = crossing(e, now, P, L), { p, d, bx, wl, fade } = C;
+  const by = wl - .05 * u + Math.sin(sec * 1.5) * .09 * u, rot = Math.sin(sec * 1.5 + .7) * .03, toW = (lx, ly) => [bx + d * lx, by + ly];
+  const t = (now - e.t0) / 1000, every = 7, k = Math.floor((t - 2) / every), q = ((t - 2) % every) / 1.2, who = k % 2;   // a fish every 7 s, taking turns
+  ctx.save(); ctx.globalAlpha = fade;
+  // their own little rain cloud
+  const [cx, cy] = toW(-1.5 * u, -11 * u);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, C.W, wl); ctx.clip();
+  ctx.strokeStyle = "rgba(170,200,230,.8)"; ctx.lineWidth = 1.6;
+  for (let i = 0; i < 40; i++) { const x = cx + ((i * 47) % 100 / 100 - .5) * 7 * u, y = cy + ((sec * 1.6 + i * .37) % 1) * 11 * u; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - .15 * u, y + .6 * u); ctx.stroke(); }
+  ctx.restore();
+  for (const [ox, oy, r] of [[-2.2, .3, 1.3], [0, -.4, 1.8], [2.2, .2, 1.4], [-.9, .6, 1.2], [1.1, .6, 1.3]]) pBlob(cx + ox * u, cy + oy * u, r * u, r * .75 * u, "#78909c");
+  for (let i = 0; i < 2; i++) {   // gulls tagging along
+    const [gx, gy] = toW((-7.5 - i * 1.6) * u, (-7 + i * .8 + Math.sin(sec * 1.3 + i) * .4) * u), fl = Math.sin(sec * 7 + i * 2) * .35 * u;
+    pSeg([gx - .6 * u, gy - fl, gx - .25 * u, gy - .15 * u, gx, gy, gx + .25 * u, gy - .15 * u, gx + .6 * u, gy - fl], "#eceff1", .1 * u);
+  }
+  ctx.save(); ctx.translate(bx, by); ctx.rotate(rot); if (d < 0) ctx.scale(-1, 1);
+  // trolling poles out, lines streaming back to the water
+  for (const [tx, ty, wx] of [[-4.6, -9.6, -8.4], [-2.8, -10.4, -7.2]]) {
+    pSeg([.2 * u, -2.6 * u, tx * u, ty * u], "#8d6e63", .1 * u);
+    ctx.strokeStyle = "rgba(240,240,240,.7)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(tx * u, ty * u); ctx.quadraticCurveTo((tx - 1.5) * u, (ty * .4) * u, wx * u, .2 * u); ctx.stroke();
+    pBlob(tx * u, ty * u + .1 * u, .07 * u, .1 * u, "#ffc107");   // the bell
+  }
+  pSeg([.3 * u, -2 * u, .3 * u, -6.4 * u], "#eceff1", .14 * u); pSeg([-.4 * u, -5.6 * u, 1 * u, -5.6 * u], "#eceff1", .08 * u);   // mast
+  pBlob(.3 * u, -6.5 * u, .32 * u, .18 * u, "#fafafa");   // radar dome
+  pSeg([-.5 * u, -2.4 * u, -.5 * u, -4.6 * u], "#424242", .16 * u);   // exhaust
+  for (let i = 0; i < 4; i++) { const s = (sec * .7 + i / 4) % 1; pBlob(-.5 * u - s * 1.6 * u, -4.8 * u - s * 1.2 * u, (.12 + s * .3) * u, (.1 + s * .25) * u, `rgba(90,90,90,${.45 * (1 - s)})`); }
+  // the two of them working the gear in the stern
+  for (const [x, i] of [[-4.2, 0], [-2.9, 1]]) {
+    const pulling = i === who && q > -.3 && q < 1.2, hy = Math.sin(sec * (pulling ? 7 : 2.2) + i * 2) * (pulling ? .25 : .1) * u;
+    ctx.save(); ctx.translate(x * u, -1.25 * u); person(TROLLERS[i], u * .95, sec, i, { hand: [(i ? -.55 : .6) * u, -.45 * u + hy], still: true, d }); ctx.restore();
+  }
+  // the salmon: up out of the water behind the stern and over the rail into the box
+  if (q >= 0 && q < 1) {
+    const sx = -7 * u + (-3.4 * u + 7 * u) * q, sy = .2 * u - Math.sin(q * Math.PI) * 3.4 * u - q * 1.6 * u;
+    ctx.save(); ctx.translate(sx, sy); ctx.rotate(-Math.cos(q * Math.PI) * .9 + Math.sin(sec * 25) * .25); salmon(.6 * u); ctx.restore();
+  }
+  // the hull: white with dark green trim, wheelhouse forward
+  ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.roundRect(.5 * u, -4.1 * u, 2.9 * u, 2.3 * u, .15 * u); ctx.fill();
+  ctx.fillStyle = TROLL_GREEN; ctx.beginPath(); ctx.roundRect(.3 * u, -4.35 * u, 3.4 * u, .32 * u, .1 * u); ctx.fill();
+  for (const x of [.85, 1.75, 2.65]) { ctx.fillStyle = "#263238"; ctx.beginPath(); ctx.roundRect(x * u, -3.75 * u, .62 * u, .6 * u, .08 * u); ctx.fill(); }
+  const hull = () => { ctx.beginPath(); ctx.moveTo(-5.3 * u, -1.75 * u); ctx.quadraticCurveTo(0, -1.85 * u, 5.2 * u, -2.75 * u); ctx.quadraticCurveTo(5.1 * u, -.6 * u, 3.6 * u, .15 * u); ctx.lineTo(-4.7 * u, .15 * u); ctx.lineTo(-5.3 * u, -1.75 * u); ctx.closePath(); };
+  hull(); ctx.fillStyle = "#fafafa"; ctx.fill();
+  ctx.save(); hull(); ctx.clip(); rect(-6 * u, -.15 * u, 12 * u, .5 * u, [27 / 255, 67 / 255, 50 / 255, 1]); ctx.restore();   // dark green bottom
+  ctx.strokeStyle = TROLL_GREEN; ctx.lineWidth = Math.max(2, .22 * u); ctx.beginPath(); ctx.moveTo(-5.3 * u, -1.75 * u); ctx.quadraticCurveTo(0, -1.85 * u, 5.2 * u, -2.75 * u); ctx.stroke();   // rail cap
+  ctx.restore();
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = TROLL_GREEN;
+  ctx.font = `bold ${Math.round(.48 * u)}px Georgia, serif`; let [tx, ty] = toW(3.2 * u, -1.3 * u); ctx.fillText("GOOD NEWS", tx, ty);
+  ctx.font = `bold ${Math.round(.28 * u)}px system-ui, sans-serif`; [tx, ty] = toW(-3.1 * u, -.75 * u); ctx.fillText("JUNEAU, AK", tx, ty);
+  if (q >= 0 && q < .7 && k >= 0) { const [x, y] = toW((who ? -2.9 : -4.2) * u, -5 * u); say(x, y, "Fish on!", f * .64); }
+  if (q > 1.4 && q < 2.4 && k >= 0) { const [x, y] = toW((who ? -4.2 : -2.9) * u, -5 * u); say(x, y, k % 3 === 2 ? "More good news!" : "Good news!", f * .64); }
+  ctx.restore();
+}
+
+// ---- a dhow under its big lateen sail, cargo piled sky high with a goat on top. The wind dies, so a crewman gets out a leaf
+//      blower and points it at the sail. It works... a little too well ----
+const DHOW_CREW = [
+  { guy: true, w: 1.15, skin: "#a8724a", hair: "#1b1b1b", shirt: "#fafafa", sleeves: true, pants: "#5d4037", cap: "#37474f" },
+  { guy: true, w: 1.3, skin: "#8d5524", hair: "#222", shirt: "#26a69a", sleeves: true, pants: "#455a64", stache: "#222" },
+];
+const DHOW_V = [[0, 1], [.32, 1], [.39, .07], [.5, .07], [.53, 2.4], [.6, 1.7], [.72, 1.1], [1, 1.1]];   // how fast it goes (the wind dies, then the leaf blower)
+function warp(tbl, p) {   // distance covered by time p (0-1) for a speed profile, as a share of the whole trip
+  const v = x => { for (let i = 1; i < tbl.length; i++) if (x <= tbl[i][0]) { const [a, va] = tbl[i - 1], [b, vb] = tbl[i]; return va + (vb - va) * (x - a) / (b - a); } return tbl.at(-1)[1]; };
+  const n = 200; let s = 0, tot = 0;
+  for (let i = 0; i < n; i++) { const x = (i + .5) / n, dv = v(x) / n; tot += dv; if (x < p) s += dv; }
+  return s / tot;
+}
+function goat(s, sec, talk) {   // standing on 0,0, facing +x
+  for (const x of [-.45, -.25, .25, .45]) pSeg([x * s, -.45 * s, x * s, 0], "#e0e0e0", .1 * s);
+  pBlob(0, -.6 * s, .6 * s, .3 * s, "#f5f5f5"); pBlob(-.62 * s, -.75 * s, .08 * s, .15 * s, "#f5f5f5", -.6);
+  const ch = Math.sin(sec * 9) * .03 * s;   // chewing
+  pBlob(.68 * s, -.95 * s, .2 * s, .24 * s, "#f5f5f5", .4); pBlob(.85 * s, -.85 * s + ch, .12 * s, .1 * s, "#eeeeee");
+  pSeg([.6 * s, -1.15 * s, .5 * s, -1.4 * s, .38 * s, -1.42 * s], "#8d6e63", .06 * s);   // horn
+  pBlob(.85 * s, -.68 * s + ch, .05 * s, .12 * s, "#bdbdbd");   // beard
+  pBlob(.72 * s, -1 * s, .04 * s, .04 * s, "#111"); pBlob(.5 * s, -1.02 * s, .12 * s, .05 * s, "#e0e0e0", .4);
+  if (talk) pBlob(.93 * s, -.82 * s, .05 * s, .05 * s, "#5a1a1a");
+}
+function dhowBoat(e, now, dt, sec, P) {
+  const f = G ? G.f : cv.clientHeight / 46, u = f * 1.7, L = 12.5 * u, W = cv.clientWidth, p = (now - e.t0) / e.dur, d = e.dir, wl = P.y0;
+  const span = W + 1.3 * L, pos = warp(DHOW_V, p), bx = d > 0 ? -.65 * L + span * pos : W + .65 * L - span * pos, fade = p > .93 ? 1 - (p - .93) / .07 : 1;
+  const fill = p < .32 ? 1 : p < .39 ? 1 - (p - .32) / .07 : p < .5 ? 0 : Math.min(1.5, (p - .5) / .025 * 1.5) - Math.max(0, p - .6) * 1.5;   // how full the sail is
+  const lurch = p > .5 ? Math.exp(-(p - .5) * e.dur / 900) * Math.sin((p - .5) * e.dur / 160) : 0;   // the jolt when the blower kicks in
+  const sway = Math.sin(sec * 1.4) * .02 + lurch * .12 + (p > .5 && p < .75 ? Math.sin(sec * 3.1) * .03 : 0);
+  const by = wl - .05 * u + Math.sin(sec * 1.3) * .08 * u, rot = Math.sin(sec * 1.3 + .6) * .02 - lurch * .04, toW = (lx, ly) => [bx + d * lx, by + ly];
+  ctx.save(); ctx.globalAlpha = fade;
+  if (p > .5 && p < .72) for (let k = 0; k < 6; k++) { const q = (sec * 3 + k / 6) % 1; pBlob(bx - d * (5.5 + q * 2.5) * u, wl - .1 * u - Math.sin(q * Math.PI) * .6 * u, (.15 + q * .3) * u, (.1 + q * .15) * u, `rgba(255,255,255,${.7 * (1 - q)})`); }   // wake
+  ctx.save(); ctx.translate(bx, by); ctx.rotate(rot); if (d < 0) ctx.scale(-1, 1);
+  // mast, yard and the lateen sail
+  pSeg([1.1 * u, -1.8 * u, 1.5 * u, -9.6 * u], "#6d4c41", .2 * u);
+  const tack = [5.2 * u, -3.1 * u], peak = [-4.4 * u, -11.6 * u], clew = [-3.4 * u, -2.9 * u], fl = Math.sin(sec * 11) * (1 - Math.min(1, fill)) * .35 * u;
+  ctx.fillStyle = "#f3ead5"; ctx.beginPath(); ctx.moveTo(...tack); ctx.lineTo(...peak);
+  ctx.quadraticCurveTo(-4.2 * u - fill * 2.4 * u + (1 - Math.min(1, fill)) * 1.5 * u + fl, -7 * u, ...clew);
+  ctx.quadraticCurveTo(1 * u, -2.6 * u + fill * .5 * u + (1 - Math.min(1, fill)) * .8 * u, ...tack); ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,.1)"; ctx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) { const a = i / 5; ctx.beginPath(); ctx.moveTo(tack[0] + (peak[0] - tack[0]) * a, tack[1] + (peak[1] - tack[1]) * a); ctx.lineTo(clew[0] + (tack[0] - clew[0]) * a * .9, clew[1] + (tack[1] - clew[1]) * a * .9 + (1 - Math.min(1, fill)) * .5 * u); ctx.stroke(); }
+  pSeg([tack[0] + .5 * u, tack[1] + .5 * u, peak[0] - .3 * u, peak[1] - .3 * u], "#5d4037", .16 * u);
+  // the crew: one up front, one aft with the leaf blower once the wind's gone
+  ctx.save(); ctx.translate(3.4 * u, -1.6 * u); person(DHOW_CREW[0], u * .9, sec, 0, { arms: p > .36 && p < .5 ? "out" : p > .66 && p < .76 ? "up" : "rest", still: true, d }); ctx.restore();
+  const blow = p > .43;
+  ctx.save(); ctx.translate(-3.4 * u, -1.9 * u); person(DHOW_CREW[1], u * .9, sec, 1, blow ? { hand: [.75 * u, -.55 * u], still: true, d } : { arms: "rest", still: true, d }); ctx.restore();
+  // the cargo, stacked sky high on deck and swaying, with the goat on top
+  ctx.save(); ctx.translate(-1.1 * u, -1.9 * u);
+  const level = (h, draw) => { draw(); ctx.translate(0, -h); ctx.rotate(sway); };
+  level(1 * u, () => { for (const x of [-1.3, 0]) { rect(x * u, -1 * u, 1.25 * u, 1 * u, [.75, .58, .36, 1]); pSeg([x * u, -1 * u, (x + 1.25) * u, 0], "rgba(0,0,0,.25)", .05 * u); } });
+  level(.9 * u, () => { for (let i = 0; i < 3; i++) pBlob(-.4 * u, -.15 * u - i * .3 * u, .8 * u, .16 * u, "#212121"); pBlob(-.4 * u, -.75 * u, .35 * u, .08 * u, "#555"); });
+  level(.5 * u, () => { ctx.fillStyle = "#e3f2fd"; ctx.beginPath(); ctx.roundRect(-1.5 * u, -.5 * u, 2.9 * u, .5 * u, .15 * u); ctx.fill(); for (let x = -1.3; x < 1.3; x += .35) pSeg([x * u, -.48 * u, x * u, -.02 * u], "#64b5f6", .06 * u); });
+  level(1 * u, () => { ctx.fillStyle = "#c62828"; ctx.beginPath(); ctx.roundRect(-1.2 * u, -.6 * u, 2.4 * u, .6 * u, .12 * u); ctx.fill(); ctx.beginPath(); ctx.roundRect(-1.2 * u, -1 * u, 2.4 * u, .5 * u, .15 * u); ctx.fill(); pBlob(-1.15 * u, -.5 * u, .2 * u, .3 * u, "#b71c1c"); pBlob(1.15 * u, -.5 * u, .2 * u, .3 * u, "#b71c1c"); });   // a sofa
+  level(1.6 * u, () => {   // a fridge with a bicycle leaning on it
+    ctx.fillStyle = "#fafafa"; ctx.beginPath(); ctx.roundRect(-.55 * u, -1.6 * u, 1.1 * u, 1.6 * u, .1 * u); ctx.fill(); pSeg([-.55 * u, -1.05 * u, .55 * u, -1.05 * u], "#bdbdbd", .04 * u); pSeg([.4 * u, -1.4 * u, .4 * u, -1.15 * u], "#9e9e9e", .06 * u);
+    ctx.strokeStyle = "#1e88e5"; ctx.lineWidth = Math.max(1, .07 * u); for (const x of [.85, 1.85]) { ctx.beginPath(); ctx.arc(x * u, -.4 * u, .38 * u, 0, 7); ctx.stroke(); }
+    pSeg([.85 * u, -.4 * u, 1.2 * u, -1 * u, 1.85 * u, -.4 * u, 1.35 * u, -.4 * u, 1.2 * u, -1 * u, 1.7 * u, -1.05 * u], "#1e88e5", .07 * u);
+  });
+  goat(.9 * u, sec, p > .53 && p < .6); ctx.restore();
+  if (blow) {   // the leaf blower, pointed up at the sail
+    const hx = -3.4 * u + .68 * u, hy = -1.9 * u - .9 * u - .5 * u;
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(-2.05);
+    ctx.fillStyle = "#ff6f00"; ctx.beginPath(); ctx.roundRect(-.6 * u, -.4 * u, 1.1 * u, .8 * u, .2 * u); ctx.fill(); pSeg([-.4 * u, -.4 * u, .2 * u, -.65 * u, .4 * u, -.35 * u], "#333", .08 * u);
+    pSeg([.4 * u, 0, 2 * u, 0], "#424242", .26 * u);
+    if (p > .5) { ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = Math.max(1.5, .08 * u);
+      for (let i = 0; i < 7; i++) { const q = (sec * 4 + i / 7) % 1, y = (i - 3) * .1 * u; ctx.beginPath(); ctx.moveTo((2.2 + q * 3) * u, y * (1 + q * 3)); ctx.lineTo((2.9 + q * 3) * u, y * (1 + q * 3) + Math.sin(sec * 20 + i) * .1 * u); ctx.stroke(); } }
+    ctx.restore();
+  }
+  // the hull: long raked bow, high stern
+  const hg = ctx.createLinearGradient(0, -3.6 * u, 0, .2 * u); hg.addColorStop(0, "#c4925e"); hg.addColorStop(1, "#7a4e2a");
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(-5.3 * u, -3.6 * u); ctx.quadraticCurveTo(-2.5 * u, -1.7 * u, 1 * u, -1.9 * u); ctx.quadraticCurveTo(4.5 * u, -2.1 * u, 6.4 * u, -2.9 * u);
+  ctx.lineTo(3.7 * u, .15 * u); ctx.lineTo(-3.9 * u, .15 * u); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "#4e2e16"; ctx.lineWidth = Math.max(2, .18 * u); ctx.beginPath(); ctx.moveTo(-5.3 * u, -3.6 * u); ctx.quadraticCurveTo(-2.5 * u, -1.7 * u, 1 * u, -1.9 * u); ctx.quadraticCurveTo(4.5 * u, -2.1 * u, 6.4 * u, -2.9 * u); ctx.stroke();
+  ctx.strokeStyle = "#00897b"; ctx.lineWidth = Math.max(1, .1 * u); ctx.beginPath(); ctx.moveTo(-4.9 * u, -2.9 * u); ctx.quadraticCurveTo(-2.4 * u, -1.35 * u, 1 * u, -1.5 * u); ctx.quadraticCurveTo(4 * u, -1.65 * u, 5.8 * u, -2.2 * u); ctx.stroke();
+  for (let x = -4.4; x < -2.6; x += .45) pBlob(x * u, (-2.85 + (x + 4.4) * .5) * u, .1 * u, .1 * u, "#fff8e1");   // painted dots on the stern
+  ctx.restore();
+  const say2 = (lx, ly, s) => { const [x, y] = toW(lx * u, ly * u); say(x, y, s, f * .64); };
+  if (p > .1 && p < .2) say2(3.4, -4.8, "Lovely breeze today!");
+  if (p > .36 && p < .44) say2(3.4, -4.8, "Uh oh. No wind.");
+  if (p > .44 && p < .5) say2(-3.4, -5, "I've got this.");
+  if (p > .53 && p < .6) { const [x, y] = toW(-.2 * u, -9.4 * u); say(x, y, "MEEEHHH!", f * .64); }
+  if (p > .5 && p < .72) { const [x, y] = toW(-2.2 * u, -2.6 * u); ctx.fillStyle = "#fff"; ctx.font = `italic 900 ${Math.round(.4 * u)}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.fillText("VRRRRRRR", x + Math.sin(sec * 40) * 2, y); }
+  if (p > .66 && p < .76) say2(3.4, -4.8, "Too much! Too much!");
+  if (p > .8 && p < .9) say2(-3.4, -5, "Same time tomorrow?");
+  ctx.restore();
+}
+
+// ---- a Spanish galleon under full sail. Its captain is a cheerful breakfast-cereal hero, Capitán Crispín, and the cannons fire cereal ----
+const CRISPIN = { guy: true, w: 1.6, skin: "#ffd8b5", hair: "#5d4037", handlebar: "#3e2723", cheeks: true, morion: true, plume: "#e53935",
+  shirt: "#2e7d32", sleeves: true, sleeve: "#2e7d32", epaulets: "#ffc107", buttons: "#ffc107", pants: "#fafafa" };
+const CEREAL = ["#ffca28", "#ec407a", "#ab47bc", "#66bb6a", "#ff7043", "#29b6f6"];
+function burgundySail(x, top, bot, w, sec, ph) {   // a square sail with the red ragged cross
+  squareSail(x, top, bot, w, "#f4ecd8", [], sec, ph);
+  ctx.strokeStyle = "#c62828"; ctx.lineWidth = Math.max(2, w * .07); ctx.lineCap = "round";
+  for (const s of [-1, 1]) {
+    ctx.beginPath(); ctx.moveTo(x - s * w * .36, top + (bot - top) * .12); ctx.lineTo(x + s * w * .36, bot - (bot - top) * .12); ctx.stroke();
+    for (let i = 1; i < 4; i++) { const a = i / 4, px = x - s * w * .36 + s * w * .72 * a, py = top + (bot - top) * (.12 + .76 * a); pBlob(px, py, w * .05, w * .05, "#c62828"); }
+  }
+  ctx.lineCap = "butt";
+}
+function pennant(x, y, len, sec, ph) {   // a long red and gold streamer flying back toward -x
+  for (const [c, o] of [["#c60b1e", 0], ["#ffc400", .33], ["#c60b1e", .66]]) {
+    ctx.fillStyle = c; ctx.beginPath();
+    for (let i = 0; i <= 10; i++) { const a = i / 10; ctx.lineTo(x - len * a, y + (o * (1 - a)) * len * .1 + Math.sin(sec * 5 + ph - a * 5) * len * .05 * a); }
+    for (let i = 10; i >= 0; i--) { const a = i / 10; ctx.lineTo(x - len * a, y + ((o + .33) * (1 - a)) * len * .1 + Math.sin(sec * 5 + ph - a * 5) * len * .05 * a); }
+    ctx.fill();
+  }
+}
+function galleon(e, now, dt, sec, P) {
+  const f = G ? G.f : cv.clientHeight / 46, u = f * 1.6, L = 15 * u, C = crossing(e, now, P, L), { p, d, vel, bx, wl, fade } = C;
+  const by = wl - .1 * u + Math.sin(sec * 1) * .1 * u, rot = Math.sin(sec * 1 + .9) * .02, toW = (lx, ly) => [bx + d * lx, by + ly];
+  const ports = [-3, -1.6, -.2, 1.2, 2.6], fireAt = i => .44 + i * .025;
+  e.os = e.os || []; e.fired = e.fired || 0;
+  while (e.fired < ports.length && p >= fireAt(e.fired)) {   // fire the breakfast!
+    const [px, py] = toW(ports[e.fired] * u + .2 * u, -1.6 * u);
+    for (let i = 0; i < 12; i++) e.os.push({ x: px, y: py, vx: vel * .6 + rnd(-110, 110), vy: -rnd(320, 560), r: rnd(.17, .27) * u, c: CEREAL[i % 6], wet: 0, ph: rnd(0, 6) });
+    e.puff = e.puff || []; e.puff.push({ i: e.fired, t0: now }); e.fired++;
+  }
+  ctx.save(); ctx.globalAlpha = fade;
+  for (const o of e.os) {   // the cereal: flies out, lands, and floats where it fell
+    if (!o.wet) { o.vy += 700 * dt; o.x += o.vx * dt; o.y += o.vy * dt; if (o.y > wl) { o.wet = 1; o.y = wl; FX.splash.push({ x: o.x, y: wl, vx: rnd(-30, 30), vy: rnd(-120, -50), t0: now }); } }
+    const y = o.wet ? wl - .05 * u + Math.sin(sec * 2 + o.ph) * .05 * u : o.y;
+    ctx.strokeStyle = o.c; ctx.lineWidth = o.r * .75; ctx.beginPath(); o.wet ? ctx.ellipse(o.x, y, o.r * 1.1, o.r * .45, 0, 0, 7) : ctx.arc(o.x, y, o.r, 0, 7); ctx.stroke();
+  }
+  ctx.save(); ctx.translate(bx, by); ctx.rotate(rot); if (d < 0) ctx.scale(-1, 1);
+  // masts, rigging, sails and flags
+  pSeg([-6.8 * u, -5.6 * u, -4.6 * u, -10.6 * u, .3 * u, -13 * u, 3.8 * u, -11 * u, 8.6 * u, -3.4 * u], "rgba(40,30,20,.5)", .03 * u);
+  for (const [x, b, t] of [[-4.6, -5.2, -10.6], [.3, -2.6, -13], [3.8, -3.6, -11]]) pSeg([x * u, b * u, x * u, t * u], "#4e342e", .24 * u);
+  burgundySail(.3 * u, -3.6 * u, -7.4 * u, 5.4 * u, sec, 0); burgundySail(.3 * u, -7.9 * u, -11 * u, 4.2 * u, sec, 1);
+  burgundySail(3.8 * u, -4.4 * u, -7.6 * u, 4.4 * u, sec, 2); burgundySail(3.8 * u, -8 * u, -10.4 * u, 3.4 * u, sec, 3);
+  ctx.fillStyle = "#f4ecd8"; ctx.beginPath(); ctx.moveTo(-2.8 * u, -6.2 * u); ctx.lineTo(-6.6 * u, -10.4 * u); ctx.quadraticCurveTo(-7.4 * u, -7 * u, -6.4 * u, -6 * u); ctx.fill();   // lateen mizzen
+  pSeg([-2.6 * u, -6 * u, -6.8 * u, -10.6 * u], "#4e342e", .12 * u);
+  pennant(.3 * u, -13 * u, 3.2 * u, sec, 0); pennant(3.8 * u, -11 * u, 2.6 * u, sec, 1); pennant(-4.6 * u, -10.6 * u, 2.2 * u, sec, 2);
+  pSeg([5.8 * u, -3.8 * u, 8.6 * u, -5 * u], "#4e342e", .16 * u);   // bowsprit
+  // Capitán Crispín on the poop deck with his big spoon, and a sailor cheering on deck
+  const cheer = p > .45 && p < .62;
+  ctx.save(); ctx.translate(1.8 * u, -2.6 * u); person({ guy: true, w: 1.1, skin: "#c68642", hair: "#111", shirt: "#fafafa", stripes: "#c62828", bandana: "#c62828" }, u * .85, sec, 1, { arms: cheer ? "up" : "rest", still: !cheer, d }); ctx.restore();
+  ctx.save(); ctx.translate(-5.3 * u, -5.1 * u);
+  pSeg([.35 * u, 0, .35 * u, -3.4 * u], "#a1887f", .12 * u); pBlob(.35 * u, -3.65 * u, .3 * u, .42 * u, "#cfd8dc"); pBlob(.3 * u, -3.7 * u, .18 * u, .28 * u, "#eceff1");   // the spoon
+  person(CRISPIN, u * 1.05, sec, 0, { reach: !(p > .38 && p < .47), arms: p > .38 && p < .47 ? "out" : undefined, still: true, d }); ctx.restore();
+  // the hull: high stern castle, gold trim, gun ports
+  const hull = () => { ctx.beginPath(); ctx.moveTo(-7 * u, -5.8 * u); ctx.lineTo(-3.8 * u, -5.3 * u); ctx.lineTo(-3.6 * u, -2.7 * u); ctx.lineTo(3.4 * u, -2.7 * u); ctx.lineTo(3.6 * u, -3.9 * u);
+    ctx.lineTo(5.9 * u, -4.1 * u); ctx.quadraticCurveTo(5.8 * u, -.6 * u, 4.2 * u, .2 * u); ctx.lineTo(-5 * u, .2 * u); ctx.quadraticCurveTo(-6.6 * u, -1 * u, -7 * u, -5.8 * u); ctx.closePath(); };
+  const hg = ctx.createLinearGradient(0, -5.8 * u, 0, .2 * u); hg.addColorStop(0, "#6d4325"); hg.addColorStop(1, "#3e2410");
+  hull(); ctx.fillStyle = hg; ctx.fill();
+  ctx.save(); hull(); ctx.clip();
+  for (const y of [-.5, -.9, -2.2]) pSeg([-7 * u, y * u, 6 * u, y * u], "rgba(0,0,0,.25)", .03 * u);
+  pSeg([-7 * u, -1.15 * u, 6 * u, -1.15 * u], "#d4a017", .12 * u); pSeg([-7 * u, -2.45 * u, 6 * u, -2.45 * u], "#d4a017", .1 * u);
+  for (const x of [-6.2, -5.5, -4.8]) { rect(x * u, -4.7 * u, .45 * u, .55 * u, [1, .8, .35, 1]); rect(x * u, -3.8 * u, .45 * u, .55 * u, [1, .8, .35, 1]); }   // stern windows
+  ctx.restore();
+  pSeg([-7 * u, -5.8 * u, -3.8 * u, -5.3 * u], "#d4a017", .12 * u); pSeg([3.6 * u, -3.9 * u, 5.9 * u, -4.1 * u], "#d4a017", .12 * u);
+  for (let i = 0; i < ports.length; i++) {
+    const x = ports[i] * u; rect(x, -1.95 * u, .5 * u, .45 * u, [.05, .03, .02, 1]);
+    ctx.fillStyle = "#b71c1c"; ctx.beginPath(); ctx.moveTo(x, -1.95 * u); ctx.lineTo(x + .5 * u, -1.95 * u); ctx.lineTo(x + .55 * u, -2.4 * u); ctx.lineTo(x - .05 * u, -2.4 * u); ctx.fill();   // lid, open
+  }
+  pBlob(-7.1 * u, -6.3 * u, .25 * u, .35 * u, "rgba(255,213,79,.9)"); pSeg([-7.1 * u, -5.8 * u, -7.1 * u, -5.95 * u], "#d4a017", .08 * u);   // stern lantern
+  for (const pf of e.puff || []) { const q = (now - pf.t0) / 1400; if (q < 1) for (let k = 0; k < 4; k++) pBlob(ports[pf.i] * u + .25 * u + (k - 1.5) * .3 * u * q, -1.7 * u - q * .8 * u, (.35 + q * .7) * u, (.3 + q * .6) * u, `rgba(235,235,235,${.8 * (1 - q)})`); }
+  ctx.restore();
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#ffd54f"; ctx.font = `italic bold ${Math.round(.4 * u)}px Georgia, serif`;
+  const [tx, ty] = toW(-2 * u, -.6 * u); ctx.fillText("El Desayuno", tx, ty);
+  const say2 = (lx, ly, s) => { const [x, y] = toW(lx * u, ly * u); say(x, y, s, f * .64); };
+  if (p > .12 && p < .21) say2(-5.3, -9.6, "¡Buenos días, amigos!");
+  if (p > .27 && p < .36) say2(-5.3, -9.6, "Ready the breakfast cannons!");
+  if (p > .38 && p < .45) say2(-5.3, -9.6, "¡FUEGO!");
+  if (p > .6 && p < .69) say2(-5.3, -9.6, "Part of a balanced breakfast!");
+  if (p > .74 && p < .83) say2(1.8, -6.4, "Stays crispy in seawater, Capitán!");
   ctx.restore();
 }
 // ---- a Cybertruck cruising along the beach, driver waving ----
@@ -3700,12 +4078,114 @@ function spinDone() {
 // ---- page animations: the whole page (chart and buttons) gets crumpled and thrown in an office wastebasket, ages to dust
 //      and is swept away, is smashed like a windshield, or turns into a ball that's hit out into the night sky.
 //      They have their own timer, never play with a beach scene, and the live page fades back in at the end ----
-const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"]];
+const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"], ["liner", "aLiner", "Iceberg"]];
 const PAGE_KIND = Object.fromEntries(PAGE_LIST.map(([k]) => [k, 1]));
 const CRAFT_LIST = [["sub", "aSub", "Yellow submarine"], ["party", "aParty", "Bachelorette pontoon"], ["jetski", "aJet", "Jet ski crash"], ["surf", "aSurf", "Wake surf bros"],
-  ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"], ["cg", "aCG", "Raft and the Coast Guard"]];   // the Boats group
-const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch, cg: coastGuard };
+  ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"], ["cg", "aCG", "Raft and the Coast Guard"],
+  ["pirate", "aPirate", "Pirate ship"], ["troller", "aTroll", "Salmon troller Good News"], ["dhow", "aDhow", "Dhow"], ["galleon", "aGalleon", "Spanish galleon"]];   // the Boats group
+const CRAFT_DRAW = { party: partyPontoon, jetski: jetCrash, surf: wakeSurf, bass: bassBoat, fab: fabBoat, dolphin: dolphinWatch, cg: coastGuard, pirate: pirateShip, troller: trollerBoat, dhow: dhowBoat, galleon: galleon };
 const RAUNCHY = { party: 1, jetski: 1, surf: 1, bass: 1, fab: 1, dolphin: 1, cg: 1 }, tame = k => !RAUNCHY[k] || state.aRaunchy;   // raunchy ones only play when "Show raunchy animations" is on
+// ---- 9. iceberg: an old ocean liner steams along the water behind the forecast, comes out in front of it just before it hits an
+//      iceberg, and sinks bow first. The stern goes down last and drags the whole screen down with it, then the wave brings it back ----
+function linerArt(L, sec, lit, smoke) {   // facing +x, waterline at 0, from -L/2 to L/2
+  const h = L * .095, hull = () => { ctx.beginPath(); ctx.moveTo(-.5 * L, -h); ctx.lineTo(.47 * L, -h * 1.12); ctx.lineTo(.5 * L, -h * 1.2);
+    ctx.lineTo(.465 * L, h * .9); ctx.lineTo(-.43 * L, h * .9); ctx.quadraticCurveTo(-.5 * L, h * .2, -.5 * L, -h); ctx.closePath(); };
+  if (smoke) for (const fx of [-.16, .01, .18]) for (let k = 0; k < 4; k++) {   // smoke trailing back from the funnels
+    const q = (sec * .35 + k / 4 + fx) % 1; pBlob((fx - .02) * L - q * .25 * L, -3.05 * h - q * .5 * h, (.03 + q * .06) * L, (.02 + q * .04) * L, `rgba(70,70,75,${.55 * (1 - q)})`);
+  }
+  pSeg([-.36 * L, -h, -.36 * L, -3.3 * h], "#3e2723", .006 * L); pSeg([.37 * L, -h, .37 * L, -3.4 * h], "#3e2723", .006 * L);   // masts
+  pSeg([-.36 * L, -3.3 * h, .37 * L, -3.4 * h], "rgba(40,30,20,.6)", .002 * L); pSeg([.37 * L, -3.4 * h, .5 * L, -1.2 * h], "rgba(40,30,20,.6)", .002 * L);
+  pBlob(.37 * L, -2.85 * h, .012 * L, .007 * L, "#4e342e");   // crow's nest
+  for (const fx of [-.16, .01, .18]) {   // three raked funnels, red with black tops
+    ctx.fillStyle = "#c62828"; ctx.beginPath(); ctx.moveTo((fx - .028) * L, -1.8 * h); ctx.lineTo((fx + .028) * L, -1.8 * h); ctx.lineTo((fx + .012) * L, -3 * h); ctx.lineTo((fx - .044) * L, -3 * h); ctx.fill();
+    ctx.fillStyle = "#151515"; ctx.beginPath(); ctx.moveTo((fx + .018) * L, -2.75 * h); ctx.lineTo((fx + .012) * L, -3 * h); ctx.lineTo((fx - .044) * L, -3 * h); ctx.lineTo((fx - .038) * L, -2.75 * h); ctx.fill();
+  }
+  rect(-.32 * L, -1.85 * h, .62 * L, .9 * h, [.97, .97, .95, 1]); rect(-.24 * L, -2.15 * h, .44 * L, .32 * h, [.97, .97, .95, 1]);   // decks
+  rect(.24 * L, -2.45 * h, .06 * L, .62 * h, [.97, .97, .95, 1]);   // the bridge
+  for (let x = -.3; x < .28; x += .055) { ctx.fillStyle = "#eceff1"; ctx.beginPath(); ctx.roundRect(x * L, -2.02 * h, .035 * L, .17 * h, .08 * h); ctx.fill(); pSeg([x * L + .017 * L, -1.85 * h, x * L + .017 * L, -2.05 * h], "#90a4ae", .002 * L); }   // lifeboats
+  const win = lit ? "#ffd54f" : "#37474f";
+  for (let x = -.3; x < .29; x += .018) { rect(x * L, -1.55 * h, .009 * L, .22 * h, win === "#ffd54f" ? [1, .84, .31, 1] : [.22, .28, .31, 1]); }
+  hull(); ctx.fillStyle = "#8b1a1a"; ctx.fill();   // red below the waterline
+  ctx.save(); hull(); ctx.clip(); rect(-.6 * L, -1.4 * h, 1.2 * L, 1.42 * h, [.07, .07, .08, 1]); rect(-.6 * L, -1.4 * h, 1.2 * L, .28 * h, [.97, .97, .95, 1]);
+  pSeg([-.6 * L, -.9 * h, .6 * L, -.9 * h], "#d4a017", .004 * L);
+  for (const y of [-.62, -.32]) for (let x = -.46; x < .45; x += .016) pBlob(x * L, y * h, .0035 * L, .0035 * L, lit ? "#ffe082" : "#263238");
+  ctx.restore();
+  ctx.save(); ctx.fillStyle = "#fff"; ctx.font = `bold ${Math.max(7, Math.round(.2 * h))}px Georgia, serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("S.S. UNSINKABLE", .38 * L, -.78 * h); ctx.restore();
+}
+function iceberg(w, h) {   // base on 0, centred on x = 0
+  const pts = [[-.5, 0], [-.44, -.32], [-.33, -.4], [-.25, -.78], [-.12, -.7], [-.02, -1], [.1, -.84], [.18, -.88], [.26, -.56], [.36, -.62], [.45, -.28], [.5, 0]];
+  ctx.fillStyle = "rgba(160,215,235,.35)"; ctx.beginPath(); ctx.ellipse(0, h * .02, w * .7, h * .55, 0, 0, Math.PI); ctx.fill();   // the part under the water
+  const g = ctx.createLinearGradient(0, -h, 0, 0); g.addColorStop(0, "#ffffff"); g.addColorStop(1, "#b3e0f2");
+  ctx.fillStyle = g; ctx.beginPath(); for (const [x, y] of pts) ctx.lineTo(x * w, y * h); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "rgba(90,160,200,.35)"; ctx.beginPath(); for (const [x, y] of [[-.02, -1], [.1, -.84], [.18, -.88], [.26, -.56], [.36, -.62], [.45, -.28], [.5, 0], [.05, 0], [.08, -.5]]) ctx.lineTo(x * w, y * h); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); for (const [x, y] of [[-.33, -.4], [-.25, -.78], [-.12, -.7], [-.2, -.3]]) ctx.lineTo(x * w, y * h); ctx.closePath(); ctx.fill();
+}
+function seaStrip(W, H, top, sec, a) {   // the sea across the bottom of the screen, once the ship's come out in front
+  ctx.save(); ctx.globalAlpha *= a;
+  const g = ctx.createLinearGradient(0, top, 0, H); g.addColorStop(0, "#1f5f86"); g.addColorStop(1, "#0a2238");
+  ctx.fillStyle = g; ctx.fillRect(0, top, W, H - top);
+  ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = 1.5;
+  for (let r = 0; r < 5; r++) { const y = top + 6 + r * (H - top) / 5; ctx.beginPath(); for (let x = 0; x <= W; x += 12) ctx.lineTo(x, y + Math.sin(x / 40 + sec * 1.5 + r) * 2.5); ctx.stroke(); }
+  ctx.restore();
+}
+function liner(e, now, dt, sec, P) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, f = G ? G.f : H / 46, u = f * 2;
+  const T1 = 5.5, T2 = 8, Thit = 8.6, Tdip = 10.2, Tup = 13.6, Tslide = 16.8, Tdrag = 17.6, Tgone = 20.6, Twipe = 21.8;
+  const seaY = H * .78, L1 = Math.min(W * .74, H * 1.45), L0 = 14 * u, bw1 = Math.min(W * .3, H * .5), bh1 = bw1 * .8, bx1 = W - bw1 * .42;
+  const hitX = bx1 - bw1 * .4 - L1 * .5, v1 = W * .09;
+  const xs = -L0 * .6 + (W * .5 + L0 * .6) * (t / T1);   // along the water behind the forecast
+  const xb = t < Thit ? hitX - v1 * (Thit - t) : hitX + v1 * .3 * (1 - Math.exp(-(t - Thit) / .3));   // out in front: steaming at the iceberg, then stopped dead
+  const k = ease(clamp((t - T1) / (T2 - T1), 0, 1)), lerp = (a, b) => a + (b - a) * k;
+  const L = lerp(L0, L1), wy = lerp(P.y0, seaY), bw = lerp(4.5 * u, bw1), bh = bw * .8, bgx = lerp(W * .84, bx1);
+  const lit = t < 14.6 || (t < 15.4 && Math.sin(t * 40) > 0), smoke = t < Thit + .8;
+  if (t < T1) {   // small, behind the forecast
+    const keep = ctx; ctx = bctx;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, P.y0 + .1 * u); ctx.clip();
+    ctx.save(); ctx.translate(W * .84, P.y0 + .1 * u); iceberg(4.5 * u, 3.6 * u); ctx.restore();
+    ctx.save(); ctx.translate(xs, P.y0 + Math.sin(sec * 1.2) * .05 * u); linerArt(L0, sec, true, true); ctx.restore();
+    ctx.restore(); ctx = keep; return;
+  }
+  // how it sits: dead level, bow down a little, standing on end, then sliding under
+  let ang = 0, sink = 0;
+  if (t > Tdip) { const q = ease(clamp((t - Tdip) / (Tup - Tdip), 0, 1)); ang = .2 * q; sink = .03 * L1 * q; }
+  if (t > Tup) { const q = ease(clamp((t - Tup) / (Tslide - Tup), 0, 1)); ang = .2 + 1.12 * q; sink = .03 * L1 + .1 * L1 * q; }
+  if (t > Tslide) { const s = t - Tslide; sink += .05 * L1 * s + .03 * L1 * s * s; }   // slips under, slowly
+  const shake = t > Thit && t < Thit + 1.4 ? 7 * Math.exp(-(t - Thit) * 3) : 0, jx = rnd(-shake, shake), jy = rnd(-shake, shake);
+  const cx = lerp(xs, xb) + jx, cy = wy + sink + Math.sin(sec * 1.1) * .002 * L + jy;
+  const toW = (lx, ly) => [cx + lx * Math.cos(ang) - ly * Math.sin(ang), cy + lx * Math.sin(ang) + ly * Math.cos(ang)];
+  const [, sternY] = toW(-.5 * L, -.095 * L);
+  const ship = (top) => { ctx.save(); ctx.beginPath(); ctx.rect(-W, -H * 2, W * 3, top + H * 2); ctx.clip(); ctx.translate(cx, cy); ctx.rotate(ang); linerArt(L, sec, lit, smoke); ctx.restore(); };
+  const scene = () => {   // the sea and the iceberg, in front of the forecast
+    seaStrip(W, H, wy, sec, Math.min(1, k * 1.5));
+    ctx.save(); ctx.translate(bgx, wy); iceberg(bw, bh); ctx.restore();
+  };
+  if (!e.drag && t > Tdrag) {   // the stern's still up: as it goes, it takes the whole screen down with it
+    e.drag = { t, y0: sternY, sky: nightSkyCanvas() };
+    const c = pageSnap(), r = c.width / W, keep = ctx; ctx = c.getContext("2d"); ctx.scale(r, r); scene(); ctx = keep; e.drag.page = c;
+  }
+  if (t >= Twipe) { wipe(e, clamp((t - Twipe) / 1.7, 0, 1), sec, W, H, () => ctx.drawImage(e.drag.sky, 0, 0, W, H)); return; }
+  if (e.drag) {
+    const q = clamp((t - e.drag.t) / (Tgone - Tdrag), 0, 1), dy = H * 1.3 * q * q;   // slow at first, then gone
+    ctx.drawImage(e.drag.sky, 0, 0, W, H);
+    if (q < 1) {
+      ctx.save(); ctx.translate(0, dy);
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 30; ctx.drawImage(e.drag.page, 0, 0, W, H); ctx.shadowBlur = 0;
+      ship(seaY); ctx.restore();   // the ship rides down with it, still slipping under
+    }
+    return;
+  }
+  scene();
+  ship(wy);   // only the part above the water shows
+  if (t > Thit && t < Thit + 3) {   // ice coming down on the deck
+    e.ice = e.ice || Array.from({ length: 18 }, () => ({ x: rnd(-.1, .05), y: rnd(-.6, -.2), vx: rnd(-60, 20), vy: rnd(-120, 0), s: rnd(.004, .012) }));
+    const s = t - Thit;
+    for (const c of e.ice) { const x = bgx + (c.x - .38) * bw1 + c.vx * s, y = wy - bh1 * -c.y * 1 + c.vy * s + 500 * s * s; if (y < wy) pBlob(x, y, c.s * W, c.s * W * .8, "#e1f5fe"); }
+  }
+  const sz = Math.max(13, f * 1.15), talk = (lx, ly, s) => { const [x, y] = toW(lx * L, ly * L); say(clamp(x, sz * 6, W - sz * 6), Math.max(sz * 1.5, y), s, sz); };
+  if (t > 6.8 && t < Thit + .3) talk(.37, -.3, "ICEBERG, RIGHT AHEAD!");
+  if (t > Tdip + .2 && t < Tup - .2) talk(.27, -.28, "Relax. She's unsinkable.");
+  if (t > Tup + .4 && t < Tslide - .4) talk(.27, -.28, "...mostly unsinkable.");
+}
 function pageSnap(scale) {   // the whole screen as it looks now: background, wave band, chart and the button bar
   const W = innerWidth, H = innerHeight, r = scale || window.devicePixelRatio || 1, s = document.createElement("canvas");
   s.width = Math.round(W * r); s.height = Math.round(H * r);
@@ -4495,7 +4975,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, pirate: 0, troller: 0, dhow: 0, galleon: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3, liner: 3 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
@@ -4512,6 +4992,7 @@ function fxFrame(now) {
     if (e.kind === "freeze") freeze(e, now);
     if (e.kind === "chaos") chaos(e, now);
     if (e.kind === "spin") spin(e, now);
+    if (e.kind === "liner") liner(e, now, dt, sec, P);
     if (PAGE_KIND[e.kind]) pageFx(e, now, dt);
     busy = true;
   }

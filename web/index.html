@@ -139,14 +139,13 @@
     <label class="row"><span>All animations<small>Turn them all on or off. Tap ▶ to see one now.</small></span><input type="checkbox" class="sw" data-set="anim"></label>
     <label class="row sub"><span>Time between wildlife<small>Give or take 20%, so it feels random</small></span><select class="pick" data-min="lifeMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
     <label class="row sub"><span>Time between big boats<small>Huge, faint boats passing behind the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="boatMin"><option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option></select></label>
-    <label class="row sub"><span>Time between other animations<small>Kiteboarder, melt or freeze, and the ones below Lively numbers (not the page animations). One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Time between other animations<small>Kiteboarder and the ones below Lively numbers (not the page animations). One at a time, give or take 20%</small></span><select class="pick" data-min="otherMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Beach scene<small>Ren, the Cybertruck, Starship and the mariachi band get a beach that rises from the bottom while the screen scrunches up. Off: they go by along the wave band</small></span><input type="checkbox" class="sw" data-set="aBeach"></label>
     <label class="row sub"><span>Wave band<small>Bottom edge moves with the real waves</small></span><input type="checkbox" class="sw" data-set="aWaves"></label>
     <label class="row sub"><span>Wind streaks<small>Drift with the real wind direction and speed</small></span><input type="checkbox" class="sw" data-set="aWind"></label>
     <label class="row sub"><span>Kiteboarder<small>Rides by when the wind is 15+ mph</small></span><span class="ctl"><button class="try" data-try="kite">▶</button><input type="checkbox" class="sw" data-set="aKite"></span></label>
     <label class="row sub" id="tidefxrow"><span>Tide shimmer<small>Water ripples at the current tide level</small></span><input type="checkbox" class="sw" data-set="aTide"></label>
     <label class="row sub"><span>Weather<small>Rain, snow, clouds, sun glow, stars</small></span><input type="checkbox" class="sw" data-set="aWx"></label>
-    <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Wave wipe<small>Washes in new data every 15 min</small></span><span class="ctl"><button class="try" data-try="wipe">▶</button><input type="checkbox" class="sw" data-set="aWipe"></span></label>
     <label class="row sub"><span>Wildlife<small id="lifenames">Dolphin, redfish, sea turtle, stingray, pelican</small></span><span class="ctl"><button class="try" data-try="life">▶</button><input type="checkbox" class="sw" data-set="aLife"></span></label>
     <label class="row sub"><span>Lively numbers<small>Count up when they change; wind arrow wobbles in gusts</small></span><span class="ctl"><button class="try" data-try="nums">▶</button><input type="checkbox" class="sw" data-set="aNums"></span></label>
@@ -161,7 +160,8 @@
     <label class="row sub"><span>Starship launch<small>A beach rises, Starship fades in on Mechazilla, launches, and the booster comes back to be caught</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <h3>Page animations</h3>
-    <label class="row sub"><span>Time between page animations<small>The whole page spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned or rained on. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned or rained on. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
@@ -1280,8 +1280,8 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
     else if (busy) FX.next.life = wait; else { FX.next.life = now + gap(state.lifeMin); play("life", { random: true }); }
   }
   if (now >= FX.next.other) {
-    const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null, lake = !LOC.station;
-    const pool = [["kite", on("aKite") && G.spd >= KITE], [hot, on("aMelt") && hot], ["slot", on("aSlot") && !FX.slot],
+    const lake = !LOC.station;
+    const pool = [["kite", on("aKite") && G.spd >= KITE], ["slot", on("aSlot") && !FX.slot],
       ["truck", on("aTruck")], ["rocket", on("aRocket")], ["queen", on("aQueen") && lake], ["coaster", on("aCoaster") && lake],
       ["sub", on("aSub")], ["ren", on("aRen")], ["mariachi", on("aMariachi")], ["bite", on("aBite")]].filter(([, ok]) => ok).map(([k]) => k);
     const boat = FX.events.some(e => e.kind === "ship");   // a boat going by: anything but the beach scenes can play over it
@@ -1292,7 +1292,8 @@ function fxSchedule(now) {   // wildlife and the other animations each have thei
     else { FX.next.other = now + gap(state.otherMin); FX.last = pick[Math.floor(Math.random() * pick.length)]; play(FX.last); }
   }
   if (now >= FX.next.page) {   // the page animations: their own timer, and only when nothing else (but a boat) is playing
-    const pool = PAGE_LIST.filter(([, k]) => on(k)).map(([kind]) => kind), pick = pool.length > 1 ? pool.filter(k => k !== FX.lastPage) : pool;
+    const hot = G.temp >= 80 ? "melt" : G.temp < LOC.cold ? "freeze" : null;   // melt or freeze, when it's hot or cold enough
+    const pool = [...PAGE_LIST.filter(([, k]) => on(k)).map(([kind]) => kind), ...(hot && on("aMelt") ? [hot] : [])], pick = pool.length > 1 ? pool.filter(k => k !== FX.lastPage) : pool;
     if (!pick.length) FX.next.page = now + MIN;
     else if (FX.events.some(e => e.kind !== "ship")) FX.next.page = wait;
     else { FX.next.page = now + gap(state.pageMin); FX.lastPage = pick[Math.floor(Math.random() * pick.length)]; play(FX.lastPage); }

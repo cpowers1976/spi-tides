@@ -160,10 +160,11 @@
     <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
     <label class="row sub"><span>Starship launch<small>A beach rises, Starship fades in on Mechazilla, launches, and the booster comes back to be caught</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
-    <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and jiggles back into place</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
+    <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <h3>Page animations</h3>
-    <label class="row sub"><span>Time between page animations<small>The whole page gets crumpled, turned to dust, smashed or hit out of the park, then fades back in. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>Time between page animations<small>The whole page tumbles, gets crumpled, turned to dust, smashed or hit out of the park. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
+    <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
     <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters to the night sky</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
@@ -220,7 +221,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, data: null, updated: null, error: "",
@@ -1251,13 +1252,14 @@ function play(kind, opt = {}) {
     const b = BOATS[opt.sp]; opt.dir = b.dir || (Math.random() < .5 ? -1 : 1); opt.dur = (1 + b.len) * b.secs * 1000;
   }
   if (kind === "spin") { opt.dir = Math.random() < .5 ? -1 : 1; opt.turns = Math.random() < .5 ? 2 : 3; opt.T = rnd(5.5, 7); opt.ov = rnd(8, 12);
-    opt.flip = Math.random() < .35; opt.T2 = rnd(1.8, 2.4); opt.dur = (opt.T + 2 + (opt.flip ? opt.T2 + 2 : 0)) * 1000; }
+    opt.flip = true; /* always lands upside down, then turns the right way up */ opt.T2 = rnd(1.8, 2.4); opt.dur = (opt.T + 2 + (opt.flip ? opt.T2 + 2 : 0)) * 1000; }
+  if (kind === "flip") { opt.dir = Math.random() < .5 ? -1 : 1; opt.turns = Math.random() < .5 ? 2 : 3; opt.T = rnd(5.5, 7); opt.ov = rnd(8, 12); opt.T2 = rnd(1.6, 2); opt.dur = (opt.T + 1.6 + 2.8 + opt.T2 + 2) * 1000; }
   if (PAGE_KIND[kind]) FX.events = FX.events.filter(e => !PAGE_KIND[e.kind] && !beachy(e.kind));   // one page animation at a time, never with a beach scene
   if (kind === "bite") { opt.dir = Math.random() < .5 ? -1 : 1; opt.lake = !LOC.station; }
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2955,7 +2957,7 @@ function spinDone() {
 // ---- page animations: the whole page (chart and buttons) gets crumpled and thrown in an office wastebasket, ages to dust
 //      and is swept away, is smashed like a windshield, or turns into a ball that's hit out into the night sky.
 //      They have their own timer, never play with a beach scene, and the live page fades back in at the end ----
-const PAGE_LIST = [["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"]];
+const PAGE_LIST = [["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"]];
 const PAGE_KIND = Object.fromEntries(PAGE_LIST.map(([k]) => [k, 1]));
 function pageSnap(scale) {   // the whole screen as it looks now: background, wave band, chart and the button bar
   const W = innerWidth, H = innerHeight, r = scale || window.devicePixelRatio || 1, s = document.createElement("canvas");
@@ -3446,6 +3448,27 @@ function pageFx(e, now, dt) {
   if (e.kind === "dust") dust(e, now, dt);
   if (e.kind === "rock") rock(e, now);
   if (e.kind === "bat") bat(e, now);
+  if (e.kind === "flip") flip(e, now);
+}
+// ---- 5. end over end: the screen tumbles head over heels, stops back to front (everything backwards), struggles to turn
+//      over, falls back a couple of times, then flips the right way round ----
+function flip(e, now) {
+  const t = (now - e.t0) / 1000, b = document.body, T = e.T, A = e.turns * 360 + 180, s1 = T + 1.6, s2 = s1 + 2.8, s3 = s2 + e.T2;
+  if (!e.sky) { e.sky = 1; document.documentElement.style.background = `#02040c url(${nightSkyCanvas().toDataURL()}) center / cover no-repeat`; }
+  const settle = (s, base, ov) => base + ov * Math.exp(-3.2 * s) * Math.cos(13 * s);
+  let ang, sc = 1;
+  if (t < T) { const u = t / T; ang = (A + e.ov) * spinEase(u); sc = 1 - .4 * Math.pow(Math.sin(Math.PI * u), .6); }   // slow, fast, slow
+  else if (t < s1) ang = settle(t - T, A, e.ov);   // stops the wrong way round
+  else if (t < s2) {   // tries to turn over three times, a bit harder each time, straining, and falls back
+    const u = (t - s1) / (s2 - s1) * 3, i = Math.min(2, Math.floor(u)), f = u - i, amp = [20, 38, 62][i], up = Math.sin(Math.PI * f) ** 1.5;
+    ang = A + amp * up + Math.sin(t * 45) * 1.6 * up;
+    sc = 1 - .06 * up;
+  } else if (t < s3) { const u = (t - s2) / e.T2; ang = A + (180 + e.ov * .6) * spinEase(u); sc = 1 - .3 * Math.pow(Math.sin(Math.PI * u), .6); }   // there it goes!
+  else ang = settle(t - s3, A + 180, e.ov * .6);
+  b.style.transformOrigin = "50% 50%";
+  b.style.transform = `perspective(${Math.round(Math.max(innerWidth, innerHeight) * 2)}px) rotateX(${(e.dir * ang).toFixed(2)}deg) scale(${sc.toFixed(4)})`;
+  b.style.boxShadow = sc < .995 ? "0 0 40px rgba(0,0,0,.6)" : "";
+  FX.spinning = true;
 }
 // ---- frame loop ----
 let fxRaf = 0, fxPrev = 0;
@@ -3481,7 +3504,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);
@@ -3501,7 +3524,7 @@ function fxFrame(now) {
     busy = true;
   }
   if (!FX.events.some(e => e.kind === "life" || e.kind === "bite" || e.kind === "ren" || e.kind === "truck")) busy = splashes(now) || busy;
-  if (FX.spinning && !FX.events.some(e => e.kind === "spin")) spinDone();
+  if (FX.spinning && !FX.events.some(e => e.kind === "spin" || e.kind === "flip")) spinDone();
   const re = FX.events.find(e => BEACH_KIND[e.kind]);
   scrunch(re && re.rise ? 1 - BEACH.h * re.rise : 1);
   ctx = mainCtx;

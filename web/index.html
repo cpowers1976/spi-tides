@@ -222,7 +222,7 @@
     <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
-    <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters to the night sky</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
+    <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters, the sea pours in, and you sink to a diner on the sea floor</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
     <label class="row sub"><span>Home run<small>Rolls up into a ball, a bat knocks it out of the galaxy, and we zoom all the way back home</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
     <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
@@ -1362,7 +1362,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -5035,11 +5035,11 @@ function dust(e, now, dt) {
   }
 }
 
-// ---- 3. a rock hits the screen three times, cracking it like a windshield; the third time it shatters to the night sky ----
+// ---- 3. a rock hits the screen three times, cracking it like a windshield; the third time it shatters and the sea pours in ----
 const HITS = [1, 2.6, 4.2];
 function rockArt(e, W, H) {
   const R = Math.hypot(W, H);
-  e.tex = pageSnap(); e.sky = nightSkyCanvas();
+  e.tex = pageSnap();
   e.hits = HITS.map((th, h) => {
     const cx = W * (h === 2 ? rnd(.42, .58) : rnd(.2, .8)), cy = H * (h === 2 ? rnd(.38, .55) : rnd(.22, .7)), n = Math.round(rnd(9, 13));
     const rays = Array.from({ length: n }, (_, i) => {
@@ -5091,8 +5091,8 @@ function drawRock(h, t) {   // flies in from far away, hits, and drops back down
 }
 function rock(e, now) {
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, ts = 5;   // shatters at ts
-  if (!e.tex) rockArt(e, W, H);
-  ctx.save(); ctx.globalAlpha = fadeBack(t, 8.4, 2);
+  if (!e.tex) { rockArt(e, W, H); seaInit(e, W, H); }
+  ctx.save();
   if (t < ts) {
     const last = [...e.hits].reverse().find(h => t >= h.th), j = last ? 10 * Math.exp(-(t - last.th) * 14) : 0;   // the screen shakes on each hit
     ctx.save(); ctx.translate(rnd(-j, j), rnd(-j, j));
@@ -5120,12 +5120,12 @@ function rock(e, now) {
         }
       }
     }
-    ctx.drawImage(e.sky, 0, 0, W, H);
     const u0 = (t - ts);
+    seaScene(e, u0, now / 1000);   // underwater: fish rush in, we sink to the sea floor, and zoom into the diner's sign
     for (const s of e.pieces) {
-      const u = Math.max(0, u0 - s.delay); if (u > 3) continue;
-      const sc = Math.max(.05, 1 - u * .45), dx = s.vx * u, dy = s.vy * u + 700 * u * u;   // falls away from you as it drops
-      ctx.save();
+      const u = Math.max(0, u0 - s.delay * .3); if (u > .9) continue;
+      const sc = 1 + u * 1.6, dx = s.vx * u * 2.2, dy = s.vy * u * 2.2 + 120 * u * u;   // the water blows the glass in at you
+      ctx.save(); ctx.globalAlpha *= 1 - u / .9;
       ctx.translate(s.mx + dx, s.my + dy); ctx.rotate(s.spin * u); ctx.scale(sc, sc); ctx.translate(-s.mx, -s.my);
       ctx.beginPath(); for (const p of s.poly) ctx.lineTo(...p); ctx.closePath();
       ctx.save(); ctx.clip(); ctx.drawImage(e.glass, 0, 0, W, H); ctx.restore();
@@ -5134,6 +5134,323 @@ function rock(e, now) {
     }
   }
   ctx.restore();
+}
+
+// ---- after the glass breaks: the sea pours in, fish and all, and we sink slowly to a diner on the sea floor ----
+const SEA = { sink: [1, 9.5], blink: 10, cast: 11.3, zoom: [11.6, 4.6] };   // seconds after the glass breaks
+function seaLayout(W, H) {
+  const sandY = H * .8, dW = Math.min(W * .86, H * .85), dH = dW * .3, dBot = sandY + dH * .1, dTop = dBot - dH;
+  let fh = Math.min(H * .36, dTop - H * .13), fw = fh * W / H;
+  if (fw > W * .6) { fw = W * .6; fh = fw * H / W; }
+  const fx = W / 2 - fw / 2, fy = dTop - H * .06 - fh;
+  return { sandY, dW, dH, dBot, dTop, fx, fy, fw, fh };
+}
+function seaInit(e, W, H) {
+  const h = e.hits[2], D = Math.hypot(W, H), M = Math.min(W, H);
+  e.sea = seaLayout(W, H);
+  e.bub = Array.from({ length: 70 }, () => ({ x: rnd(0, W), y: rnd(0, H * 1.4), r: M * rnd(.004, .016), sp: rnd(.06, .16) * H, wob: rnd(0, 6), par: rnd(.6, 1.1) }));
+  e.foam = Array.from({ length: 46 }, () => ({ a: rnd(0, 6.283), sp: rnd(.25, 1.1) * D, r: M * rnd(.04, .14), d: rnd(0, .25) }));
+  e.burst = Array.from({ length: 24 }, () => {   // fish and friends tumbling in through the hole, coming right at you
+    const kinds = ["fish", "fish", "fish", "fish", "jelly", "crab", "star", "puff"];
+    return { k: kinds[Math.floor(Math.random() * kinds.length)], a: rnd(0, 6.283), d: rnd(0, .9), life: rnd(1.6, 2.4), sp: rnd(.45, .8) * D, s: M * rnd(.08, .13), spin: rnd(-3, 3), c: FISHC[Math.floor(Math.random() * FISHC.length)] };
+  });
+  e.swim = [   // who you pass on the way down (ks: how far down you are when they're level with you)
+    ...Array.from({ length: 11 }, (_, i) => ({ k: "fish", ks: .18, dir: 1, sp: .1, x0: -.1 - (i % 4) * .07, y: .42 + (i * .37 % 1) * .2, s: .045, c: FISHC[1], par: 1 })),
+    { k: "turtle", ks: .42, dir: -1, sp: .07, x0: 1.15, y: .45, s: .2, par: .85 },
+    { k: "jelly", ks: .3, dir: 0, sp: 0, x0: .78, y: .35, s: .09, par: .95 },
+    { k: "jelly", ks: .56, dir: 0, sp: 0, x0: .2, y: .55, s: .07, par: .9 },
+    { k: "fish", ks: .7, dir: -1, sp: .09, x0: 1.1, y: .3, s: .09, c: FISHC[3], par: 1 },
+    { k: "puff", ks: .62, dir: 1, sp: .05, x0: -.1, y: .62, s: .07, par: 1 },
+  ];
+  e.kelp = Array.from({ length: 9 }, (_, i) => ({ x: i < 5 ? rnd(.0, .16) + i * .02 : rnd(.84, 1), h: rnd(.25, .55), ph: rnd(0, 6), c: ["#2f8a4a", "#3f9e3c", "#5a9a2e"][i % 3] }));
+  e.rocks = Array.from({ length: 7 }, () => ({ x: rnd(0, 1), w: rnd(.08, .2), h: rnd(.04, .12) }));
+  e.dots = Array.from({ length: 60 }, () => [rnd(0, 1), rnd(0, 1), rnd(.5, 1.6)]);
+  e.hole = [h.cx, h.cy];
+}
+const FISHC = [["#ffb02e", "#ff6a00"], ["#5fd4ff", "#1c7fd6"], ["#ffe14a", "#2a2a2a"], ["#ff5f8a", "#b0306a"], ["#9cff6a", "#2f9e5a"], ["#c48bff", "#6a3fd6"]];
+function seaFish(x, y, s, dir, c, ph, stripes) {   // s: body length; dir 1 swims right
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir < 0 ? -1 : 1, 1);
+  const w = Math.sin(ph) * .35;
+  ctx.fillStyle = c[1]; ctx.beginPath(); ctx.moveTo(-s * .38, 0); ctx.lineTo(-s * .62, -s * .22 + w * s * .2); ctx.lineTo(-s * .58, s * .22 + w * s * .2); ctx.fill();   // tail
+  ctx.beginPath(); ctx.moveTo(-s * .1, -s * .18); ctx.quadraticCurveTo(s * .05, -s * .38, s * .15, -s * .17); ctx.fill();   // back fin
+  const g = ctx.createLinearGradient(0, -s * .2, 0, s * .2); g.addColorStop(0, c[0]); g.addColorStop(1, c[1]);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s * .42, s * .2, 0, 0, 7); ctx.fill();
+  if (stripes !== false) { ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = s * .045; for (const sx of [-.12, .08]) { ctx.beginPath(); ctx.ellipse(s * sx, 0, s * .03, s * .17, 0, 0, 7); ctx.stroke(); } }
+  ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.ellipse(s * .05, -s * .08, s * .22, s * .05, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(s * .26, -s * .04, s * .065, 0, 7); ctx.fill();
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(s * .28, -s * .04, s * .035, 0, 7); ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.lineWidth = s * .02; ctx.beginPath(); ctx.arc(s * .36, s * .05, s * .04, .2, 2); ctx.stroke();
+  ctx.restore();
+}
+function seaJelly(x, y, s, ph) {
+  ctx.save(); ctx.translate(x, y);
+  const pump = 1 + Math.sin(ph) * .08;
+  ctx.strokeStyle = "rgba(255,170,230,.55)"; ctx.lineWidth = s * .035; ctx.lineCap = "round";
+  for (let i = 0; i < 6; i++) {
+    const tx = (i / 5 - .5) * s * .7; ctx.beginPath(); ctx.moveTo(tx, 0);
+    for (let k = 1; k <= 8; k++) ctx.lineTo(tx + Math.sin(ph * 1.3 + k * .8 + i) * s * .08, k * s * .14);
+    ctx.stroke();
+  }
+  const g = ctx.createRadialGradient(0, -s * .2, s * .05, 0, -s * .1, s * .6); g.addColorStop(0, "rgba(255,225,250,.95)"); g.addColorStop(.6, "rgba(240,130,220,.7)"); g.addColorStop(1, "rgba(180,80,200,.35)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s * .5 / pump, s * .42 * pump, 0, Math.PI, 0); ctx.quadraticCurveTo(0, s * .12, -s * .5 / pump, 0); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.ellipse(-s * .15, -s * .25, s * .1, s * .06, -.5, 0, 7); ctx.fill();
+  ctx.restore();
+}
+function seaTurtle(x, y, s, dir, ph) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir < 0 ? -1 : 1, 1);
+  const f = Math.sin(ph) * .5;
+  ctx.fillStyle = "#6fae5a";
+  for (const [fx, fy, r0, sg] of [[.18, -.12, -.6, 1], [.18, .12, .6, -1], [-.22, -.1, -2.4, 1], [-.22, .1, 2.4, -1]]) {
+    ctx.save(); ctx.translate(fx * s, fy * s); ctx.rotate(r0 + sg * f * (fx > 0 ? 1 : .5)); ctx.beginPath(); ctx.ellipse(s * .14, 0, s * .16, s * .05, 0, 0, 7); ctx.fill(); ctx.restore();
+  }
+  ctx.beginPath(); ctx.ellipse(s * .36, -s * .02, s * .1, s * .075, 0, 0, 7); ctx.fill();   // head
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(s * .4, -s * .04, s * .015, 0, 7); ctx.fill();
+  const g = ctx.createRadialGradient(-s * .05, -s * .08, s * .03, 0, 0, s * .3); g.addColorStop(0, "#9ccf6a"); g.addColorStop(1, "#3c6b2e");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s * .3, s * .2, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = "rgba(30,60,20,.6)"; ctx.lineWidth = s * .015;
+  for (const [hx, hy] of [[0, 0], [-.14, -.07], [.14, -.07], [-.14, .07], [.14, .07]]) {
+    ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i / 6 * 6.283; ctx.lineTo(hx * s + Math.cos(a) * s * .065, hy * s + Math.sin(a) * s * .055); } ctx.closePath(); ctx.stroke();
+  }
+  ctx.restore();
+}
+function seaCrab(x, y, s, ph) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = "#c2311f"; ctx.lineWidth = s * .05; ctx.lineCap = "round";
+  for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) { const a = Math.sin(ph * 2 + i) * .2; ctx.beginPath(); ctx.moveTo(sd * s * .2, s * .02); ctx.lineTo(sd * s * (.38 + i * .04), -s * .02 + i * s * .06 + a * s * .2); ctx.lineTo(sd * s * (.44 + i * .05), s * .16); ctx.stroke(); }
+  for (const sd of [-1, 1]) {   // claws
+    ctx.beginPath(); ctx.moveTo(sd * s * .2, -s * .06); ctx.lineTo(sd * s * .34, -s * .22); ctx.stroke();
+    ctx.fillStyle = "#e0442a"; ctx.save(); ctx.translate(sd * s * .36, -s * .28); ctx.rotate(sd * (.3 + Math.sin(ph * 3) * .15));
+    ctx.beginPath(); ctx.ellipse(0, 0, s * .1, s * .08, 0, 0, 7); ctx.fill(); ctx.fillStyle = "#3a1a10"; ctx.fillRect(-s * .01, -s * .09, s * .02, s * .06); ctx.restore();
+  }
+  const g = ctx.createRadialGradient(-s * .06, -s * .08, s * .02, 0, 0, s * .3); g.addColorStop(0, "#ff7a55"); g.addColorStop(1, "#b52a18");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, s * .27, s * .17, 0, 0, 7); ctx.fill();
+  for (const sd of [-1, 1]) { ctx.strokeStyle = "#b52a18"; ctx.beginPath(); ctx.moveTo(sd * s * .07, -s * .12); ctx.lineTo(sd * s * .09, -s * .24); ctx.stroke(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(sd * s * .09, -s * .27, s * .045, 0, 7); ctx.fill(); ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(sd * s * .1, -s * .27, s * .022, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function seaStar(x, y, s, rot) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.fillStyle = "#ff8a3d"; ctx.beginPath();
+  for (let i = 0; i < 10; i++) { const a = i / 10 * 6.283 - Math.PI / 2, r = i % 2 ? s * .2 : s * .5; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "rgba(255,230,190,.8)"; for (let i = 0; i < 5; i++) { const a = i / 5 * 6.283 - Math.PI / 2; for (const k of [.15, .28, .4]) { ctx.beginPath(); ctx.arc(Math.cos(a) * s * k, Math.sin(a) * s * k, s * .025, 0, 7); ctx.fill(); } }
+  ctx.restore();
+}
+function seaPuffer(x, y, s, dir, ph) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir < 0 ? -1 : 1, 1);
+  ctx.strokeStyle = "#a9873a"; ctx.lineWidth = s * .03;
+  for (let i = 0; i < 16; i++) { const a = i / 16 * 6.283; ctx.beginPath(); ctx.moveTo(Math.cos(a) * s * .3, Math.sin(a) * s * .3); ctx.lineTo(Math.cos(a) * s * .4, Math.sin(a) * s * .4); ctx.stroke(); }
+  ctx.fillStyle = "#e9c75a"; ctx.beginPath(); ctx.moveTo(-s * .3, 0); ctx.lineTo(-s * .48, -s * .12 + Math.sin(ph) * s * .05); ctx.lineTo(-s * .48, s * .12 + Math.sin(ph) * s * .05); ctx.fill();
+  const g = ctx.createRadialGradient(-s * .08, -s * .1, s * .03, 0, 0, s * .34); g.addColorStop(0, "#fff2b0"); g.addColorStop(1, "#d7a93a");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, s * .32, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(120,90,30,.35)"; for (const [a, b] of [[-.1, -.15], [.05, -.2], [-.18, .02], [0, .1]]) { ctx.beginPath(); ctx.arc(a * s, b * s, s * .03, 0, 7); ctx.fill(); }
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(s * .15, -s * .08, s * .08, 0, 7); ctx.fill();
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(s * .18, -s * .08, s * .04, 0, 7); ctx.fill();
+  ctx.fillStyle = "#b5543a"; ctx.beginPath(); ctx.ellipse(s * .31, s * .06, s * .04, s * .05, 0, 0, 7); ctx.fill();
+  ctx.restore();
+}
+function seaOcto(x, y, s, ph) {   // sits on the diner roof and waves
+  ctx.save(); ctx.translate(x, y);
+  ctx.strokeStyle = "#9b4fc9"; ctx.lineCap = "round";
+  for (let i = 0; i < 6; i++) {
+    const bx = (i / 5 - .5) * s * .5, wave = i === 5;
+    ctx.lineWidth = s * .07; ctx.beginPath(); ctx.moveTo(bx, -s * .05);
+    for (let k = 1; k <= 6; k++) {
+      const q = k / 6;
+      if (wave) ctx.lineTo(bx + q * s * .3, -s * .05 - q * s * .45 + Math.sin(ph * 4 + k) * s * .05 * q);
+      else ctx.lineTo(bx + (bx > 0 ? 1 : -1) * q * s * .28 + Math.sin(ph * 1.5 + k + i) * s * .03, -s * .05 + q * s * .05);
+    }
+    ctx.stroke();
+  }
+  const g = ctx.createRadialGradient(-s * .08, -s * .35, s * .03, 0, -s * .25, s * .32); g.addColorStop(0, "#d9a0ff"); g.addColorStop(1, "#7a35a8");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -s * .26, s * .24, s * .28, 0, 0, 7); ctx.fill();
+  for (const sd of [-1, 1]) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(sd * s * .09, -s * .2, s * .06, 0, 7); ctx.fill(); ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(sd * s * .09 + s * .015, -s * .2, s * .03, 0, 7); ctx.fill(); }
+  ctx.strokeStyle = "#4a1a6a"; ctx.lineWidth = s * .025; ctx.beginPath(); ctx.arc(0, -s * .12, s * .06, .3, 2.8); ctx.stroke();
+  ctx.restore();
+}
+function seaCreature(c, x, y, s, dir, ph) {
+  if (c.k === "fish") seaFish(x, y, s, dir, c.c || FISHC[0], ph * 6);
+  else if (c.k === "jelly") seaJelly(x, y, s, ph * 3);
+  else if (c.k === "turtle") seaTurtle(x, y, s, dir, ph * 2);
+  else if (c.k === "crab") seaCrab(x, y, s, ph);
+  else if (c.k === "star") seaStar(x, y, s, ph);
+  else if (c.k === "puff") seaPuffer(x, y, s, dir, ph * 6);
+}
+function seaWater(W, H, k, sec) {   // the water: lighter near the top, sun rays swaying down from the surface
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  const mix = (a, b) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  g.addColorStop(0, `rgb(${mix([86, 196, 230], [32, 128, 172])})`); g.addColorStop(1, `rgb(${mix([30, 140, 190], [8, 52, 84])})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 6; i++) {
+    const x0 = W * (i / 5) + Math.sin(sec * .4 + i * 1.7) * W * .05, wd = W * (.04 + (i % 3) * .025);
+    const rg = ctx.createLinearGradient(0, 0, 0, H); rg.addColorStop(0, `rgba(200,240,255,${(.14 - k * .06).toFixed(3)})`); rg.addColorStop(1, "rgba(200,240,255,0)");
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0 + wd, 0); ctx.lineTo(x0 + wd * 2.4 - W * .15, H); ctx.lineTo(x0 - W * .15, H); ctx.fill();
+  }
+  ctx.restore();
+}
+function seaFace(e, L, u, sec) {   // the sign's face: THE BOTTOM FEEDER in neon, then it blinks and switches to the forecast
+  const { fx, fy, fw, fh } = L;
+  if (u >= SEA.cast) {
+    ctx.drawImage(e.tex, fx, fy, fw, fh);
+    const w = 1 - clamp((u - SEA.cast) / .5, 0, 1);
+    if (w > 0) { ctx.fillStyle = `rgba(255,255,255,${(.8 * w).toFixed(3)})`; ctx.fillRect(fx, fy, fw, fh); }
+    return;
+  }
+  ctx.fillStyle = "#081222"; ctx.fillRect(fx, fy, fw, fh);
+  let lit;   // which lines are lit: THE, BOTTOM, FEEDER, the menu line
+  if (u < SEA.blink) { const c = (u % 3); lit = c < .4 ? [1, 0, 0, 0] : c < .8 ? [1, 1, 0, 0] : c < 1.2 ? [1, 1, 1, 0] : c < 2.6 ? [1, 1, 1, 1] : [0, 0, 0, 0]; }
+  else { const on = Math.floor((u - SEA.blink) / .26) % 2 === 1; lit = on ? [1, 1, 1, 1] : [0, 0, 0, 0]; }
+  const any = lit.some(Boolean);
+  ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.strokeStyle = any ? "#5ff4ff" : "#1c3a48"; ctx.lineWidth = fh * .02;
+  if (any) { ctx.shadowColor = "#5ff4ff"; ctx.shadowBlur = fh * .05; }
+  ctx.strokeRect(fx + fh * .05, fy + fh * .05, fw - fh * .1, fh * .9);
+  const hU = Math.min(fh, fw * 1.1);   // the lettering keeps its shape on a tall, narrow (phone) sign
+  const rows = [["THE", .22, .13, "#ffe46b"], ["BOTTOM", .42, .22, "#ff5fa8"], ["FEEDER", .64, .22, "#ff5fa8"], ["burgers · shakes · kelp fries", .84, .075, "#bff6ff"]];
+  rows.forEach(([txt, y, sz, col], i) => {
+    ctx.font = `900 ${hU * sz}px system-ui, Roboto, sans-serif`;
+    if (lit[i]) { ctx.shadowColor = col; ctx.shadowBlur = fh * .06; ctx.fillStyle = col; }
+    else { ctx.shadowBlur = 0; ctx.fillStyle = "rgba(110,120,140,.28)"; }
+    ctx.fillText(txt, fx + fw / 2, fy + (fh - hU) / 2 + hU * y, fw * .86);
+  });
+  ctx.restore();
+}
+function seaFloor(e, L, W, H, u, sec) {   // sand, rocks, kelp, and the diner with its sign, in final position
+  const { sandY, dW, dH, dBot, dTop, fx, fy, fw, fh } = L, M = Math.min(W, H), cx = W / 2;
+  // far rocks
+  ctx.fillStyle = "rgba(20,70,95,.8)";
+  for (const r of e.rocks) { ctx.beginPath(); ctx.ellipse(r.x * W, sandY + H * .01, r.w * W, r.h * H, 0, Math.PI, 0); ctx.fill(); }
+  // sand
+  let g = ctx.createLinearGradient(0, sandY, 0, H); g.addColorStop(0, "#d9c38f"); g.addColorStop(1, "#a88d5c");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, H * 2);
+  for (let i = 0; i <= 24; i++) ctx.lineTo(W * i / 24, sandY + Math.sin(i * 1.3) * H * .008);
+  ctx.lineTo(W, H * 2); ctx.fill();
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.strokeStyle = "rgba(180,240,255,.12)"; ctx.lineWidth = M * .006;   // light rippling on the sand
+  for (let i = 0; i < 8; i++) { const y = sandY + (i + 1) * (H - sandY) / 9; ctx.beginPath(); for (let x = 0; x <= W; x += W / 30) ctx.lineTo(x, y + Math.sin(x / W * 14 + sec * 1.5 + i) * H * .006); ctx.stroke(); }
+  ctx.restore();
+  ctx.fillStyle = "rgba(120,95,60,.5)"; for (const [a, b, r] of e.dots) { ctx.beginPath(); ctx.arc(a * W, sandY + b * (H - sandY), r * M * .003, 0, 7); ctx.fill(); }
+  // kelp swaying at both sides
+  ctx.lineCap = "round";
+  for (const k of e.kelp) {
+    ctx.strokeStyle = k.c; ctx.lineWidth = M * .02; ctx.beginPath();
+    const x0 = k.x * W; ctx.moveTo(x0, sandY + H * .02);
+    for (let i = 1; i <= 12; i++) { const q = i / 12; ctx.lineTo(x0 + Math.sin(sec * 1.1 + k.ph + q * 3) * M * .04 * q, sandY - q * k.h * H); }
+    ctx.stroke();
+    ctx.fillStyle = k.c; for (let i = 2; i <= 11; i += 2) { const q = i / 12, lx = x0 + Math.sin(sec * 1.1 + k.ph + q * 3) * M * .04 * q, ly = sandY - q * k.h * H; ctx.beginPath(); ctx.ellipse(lx + (i % 4 ? 1 : -1) * M * .02, ly, M * .025, M * .009, (i % 4 ? .5 : -.5), 0, 7); ctx.fill(); }
+  }
+  // the sign's posts and cabinet
+  const m = fh * .08, px = [cx - fw * .28, cx + fw * .28];
+  for (const x of px) { g = ctx.createLinearGradient(x - M * .01, 0, x + M * .01, 0); g.addColorStop(0, "#7d8a94"); g.addColorStop(.5, "#dfe7ec"); g.addColorStop(1, "#56626b"); ctx.fillStyle = g; ctx.fillRect(x - M * .009, fy + fh, M * .018, dTop - fy - fh + dH * .1); }
+  ctx.fillStyle = "#18324a"; ctx.beginPath(); ctx.roundRect(fx - m, fy - m, fw + m * 2, fh + m * 2, m); ctx.fill();
+  ctx.strokeStyle = "#b9c6cf"; ctx.lineWidth = m * .25; ctx.stroke();
+  // a neon fish riding on top of the sign
+  ctx.save(); const ny = fy - m * 2.4, ns = Math.min(fw * .32, fh * .5);
+  ctx.strokeStyle = "#ffb02e"; ctx.lineWidth = Math.max(1.5, ns * .05); ctx.shadowColor = "#ffb02e"; ctx.shadowBlur = ns * .15;
+  ctx.beginPath(); ctx.ellipse(cx, ny, ns * .4, ns * .17, 0, 0, 7); ctx.moveTo(cx - ns * .4, ny); ctx.lineTo(cx - ns * .6, ny - ns * .15); ctx.lineTo(cx - ns * .6, ny + ns * .15); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx + ns * .22, ny - ns * .03, ns * .03, 0, 7); ctx.stroke(); ctx.restore();
+  // chasing bulbs around the face
+  const per = 2 * (fw + fh) + 8 * m, nb = Math.max(16, Math.round(per / (m * 1.1)));
+  for (let i = 0; i < nb; i++) {
+    let d = i / nb * per, x, y; const w2 = fw + m * 1.2, h2 = fh + m * 1.2, x0 = fx - m * .6, y0 = fy - m * .6;
+    if (d < w2) { x = x0 + d; y = y0; } else if ((d -= w2) < h2) { x = x0 + w2; y = y0 + d; } else if ((d -= h2) < w2) { x = x0 + w2 - d; y = y0 + h2; } else { d -= w2; x = x0; y = y0 + h2 - Math.min(d, h2); }
+    const on = (i + Math.floor(sec * 6)) % 3 !== 0;
+    ctx.fillStyle = on ? "#fff3b0" : "#6a5a2a"; ctx.beginPath(); ctx.arc(x, y, m * .2, 0, 7); ctx.fill();
+  }
+  // the diner: a chrome dining car settled in the sand, with portholes and fish in the booths
+  const x0 = cx - dW / 2, rr = dH * .42;
+  g = ctx.createLinearGradient(0, dTop, 0, dBot); g.addColorStop(0, "#f4f8fa"); g.addColorStop(.35, "#aeb9c1"); g.addColorStop(.55, "#e9eef1"); g.addColorStop(1, "#6d7880");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x0, dTop, dW, dH, rr); ctx.fill();
+  ctx.fillStyle = "#3f5f78"; ctx.beginPath(); ctx.roundRect(x0 + dW * .04, dTop - dH * .1, dW * .92, dH * .16, dH * .08); ctx.fill();   // roof
+  ctx.fillStyle = "#d8344a"; ctx.fillRect(x0 + rr * .4, dTop + dH * .66, dW - rr * .8, dH * .1);   // red stripe
+  ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.fillRect(x0 + rr * .4, dTop + dH * .66, dW - rr * .8, dH * .015);
+  const nw = 6, pr = dH * .14, glow = .75 + .25 * Math.sin(sec * 3);
+  for (let i = 0; i < nw; i++) {
+    const wx = x0 + dW * (.14 + i * .144 + (i >= 3 ? .0 : 0)), wy = dTop + dH * .38;
+    if (i === 3) continue;   // the door goes here
+    ctx.fillStyle = "#56626b"; ctx.beginPath(); ctx.arc(wx, wy, pr * 1.18, 0, 7); ctx.fill();
+    const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, pr); wg.addColorStop(0, `rgba(255,236,160,${glow})`); wg.addColorStop(1, "#e7a443"); ctx.fillStyle = wg; ctx.beginPath(); ctx.arc(wx, wy, pr, 0, 7); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(wx, wy, pr, 0, 7); ctx.clip();   // a fish customer in the booth
+    seaFish(wx + Math.sin(sec + i) * pr * .2, wy + pr * .2, pr * 1.5, i % 2 ? 1 : -1, FISHC[(i + 2) % FISHC.length], sec * 3 + i, false);
+    ctx.restore();
+  }
+  const dx = x0 + dW * (.14 + 3 * .144) - dH * .14, dw2 = dH * .28;   // door
+  ctx.fillStyle = "#1f7f86"; ctx.beginPath(); ctx.roundRect(dx, dTop + dH * .2, dw2, dH * .62, dH * .05); ctx.fill();
+  ctx.fillStyle = "#ffe8a0"; ctx.beginPath(); ctx.arc(dx + dw2 / 2, dTop + dH * .36, dw2 * .22, 0, 7); ctx.fill();
+  ctx.save(); ctx.fillStyle = "#ff5fa8"; ctx.shadowColor = "#ff5fa8"; ctx.shadowBlur = dH * .06; ctx.font = `900 ${dH * .1}px system-ui, Roboto, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  if (Math.floor(sec * 1.5) % 4) ctx.fillText("OPEN", dx + dw2 / 2, dTop + dH * .11); ctx.restore();
+  ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fillRect(x0 + rr * .5, dTop + dH * .06, dW - rr, dH * .03);   // shine
+  // barnacles and coral tufts
+  ctx.fillStyle = "rgba(240,235,220,.85)"; for (let i = 0; i < 14; i++) { ctx.beginPath(); ctx.arc(x0 + dW * ((i * .37) % 1), dTop + dH * (.8 + (i * .13) % .12), dH * .02, 0, 7); ctx.fill(); }
+  for (const [sx, col] of [[-.03, "#ff7aa8"], [1.02, "#ff9a4a"], [.08, "#c86bff"]]) {
+    const bx = x0 + dW * sx, by = dBot - dH * .05;
+    ctx.strokeStyle = col; ctx.lineWidth = dH * .045; ctx.lineCap = "round";
+    for (let j = -2; j <= 2; j++) { ctx.beginPath(); ctx.moveTo(bx, by); ctx.quadraticCurveTo(bx + j * dH * .06, by - dH * .2, bx + j * dH * .1 + Math.sin(sec + j) * dH * .02, by - dH * .32); ctx.stroke(); }
+  }
+  // a sand bank in front so it looks settled in
+  g = ctx.createLinearGradient(0, dBot - dH * .12, 0, dBot + dH * .1); g.addColorStop(0, "#e2cd98"); g.addColorStop(1, "#c4a874");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x0 - dW * .1, dBot + dH * .1);
+  for (let i = 0; i <= 20; i++) ctx.lineTo(x0 - dW * .1 + dW * 1.2 * i / 20, dBot - dH * (.04 + .05 * Math.sin(i * .9)));
+  ctx.lineTo(x0 + dW * 1.1, dBot + dH * .1); ctx.fill();
+  // the doorman on the roof, a crab out front, a starfish
+  seaOcto(x0 + dW * .9, dTop - dH * .08, Math.min(dH * .55, (dTop - fy - fh) * 1.4), sec);
+  seaCrab(x0 + dW * (.25 + .05 * Math.sin(sec * .7)), sandY + (H - sandY) * .55, M * .07, sec * 3);
+  seaStar(x0 + dW * .7, sandY + (H - sandY) * .7, M * .06, .3);
+  // a few regulars swimming around the place
+  const fade = 1 - ease(clamp((u - SEA.zoom[0]) / 1.2, 0, 1));   // they swim off before the zoom gets close
+  if (fade > 0) for (let i = 0; i < 3; i++) {
+    ctx.save(); ctx.globalAlpha *= fade;
+    const p = ((sec * .05 + i * .33) % 1), dir = i % 2 ? -1 : 1, x = dir > 0 ? -W * .1 + p * W * 1.2 : W * 1.1 - p * W * 1.2;
+    seaFish(x, dTop - dH * (.3 - i * .25) + Math.sin(sec + i) * H * .01, M * .06, dir, FISHC[(i + 4) % FISHC.length], sec * 6 + i);
+    ctx.restore();
+  }
+  seaFace(e, L, u, sec);
+}
+function seaScene(e, u, sec) {   // u: seconds since the glass broke
+  const W = innerWidth, H = innerHeight, L = e.sea, M = Math.min(W, H), D = Math.hypot(W, H);
+  const k = ease(clamp((u - SEA.sink[0]) / (SEA.sink[1] - SEA.sink[0]), 0, 1)), off = (1 - k) * H * 1.5;
+  const Q = ease(clamp((u - SEA.zoom[0]) / SEA.zoom[1], 0, 1));
+  if (Q >= 1) { ctx.drawImage(e.tex, 0, 0, W, H); return; }
+  const Zm = W / L.fw, sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = L.fx + L.fw / 2, my = L.fy + L.fh / 2;
+  ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
+  seaWater(W, H, k, sec);
+  // the swimmers you pass on the way down
+  for (const c of e.swim) {
+    const ua = SEA.sink[0] + c.ks * (SEA.sink[1] - SEA.sink[0]);
+    const y = c.y * H + (off - (1 - c.ks) * H * 1.5) * c.par + (c.k === "jelly" ? -(u - ua) * H * .02 : 0);
+    if (y < -H * .4 || y > H * 1.4) continue;
+    const x = c.x0 * W + c.dir * c.sp * W * (u - ua) + (c.dir ? 0 : Math.sin(u * .6) * W * .02), s = c.s * M;
+    seaCreature(c, x + (c.k === "fish" && c.ks === .18 ? Math.sin(u * 2 + c.y * 20) * M * .01 : 0), y, s, c.dir || 1, sec + c.y * 7);
+  }
+  if (off < H * 1.2) { ctx.save(); ctx.translate(0, off); seaFloor(e, L, W, H, u, sec); ctx.restore(); }
+  // bubbles rising past you (faster while you sink)
+  ctx.save(); ctx.globalAlpha *= 1 - Q;
+  for (const b of e.bub) {
+    const span = H * 1.4, y = (((b.y - u * b.sp + off * b.par) % span) + span) % span - H * .2, x = b.x + Math.sin(sec * 2 + b.wob) * M * .01;
+    ctx.strokeStyle = "rgba(230,250,255,.6)"; ctx.lineWidth = Math.max(1, b.r * .2); ctx.beginPath(); ctx.arc(x, y, b.r, 0, 7); ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(x - b.r * .35, y - b.r * .35, b.r * .25, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+  ctx.restore();
+  if (u < 2.6) {   // the rush: foam blasting in through the hole, and everything that came in with it
+    const [hx, hy] = e.hole;
+    const a = 1 - clamp(u / 1.8, 0, 1);
+    if (a > 0) {
+      const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, D * (.15 + u * .8)); g.addColorStop(0, `rgba(255,255,255,${(.85 * a).toFixed(3)})`); g.addColorStop(.5, `rgba(200,240,255,${(.4 * a).toFixed(3)})`); g.addColorStop(1, "rgba(200,240,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      for (const b of e.foam) {
+        const v = Math.max(0, u - b.d); if (v <= 0) continue;
+        const dd = b.sp * Math.pow(v, .6), r = b.r * (1 + v * 3), al = Math.max(0, 1 - v / 1.6) * .55;
+        ctx.fillStyle = `rgba(255,255,255,${al.toFixed(3)})`; ctx.beginPath(); ctx.arc(hx + Math.cos(b.a) * dd, hy + Math.sin(b.a) * dd, r, 0, 7); ctx.fill();
+      }
+    }
+    for (const c of e.burst) {
+      const v = (u - c.d) / c.life; if (v <= 0 || v >= 1) continue;
+      const dd = c.sp * v * v * 1.2, s = c.s * (.15 + v * v * 3.2), x = hx + Math.cos(c.a) * dd, y = hy + Math.sin(c.a) * dd;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(c.k === "fish" || c.k === "puff" ? (Math.cos(c.a) < 0 ? c.a - Math.PI : c.a) : c.spin * v);
+      seaCreature(c, 0, 0, s, Math.cos(c.a) < 0 ? -1 : 1, sec * 2 + c.a);
+      ctx.restore();
+    }
+  }
 }
 
 // ---- 4. the page rolls up into a ball (stitched like a baseball) and a bat knocks it out into the night sky ----

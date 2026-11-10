@@ -217,13 +217,13 @@
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
-    <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
+    <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night, where a couple leaning on their car is checking the forecast on a tablet</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
     <label class="row sub"><span>Rock through the glass<small>Three rocks crack it like a windshield, then it shatters to the night sky</small></span><span class="ctl"><button class="try" data-try="rock">▶</button><input type="checkbox" class="sw" data-set="aRock"></span></label>
-    <label class="row sub"><span>Home run<small>Rolls up into a ball and a bat knocks it out into the night sky</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
+    <label class="row sub"><span>Home run<small>Rolls up into a ball, a bat knocks it out of the galaxy, and we zoom all the way back home</small></span><span class="ctl"><button class="try" data-try="bat">▶</button><input type="checkbox" class="sw" data-set="aBat"></span></label>
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
     <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
     <label class="row sub"><span>Iceberg<small>The Titanic comes out in front of the forecast and hits an iceberg. It sinks bow first and the stern drags the whole screen down with it</small></span><span class="ctl"><button class="try" data-try="liner">▶</button><input type="checkbox" class="sw" data-set="aLiner"></span></label>
@@ -453,7 +453,7 @@ function reelLeft(x, y, i = 0) {  // how many digits this reel still has to turn
     return { r: 1e4 - (8 * tt + 9 * tt * tt) - x * .37 - i * 1.7, since: -1 };
   }
   const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1, A = REEL_A, D = REEL_D;
-  const stop = 1.9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
+  const stop = 3 + 4.6 * Math.min(1, Math.max(0, x / W)) + .4 * (y / (cv.clientHeight || 1)) + i * .06;   // the last ones land around 8 s
   const k = A / 3 + (stop - D - A) + D / 2;   // distance covered at a speed of 1
   const total = 10 * Math.ceil((REEL_V * k + i * 1.7) / 10), v = total / k;   // whole turns, so it starts on the real value
   const done = t < A ? v * t ** 3 / (3 * A * A)   // starts slow and speeds up
@@ -669,7 +669,7 @@ function worldFlag(spec, x, cy, h) {
   if (spec.disc) { const [c, px, r] = spec.disc; dot(x + w * px, cy, h * r, c.match(/\w\w/g).map(v => parseInt(v, 16) / 255).concat(1)); }
   if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
 }
-const PLACE_T = 6.2, PLACE_A = 1.2, PLACE_D = 1.8;   // the place reel lands last, and turns slowly enough to read
+const PLACE_T = 9.4, PLACE_A = 1.2, PLACE_D = 2.2;   // the place reel lands last, and turns slowly enough to read
 function placeReel(f, top, ps, clipR) {
   const sl = FX.slot, t = (performance.now() - sl.t0) / 1000, N = sl.places.length;
   if (sl.wild) {   // haywire: whirls through the world faster and faster, never landing
@@ -1303,7 +1303,7 @@ function play(kind, opt = {}) {
   if (kind === "nums") { for (const k in NUM) delete NUM[k]; draw(); return; }
   if (kind === "slot") {
     const pool = [...WORLD].sort(() => Math.random() - .5);
-    FX.slot = { t0: now, end: now + (PLACE_T + .6) * 1000, places: pool.slice(0, 12) };
+    FX.slot = { t0: now, end: now + (PLACE_T + .6) * 1000, places: pool.slice(0, 18) };   // 10 seconds in all
     fxKick(); return;
   }
   if (kind === "wipe" && !opt.old) opt.old = snapshot();
@@ -1360,7 +1360,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 10300, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -4570,7 +4570,7 @@ function pageSnap(scale) {   // the whole screen as it looks now: background, wa
       x.fillStyle = st.backgroundColor; x.beginPath();
       x.roundRect ? x.roundRect(b.left, b.top, b.width, b.height, 8) : x.rect(b.left, b.top, b.width, b.height); x.fill();
     }
-    const txt = (el.id === "gear" ? "⚙" : el.id === "spin" ? "⟳ " + el.textContent : el.textContent).trim(), mid = el.tagName === "BUTTON" || st.textAlign === "center";
+    const txt = (el.id === "gear" ? "⚙" : el.id === "spin" ? "⟳ " + el.innerText : el.innerText).trim(), mid = el.tagName === "BUTTON" || st.textAlign === "center";
     x.fillStyle = st.color; x.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`; x.textBaseline = "middle"; x.textAlign = mid ? "center" : "left";
     x.fillText(txt, mid ? b.left + b.width / 2 : b.left, b.top + b.height / 2, b.width);
   }
@@ -4646,7 +4646,7 @@ function officeArt(W, H, bk, shot) {   // shot: the forecast as it looks now, sh
   x.fillStyle = "#1c1c1f"; x.fillRect(W * .1, dy - M * .32, W * .18, M * .23);
   const sx = W * .1 + 6, sy = dy - M * .32 + 6, sw = W * .18 - 12, sh = M * .23 - 12;   // the screen: this forecast app, running
   x.fillStyle = rgba(T.bg); x.fillRect(sx, sy, sw, sh);
-  if (shot) { const k = Math.min(sw / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k; x.drawImage(shot, sx + (sw - w) / 2, sy + (sh - h) / 2, w, h); }
+  if (shot) { const k = Math.min(sw / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k; c.scr = [sx + (sw - w) / 2, sy + (sh - h) / 2, w, h]; x.drawImage(shot, ...c.scr); }
   g = x.createLinearGradient(sx, sy, sx + sw, sy + sh); g.addColorStop(0, "rgba(255,255,255,.16)"); g.addColorStop(.45, "rgba(255,255,255,.03)"); g.addColorStop(.46, "rgba(255,255,255,0)");
   x.fillStyle = g; x.fillRect(sx, sy, sw, sh);   // a little glare on the glass
   x.fillStyle = "#4ade80"; x.beginPath(); x.arc(W * .19, dy - M * .32 + M * .23 - 3, 1.5, 0, 7); x.fill();   // power light
@@ -4708,10 +4708,18 @@ function crumple(e, now) {
       const a = Math.atan2(y - H / 2, x - W / 2) + rnd(-.7, .7), d = clamp(Math.hypot((x - W / 2) / W, (y - H / 2) / H) / .71, 0, 1), rr = R * (.25 + .8 * Math.sqrt(d)) * rnd(.75, 1.05);
       return [Math.cos(a) * rr, Math.sin(a) * rr, rnd(0, 7), d];
     });
-    e.office = officeArt(W, H, e.bk, e.tex);
+    e.office = officeArt(W, H, e.bk, e.tex); e.shot = pageSnap();
   }
-  ctx.save(); ctx.globalAlpha = fadeBack(t, 5.6, 2);   // the office fades out as the page fades back in
+  const [ix, iy, iw, ih] = e.office.scr, Z = W / iw, Q = ease(clamp((t - 5.4) / 2.6, 0, 1));   // then we zoom into the desk monitor until it is the screen again
+  if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
+  const sc = Math.exp(Math.log(Z) * Q), f = (sc - 1) / (Z - 1), mx = ix + iw / 2, my = iy + ih / 2;
+  ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
   ctx.drawImage(e.office, 0, 0, W, H);
+  if (Q > 0) {   // the monitor's picture, sharp, its glare fading as we get there
+    ctx.drawImage(e.shot, ix, iy, iw, ih);
+    const gl = ctx.createLinearGradient(ix, iy, ix + iw, iy + ih); gl.addColorStop(0, `rgba(255,255,255,${(.16 * (1 - Q)).toFixed(3)})`); gl.addColorStop(.45, "rgba(255,255,255,0)");
+    ctx.fillStyle = gl; ctx.fillRect(ix, iy, iw, ih);
+  }
   const k = clamp((t - .3) / 2.7, 0, 1);
   let tilt = 0;
   if (t > 4.95) tilt = Math.sin((t - 4.95) * 22) * .09 * Math.exp(-(t - 4.95) * 5);   // the basket rocks when it lands
@@ -4975,6 +4983,296 @@ function drawBat(e, ang, alpha) {
   }
   ctx.restore();
 }
+// ---- after the home run: the camera pulls back out of our galaxy, out to a deep field full of galaxies, dives into one
+//      that turns out to be the Milky Way, then the solar system, Earth, a house at the forecast spot, and in through its
+//      window to a screen on the wall that is running this forecast, until that screen is the whole screen again ----
+const COS_LAND = [   // very rough coastlines (longitude, latitude), only for the side of the globe that faces America
+  [-165,54,-160,58,-166,62,-165,68,-156,71,-141,70,-128,70,-115,68,-95,69,-87,67,-94,61,-93,58,-87,55.5,-82,52.5,-79,55,-78,58.5,-77,62,-72,61,-65,60,-61,56,-56,52,-60,47,-66,44,-70,42,-74,40,-76,37,-76,35,-81,31,-80,26,-81,25,-82,27,-83,29,-85,30,-89,30,-90,29,-94,29.7,-97,27.8,-97.4,27.6,-97.15,26.4,-97.1,26,-97.2,25.6,-97.6,24.5,-97.5,21.5,-96,19,-94.5,18.2,-91,18.7,-90.5,21,-87,21.5,-87.5,18,-88.5,16,-84,15.8,-83.2,15,-83.6,11,-81.5,9,-79,9.3,-77.3,8.3,-77.5,7.5,-80,7.5,-83,8.2,-86,11,-88,13.3,-92,14.5,-95,16,-99,16.7,-105,19.8,-105.5,22.5,-108,25.5,-111,28.5,-114.8,31.6,-113,29,-111.5,26.5,-109.9,23,-112,24.8,-114,27.8,-115.8,30.4,-117.1,32.5,-118.5,34,-120.6,34.6,-122.5,37.7,-124,40.5,-124.5,43,-124,46.5,-124.7,48.4,-123,49,-127,50.5,-130,54.5,-133,57.5,-137,58.5,-140,59.7,-146,60.7,-151,59.5,-152,58,-154,57.5,-158,56,-162,55],
+  [-120,72,-110,77,-90,80,-75,80,-80,73,-95,74,-105,72],
+  [-73,78,-60,82,-35,83.5,-20,82,-18,77,-22,70,-32,68,-40,65,-43,60,-48,61,-52,65,-54,69,-58,75,-68,76.5],
+  [-85,21.8,-82,23.1,-77,22,-74.2,20.2,-77.5,19.9,-80,21.7,-83,22],
+  [-74.4,19.8,-70,19.8,-68.4,18.6,-71.5,17.6,-74.4,18.4],
+  [-77,8.5,-75.5,10.8,-72,12,-67,10.7,-62,10.6,-60,8.5,-57,6,-52,5,-50,1.5,-48,-1,-44,-2.5,-39,-3.5,-35,-5.5,-35,-9,-38.5,-13,-39,-17.5,-41,-22,-45,-23.5,-48.5,-26.5,-50,-31,-53,-34,-58,-34.5,-57,-38,-62,-39,-65,-42,-67,-46,-69,-51,-68.5,-54.5,-71.5,-53.5,-75,-50,-73.5,-43,-73.5,-37,-71.5,-30,-70.3,-18.5,-75.5,-15,-79,-8,-81,-5,-80,-1,-79,1.5,-77.5,4,-77.3,7],
+  [-17,21,-17,14.7,-15,11,-13,8,-8,4.5,-2,5,5,6,9,4,9.5,1,12,-5,13,-12,11.8,-17,15,-27,18.5,-34.5,25,-34,32,-28,35,-22,40.5,-15,40,-5,51,11.5,43.5,12,37,20,32,31,20,31,10,34,10,37,0,36,-6,35.8,-10,30,-13,27.5],
+  [-9.5,37,-9,43,-1.5,43.5,-4.5,48.5,2,51,5,53.5,8.5,57,10.5,59,5,62,14,68,25,71,40,68,45,40,30,41,26,40,22,36.5,19,40,15,38,12.5,44,13,45.5,9,44,3,43.3,0,39,-2,36.7,-5.6,36,-7.5,37.1],
+  [40,68,60,70,80,73,100,77,130,72,160,71,180,69,190,66,186,64.5,178,62.5,170,60,163,59.5,162,56,156,51,156,57,150,59.5,142,59,137,54,141,48,135,43,128,38,126,35,121,31,118,24,110,21,108,16,109,12,105,9,100,13,100,7,103,1.5,98,8,98,16,92,22,88,22,80,15,77,8,72,21,66,25,57,25,52,28,48,30,50,26,56,22,52,16,45,13,40,15,35,28,36,36,30,41,45,40]];
+function galaxySprite(S, o) {   // a face-on galaxy drawn from tens of thousands of stars; .sun = a spot out on one arm
+  const c = document.createElement("canvas"); c.width = c.height = S;
+  const x = c.getContext("2d"), R = S * .5 / 1.2, k = S / 1024, g = () => Math.random() + Math.random() + Math.random() - 1.5;
+  const armAt = (a, r) => a * 2 * Math.PI / o.arms + Math.log(r / o.r0) / Math.tan(o.pitch);
+  x.translate(S / 2, S / 2);
+  const glow = x.createRadialGradient(0, 0, 0, 0, 0, R * 1.1);
+  glow.addColorStop(0, `rgba(${o.core},.95)`); glow.addColorStop(.1, `rgba(${o.core},.5)`); glow.addColorStop(.4, `rgba(${o.arm},.1)`); glow.addColorStop(1, `rgba(${o.arm},0)`);
+  x.fillStyle = glow; x.beginPath(); x.arc(0, 0, R * 1.1, 0, 7); x.fill();
+  x.globalCompositeOperation = "lighter";
+  const st = { arm: [.35, .6, .9].map(a => `rgba(${o.arm},${a})`), disk: [.25, .5].map(a => `rgba(${o.core},${a})`), pink: "rgba(255,120,175,.8)" };
+  const dot = (px, py, s) => x.fillRect(px - s / 2, py - s / 2, s, s), sz = () => Math.max(S < 300 ? .7 : 0, (.9 + Math.random() ** 4 * 2.4) * k * 1.4);
+  for (let i = 0; i < o.n; i++) {
+    const q = Math.random();
+    if (q < .58) {   // the spiral arms (with 4 arms, two of them weaker)
+      let a = Math.floor(Math.random() * o.arms); if (o.arms === 4 && a % 2 && Math.random() < .5) a--;
+      const r = o.r0 + (1 - o.r0) * Math.random() ** 1.2, th = armAt(a, r) + g() * .16, rr = r + g() * (.025 + .05 * r);
+      const pink = Math.random() < .04;
+      x.fillStyle = pink ? st.pink : st.arm[Math.floor(Math.random() * 3)];
+      dot(Math.cos(th) * rr * R, Math.sin(th) * rr * R, pink ? sz() * 1.8 : sz());
+    } else if (q < .86) {   // the smooth disk
+      const r = Math.min(1.05, -Math.log(Math.random() + 1e-6) * .28), th = Math.random() * 7;
+      x.fillStyle = st.disk[Math.floor(Math.random() * 2)]; dot(Math.cos(th) * r * R, Math.sin(th) * r * R, sz() * .8);
+    } else {   // the bar / bulge
+      const along = g() * (o.bar ? .3 : .1), across = g() * .08, b = o.barAng || .5;
+      x.fillStyle = st.disk[1]; dot((Math.cos(b) * along - Math.sin(b) * across) * R, (Math.sin(b) * along + Math.cos(b) * across) * R, sz());
+    }
+  }
+  if (S >= 300) {   // dark dust lanes along the inside of the arms
+    x.globalCompositeOperation = "source-over"; x.fillStyle = "rgba(25,12,8,.05)";
+    for (let i = 0; i < o.n / 14; i++) {
+      const a = Math.floor(Math.random() * o.arms), r = o.r0 + (1 - o.r0) * Math.random() ** 1.2, th = armAt(a, r) - .14 + g() * .05, rr = r + g() * .015;
+      x.beginPath(); x.arc(Math.cos(th) * rr * R, Math.sin(th) * rr * R, (1 + Math.random() * 2) * k * 1.4, 0, 7); x.fill();
+    }
+  }
+  const core = x.createRadialGradient(0, 0, 0, 0, 0, R * .16); x.globalCompositeOperation = "lighter";
+  core.addColorStop(0, `rgba(255,245,225,.9)`); core.addColorStop(1, `rgba(${o.core},0)`); x.fillStyle = core; x.beginPath(); x.arc(0, 0, R * .16, 0, 7); x.fill();
+  const ths = armAt(0, .58) - .04; c.sun = [Math.cos(ths) * .58 * .5, Math.sin(ths) * .58 * .5];   // in galaxy widths (the galaxy is 1 wide)
+  return c;
+}
+function blobSprite(cols, n) {   // an elliptical or a far-off smudge of a galaxy
+  const S = 96, c = document.createElement("canvas"); c.width = c.height = S; const x = c.getContext("2d");
+  x.globalCompositeOperation = "lighter";
+  for (let i = 0; i < n; i++) {
+    const r = S * (i ? .12 + Math.random() * .12 : .4), px = S / 2 + (i ? (Math.random() - .5) * S * .4 : 0), py = S / 2 + (i ? (Math.random() - .5) * S * .3 : 0);
+    const gr = x.createRadialGradient(px, py, 0, px, py, r); gr.addColorStop(0, `rgba(${cols},.9)`); gr.addColorStop(.3, `rgba(${cols},.35)`); gr.addColorStop(1, `rgba(${cols},0)`);
+    x.fillStyle = gr; x.fillRect(0, 0, S, S);
+  }
+  return c;
+}
+function cosmicInit(e) {
+  const W = innerWidth, H = innerHeight;
+  e.shot = pageSnap();   // the forecast, sharp, for the screen on the wall
+  e.mw = galaxySprite(1024, { n: 70000, arms: 4, pitch: .22, r0: .13, bar: 1, barAng: .4, core: "255,225,180", arm: "185,205,255" });
+  e.spr = [
+    galaxySprite(128, { n: 2600, arms: 2, pitch: .3, r0: .12, core: "255,235,200", arm: "170,200,255" }),
+    galaxySprite(128, { n: 2600, arms: 2, pitch: .25, r0: .15, bar: 1, core: "255,215,160", arm: "255,215,170" }),
+    galaxySprite(128, { n: 3000, arms: 4, pitch: .35, r0: .1, core: "255,240,220", arm: "200,215,255" }),
+    blobSprite("255,205,145", 1), blobSprite("255,105,70", 3), blobSprite("150,185,255", 4)];
+  e.sprCol = ["170,200,255", "255,215,170", "200,215,255", "255,205,145", "255,105,70", "150,185,255"];
+  e.B = [95, -40]; e.rotB = 2.1;   // where (in galaxy widths) the "other" galaxy is that we dive into
+  e.df = [];
+  for (let i = 0; i < 5000; i++) {
+    const px = rnd(-170, 270), py = rnd(-150, 150);
+    if (Math.hypot(px, py) < 4 || Math.hypot(px - e.B[0], py - e.B[1]) < 4) continue;
+    const size = .25 + 3.4 * Math.random() ** 3.2, q = Math.random();
+    const type = size < .5 ? (q < .55 ? 4 : q < .8 ? 3 : 5) : (q < .6 ? Math.floor(q / .2) : q < .9 ? 3 : 5);
+    e.df.push({ x: px, y: py, s: size, type, rot: Math.random() * 7, tilt: type === 4 ? 1 : Math.random() < .15 ? .2 : rnd(.35, 1), a: rnd(.8, 1) });
+  }
+  e.stars = Array.from({ length: 45 }, () => ({ x: rnd(-170, 270), y: rnd(-150, 150), b: .25 + Math.random() ** 4 * 1.3 }));
+  e.near = Array.from({ length: 2600 }, () => { const r = Math.random() ** .7 * .09, a = Math.random() * 7; return [Math.cos(a) * r, Math.sin(a) * r, .6 + Math.random() ** 3 * 1.8, Math.random()]; });   // stars around the Sun
+  e.pa = [0, 1, 2, 3, 4, 5, 6, 7].map(() => Math.random() * 7);   // where the planets are on their orbits
+  e.clouds = Array.from({ length: 90 }, () => ({ lat: rnd(-60, 70), lon: rnd(-180, 30), r: rnd(.03, .11), n: 2 + Math.floor(Math.random() * 3) }));
+  e.puffs = Array.from({ length: 46 }, () => ({ a: Math.random() * 7, d: rnd(.05, .6), s: rnd(.12, .35) }));
+  e.bg = Array.from({ length: Math.round(W * H / 3000) }, () => [Math.random() * W, Math.random() * H, Math.random() ** 3 * 1.3 + .3, rnd(.3, .9)]);
+}
+const kfr = (u, K) => {   // piecewise, eased from one key to the next: K = [[time, value, easing for the way here], ...]
+  if (u <= K[0][0]) return K[0][1];
+  for (let i = 1; i < K.length; i++) if (u <= K[i][0]) { const p = (u - K[i - 1][0]) / (K[i][0] - K[i - 1][0]); return K[i - 1][1] + (K[i][1] - K[i - 1][1]) * (K[i][2] || ease)(p); }
+  return K[K.length - 1][1];
+};
+const inOut = (u, a, b, f = .5) => clamp(Math.min((u - a) / f, (b - u) / f), 0, 1);   // fades in after a, out before b
+function spikes(x, y, b, M) {   // a bright star with the six-pointed flare a big space telescope gives it
+  const L = M * .028 * b, w = Math.max(.6, M * .0016 * b);
+  ctx.fillStyle = `rgba(255,240,225,${Math.min(.9, .35 + b * .35)})`;
+  for (let i = 0; i < 8; i++) {
+    const a = i < 6 ? Math.PI / 6 + i * Math.PI / 3 : i === 6 ? 0 : Math.PI, l = i < 6 ? L : L * .45, c = Math.cos(a), s = Math.sin(a);
+    ctx.beginPath(); ctx.moveTo(x - s * w, y + c * w); ctx.lineTo(x + c * l, y + s * l); ctx.lineTo(x + s * w, y - c * w); ctx.fill();
+  }
+  const gr = ctx.createRadialGradient(x, y, 0, x, y, w * 4 + 1); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(1, "rgba(255,230,210,0)");
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, w * 4 + 1, 0, 7); ctx.fill();
+}
+function galaxyStage(e, u, W, H, M) {
+  const Lg = Math.log, sunB = [Math.cos(e.rotB) * e.mw.sun[0] - Math.sin(e.rotB) * e.mw.sun[1], Math.sin(e.rotB) * e.mw.sun[0] + Math.cos(e.rotB) * e.mw.sun[1]];
+  const P = [e.B[0] + sunB[0], e.B[1] + sunB[1]], qIn = p => p * p;
+  const ppu = M * Math.exp(kfr(u, [[0, Lg(14)], [3.2, Lg(.8)], [8.2, Lg(1 / 110)], [9.1, Lg(1 / 150)], [10, Lg(1 / 100)], [13.7, Lg(24), qIn]]));
+  let cx, cy;
+  if (u < 3.2) { const w = 1 - ease(u / 3.2); cx = e.mw.sun[0] * w; cy = e.mw.sun[1] * w; }
+  else if (u < 8.2) cx = cy = 0;
+  else if (u < 10) { const w = ease((u - 8.2) / 1.8); cx = e.B[0] * w; cy = e.B[1] * w; }
+  else { const k = (M / 100) / ppu; cx = P[0] - (P[0] - e.B[0]) * k; cy = P[1] - (P[1] - e.B[1]) * k; }
+  const sx = X => W / 2 + (X - cx) * ppu, sy = Y => H / 2 + (Y - cy) * ppu;
+  ctx.fillStyle = "#020308"; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (const d of e.df) {   // the deep field
+    const r = d.s * ppu * .9, X = sx(d.x), Y = sy(d.y);
+    if (X < -r || X > W + r || Y < -r || Y > H + r) continue;
+    if (r < .8) { ctx.fillStyle = `rgba(${e.sprCol[d.type]},${(d.a * Math.max(.25, r)).toFixed(2)})`; ctx.fillRect(X - .7, Y - .7, 1.4, 1.4); continue; }
+    ctx.save(); ctx.globalAlpha = d.a; ctx.translate(X, Y); ctx.rotate(d.rot); ctx.scale(1, d.tilt); ctx.drawImage(e.spr[d.type], -r, -r, 2 * r, 2 * r); ctx.restore();
+  }
+  for (const s of e.stars) { const X = sx(s.x), Y = sy(s.y); if (X > -50 && X < W + 50 && Y > -50 && Y < H + 50) spikes(X, Y, s.b, M); }
+  const ga = clamp(1 - Lg(ppu / M / 1.3) / Lg(2.7), 0, 1);   // the galaxy picture only once it's sharp; closer in, the stars around the Sun
+  for (const G of [[0, 0, 0], [e.B[0], e.B[1], e.rotB]]) {   // our galaxy, and the one we dive into
+    const r = .6 * ppu, X = sx(G[0]), Y = sy(G[1]);
+    if (X < -r || X > W + r || Y < -r || Y > H + r) continue;
+    ctx.save(); ctx.translate(X, Y); ctx.rotate(G[2]); ctx.globalAlpha = ga; if (ga > 0) ctx.drawImage(e.mw, -r, -r, 2 * r, 2 * r); ctx.globalAlpha = 1;
+    const na = clamp(Lg(ppu / M / .9) / Lg(4), 0, 1);
+    if (na > 0) for (const [ox, oy, b, tw] of e.near) {
+      const px = (e.mw.sun[0] + ox) * ppu, py = (e.mw.sun[1] + oy) * ppu, rr = b * (.8 + na * .8);
+      ctx.fillStyle = `rgba(${tw < .2 ? "255,225,190" : tw < .4 ? "190,210,255" : "255,255,255"},${(na * (.4 + tw * .6)).toFixed(2)})`; ctx.fillRect(px - rr / 2, py - rr / 2, rr, rr);
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+  if (u < 1.6) { ctx.save(); ctx.globalAlpha = 1 - ease(u / 1.6); ctx.drawImage(e.sky, 0, 0, W, H); ctx.restore(); }   // the night sky we left fades into the stars rushing away
+
+}
+function drawGlobe(cx, cy, R, lat0, lon0, tgt) {
+  const d2r = Math.PI / 180, sl0 = Math.sin(lat0 * d2r), cl0 = Math.cos(lat0 * d2r);
+  const pr = (lon, lat) => {
+    const la = lat * d2r, dl = (lon - lon0) * d2r, cl = Math.cos(la);
+    let x = cl * Math.sin(dl), y = cl0 * Math.sin(la) - sl0 * cl * Math.cos(dl); const z = sl0 * Math.sin(la) + cl0 * cl * Math.cos(dl);
+    if (z < 0) { const l = Math.hypot(x, y) || 1; x /= l; y /= l; }   // round the back side to the edge
+    return [cx + x * R, cy - y * R, z];
+  };
+  ctx.save();
+  const halo = ctx.createRadialGradient(cx, cy, R * .98, cx, cy, R * 1.12); halo.addColorStop(0, "rgba(120,180,255,.55)"); halo.addColorStop(1, "rgba(120,180,255,0)");
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, R * 1.12, 0, 7); ctx.fill();
+  const sea = ctx.createRadialGradient(cx - R * .3, cy - R * .35, R * .05, cx, cy, R); sea.addColorStop(0, "#4a9be0"); sea.addColorStop(.6, "#1d5fae"); sea.addColorStop(1, "#0b2f6a");
+  ctx.fillStyle = sea; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill(); ctx.clip();
+  COS_LAND.forEach((p, i) => {
+    let any = false; ctx.beginPath();
+    for (let j = 0; j < p.length; j += 2) { const [x, y, z] = pr(p[j], p[j + 1]); if (z > 0) any = true; ctx.lineTo(x, y); }
+    if (!any) return;
+    ctx.fillStyle = i === 2 ? "#e6edf2" : "#5f8f4e"; ctx.fill(); ctx.strokeStyle = "rgba(220,200,140,.6)"; ctx.lineWidth = Math.max(1, R * .004); ctx.stroke();
+  });
+  ctx.restore();
+}
+function globeClouds(e, cx, cy, R, lat0, lon0, tgt) {
+  const d2r = Math.PI / 180, sl0 = Math.sin(lat0 * d2r), cl0 = Math.cos(lat0 * d2r);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.clip(); ctx.fillStyle = "rgba(255,255,255,.7)";
+  for (const c of e.clouds) {
+    if (Math.abs(c.lat - tgt.lat) < 7 && Math.abs(c.lon - tgt.lon) < 9) continue;   // keep the forecast spot clear
+    const la = c.lat * d2r, dl = (c.lon - lon0) * d2r, cl = Math.cos(la), z = sl0 * Math.sin(la) + cl0 * cl * Math.cos(dl);
+    if (z < .05) continue;
+    const x = cx + cl * Math.sin(dl) * R, y = cy - (cl0 * Math.sin(la) - sl0 * cl * Math.cos(dl)) * R, r = c.r * R;
+    for (let i = 0; i < c.n; i++) { ctx.beginPath(); ctx.ellipse(x + (i - c.n / 2) * r * .7, y + (i % 2) * r * .25, r * (.5 + .5 * z), r * .55 * (.5 + .5 * z), 0, 0, 7); ctx.fill(); }
+  }
+  const sh = ctx.createRadialGradient(cx - R * .2, cy - R * .2, R * .5, cx, cy, R * 1.02); sh.addColorStop(0, "rgba(0,0,20,0)"); sh.addColorStop(1, "rgba(0,0,30,.45)");
+  ctx.fillStyle = sh; ctx.fillRect(cx - R, cy - R, 2 * R, 2 * R); ctx.restore();
+}
+function solarStage(e, u, W, H, M, tgt) {
+  const Lg = Math.log, orb = [.39, .72, 1, 1.52, 2.6, 3.6, 4.6, 5.6], rad = [.03, .045, .05, .035, .13, .11, .075, .072];
+  const col = ["#a8a29a", "#e8d6a8", "", "#c9603a", "#d8b48a", "#e3cf98", "#9fe0e8", "#4f7de0"];
+  const ppu0 = M / 13, ppu = M * Math.exp(kfr(u, [[13, Lg(1 / 13)], [16.6, Lg(2.4)], [19.7, Lg(150), p => p ** 2.2]]));
+  const pos = i => { const a = e.pa[i] + u * .25 / orb[i] ** 1.5; return [Math.cos(a) * orb[i], Math.sin(a) * orb[i] * .9]; };
+  const E = pos(2), k = (ppu0 / ppu) * (1 - ease(clamp((u - 13) / 3.6, 0, 1))), cx = E[0] * (1 - k), cy = E[1] * (1 - k);
+  const sx = X => W / 2 + (X - cx) * ppu, sy = Y => H / 2 + (Y - cy) * ppu;
+  ctx.fillStyle = "#01020a"; ctx.fillRect(0, 0, W, H);
+  for (const [x, y, r, a] of e.bg) { ctx.fillStyle = `rgba(255,255,255,${a * .7})`; ctx.fillRect(x, y, r, r); }
+  const X0 = sx(0), Y0 = sy(0), sr = .2 * ppu, gl = ctx.createRadialGradient(X0, Y0, sr * .5, X0, Y0, sr * 4);
+  gl.addColorStop(0, "rgba(255,230,150,.8)"); gl.addColorStop(1, "rgba(255,180,80,0)");
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(X0, Y0, sr * 4, 0, 7); ctx.fill();
+  ctx.fillStyle = "#fff6d8"; ctx.beginPath(); ctx.arc(X0, Y0, sr, 0, 7); ctx.fill();
+  ctx.strokeStyle = "rgba(160,180,230,.25)"; ctx.lineWidth = 1;
+  for (const r of orb) { ctx.beginPath(); ctx.ellipse(X0, Y0, r * ppu, r * .9 * ppu, 0, 0, 7); ctx.stroke(); }
+  const v = ease(clamp((u - 15) / 3.4, 0, 1)), lon0 = tgt.lon - 90 * (1 - v) - Math.max(0, 15 - u) * 20, lat0 = 8 + (tgt.lat - 8) * v;
+  for (let i = 0; i < 8; i++) {
+    const [x, y] = pos(i), X = sx(x), Y = sy(y), r = Math.max(1.5, rad[i] * ppu);
+    if (X < -r * 3 || X > W + r * 3 || Y < -r * 3 || Y > H + r * 3) continue;
+    if (i === 2) {
+      drawGlobe(X, Y, r, lat0, lon0, tgt); if (r > 12) { ctx.save(); ctx.globalAlpha *= clamp((r - 12) / 30, 0, 1); globeClouds(e, X, Y, r, lat0, lon0, tgt); ctx.restore(); }
+      const ma = u * 1.2, mx = sx(x + Math.cos(ma) * .12), my = sy(y + Math.sin(ma) * .12);
+      ctx.fillStyle = "#cfcfc8"; ctx.beginPath(); ctx.arc(mx, my, Math.max(1, .014 * ppu), 0, 7); ctx.fill();
+      continue;
+    }
+    if (i === 5) { ctx.strokeStyle = "rgba(230,210,160,.8)"; ctx.lineWidth = Math.max(1, r * .18); ctx.beginPath(); ctx.ellipse(X, Y, r * 2, r * .6, -.3, 0, 7); ctx.stroke(); }
+    const pg = ctx.createRadialGradient(X - r * .35, Y - r * .35, r * .1, X, Y, r); pg.addColorStop(0, col[i]); pg.addColorStop(1, "#111");
+    ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(X, Y, r, 0, 7); ctx.fill();
+    if (i === 4) { ctx.save(); ctx.clip(); ctx.fillStyle = "rgba(150,90,50,.35)"; for (const b of [-.5, -.15, .25, .55]) ctx.fillRect(X - r, Y + b * r, 2 * r, r * .12); ctx.restore(); }
+  }
+  const R = rad[2] * ppu;
+  if (u > 17.2) {   // the spot on the map
+    const a = clamp((u - 17.2) / .5, 0, 1), r = M * (.014 + .004 * Math.sin(u * 9));
+    ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = "#ff3b30"; ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(2, M * .004);
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, r, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = `rgba(255,59,48,${.8 * (1 - (u * 1.5 % 1))})`; ctx.beginPath(); ctx.arc(W / 2, H / 2, r * (1 + 3 * (u * 1.5 % 1)), 0, 7); ctx.stroke(); ctx.restore();
+  }
+}
+function houseStage(e, u, W, H, M) {
+  const spi = state.loc !== "spirit", dh = .12, dw = dh * W / H, q = clamp((u - 19.6) / 5.3, 0, 1), Q = ease(q);
+  const ppu = Math.exp(Math.log(M / 2.6) + (Math.log(W / dw) - Math.log(M / 2.6)) * Q), cx = 0, cy = .06 * (1 - Q);
+  if (u >= 24.9) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
+  const wx = dw / 2 + .07, wy0 = -(dh / 2 + .05), wy1 = dh / 2 + .07;   // the big window, with the screen in the middle of the wall behind it
+  const hx = Math.max(.6, wx + .3), hy0 = wy0 - .12, hy1 = wy1 + .26, gy = hy1 + (spi ? .22 : .05), hz = hy1 - (spi ? .05 : .12);
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(ppu, ppu); ctx.translate(-cx, -cy);
+  const sky = ctx.createLinearGradient(0, -1.5, 0, hz); sky.addColorStop(0, "#3d8fd9"); sky.addColorStop(1, "#cfe7f6");
+  ctx.fillStyle = sky; ctx.fillRect(-30, -30, 60, 30 + hz);
+  ctx.fillStyle = "rgba(255,250,220,.9)"; ctx.beginPath(); ctx.arc(hx + .5, -1.1, .09, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.85)";
+  for (const [x, y, s] of [[-1.3, -1, .12], [-1.1, -1.02, .09], [1.6, -.75, .1], [1.75, -.73, .08], [-.4, -1.35, .1]]) { ctx.beginPath(); ctx.ellipse(x, y, s * 1.6, s * .55, 0, 0, 7); ctx.fill(); }
+  const wat = ctx.createLinearGradient(0, hz, 0, gy); wat.addColorStop(0, spi ? "#1f6fa3" : "#2b5f80"); wat.addColorStop(1, spi ? "#59b8c4" : "#4f8fa8");
+  ctx.fillStyle = wat; ctx.fillRect(-30, hz, 60, gy - hz + .01);
+  if (spi) {   // surf lines, then sand
+    ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = .006;
+    for (let i = 0; i < 4; i++) { const y = hz + (gy - hz) * (.35 + i * .2); ctx.beginPath(); for (let x = -6; x <= 6; x += .1) ctx.lineTo(x, y + Math.sin(x * 9 + u * 2 + i) * .005); ctx.stroke(); }
+    ctx.fillStyle = "#ead7a7"; ctx.fillRect(-30, gy, 60, 30);
+  } else {   // far shore with trees, then grass
+    ctx.fillStyle = "#2e4a2c"; ctx.beginPath(); ctx.moveTo(-30, hz); for (let x = -6; x <= 6; x += .05) ctx.lineTo(x, hz - .025 - Math.abs(Math.sin(x * 23)) * .015); ctx.lineTo(30, hz); ctx.fill();
+    ctx.fillStyle = "#6a9a45"; ctx.fillRect(-30, gy, 60, 30);
+  }
+  const tree = x => {
+    if (spi) {   // palm
+      ctx.strokeStyle = "#8a6a43"; ctx.lineWidth = .035; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x + .1, gy - .45, x + .05, gy - .85); ctx.stroke();
+      ctx.strokeStyle = "#2f7d3a"; ctx.lineWidth = .03;
+      for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * .5; ctx.beginPath(); ctx.moveTo(x + .05, gy - .85); ctx.quadraticCurveTo(x + .05 + Math.cos(a) * .25, gy - .85 + Math.sin(a) * .2 - .05, x + .05 + Math.cos(a) * .38, gy - .85 + Math.sin(a) * .1 + .12); ctx.stroke(); }
+    } else {   // pine
+      ctx.fillStyle = "#5a3d24"; ctx.fillRect(x - .02, gy - .15, .04, .15); ctx.fillStyle = "#24502c";
+      for (let i = 0; i < 4; i++) { const y = gy - .1 - i * .2, w = .28 - i * .055; ctx.beginPath(); ctx.moveTo(x - w, y); ctx.lineTo(x, y - .32); ctx.lineTo(x + w, y); ctx.fill(); }
+    }
+  };
+  tree(-hx - .45); tree(hx + .4); tree(hx + 1.3);
+  if (spi) { ctx.fillStyle = "#e5e1d8"; for (let x = -hx + .05; x <= hx - .04; x += (2 * hx - .1) / 4) ctx.fillRect(x - .018, hy1, .036, gy - hy1 + .02); }   // stilts
+  else { ctx.fillStyle = "#8d8a84"; ctx.fillRect(-hx, hy1, 2 * hx, gy - hy1); }   // stone foundation
+  ctx.fillStyle = spi ? "#86d3c8" : "#8e4a33"; ctx.fillRect(-hx, hy0, 2 * hx, hy1 - hy0);   // the house
+  ctx.strokeStyle = "rgba(0,0,0,.12)"; ctx.lineWidth = .004;
+  for (let y = hy0 + .035; y < hy1; y += .035) { ctx.beginPath(); ctx.moveTo(-hx, y); ctx.lineTo(hx, y); ctx.stroke(); }
+  ctx.fillStyle = "#f6f3ea"; ctx.fillRect(-hx, hy0, .025, hy1 - hy0); ctx.fillRect(hx - .025, hy0, .025, hy1 - hy0);
+  ctx.fillStyle = spi ? "#d27b5f" : "#3d5a3a"; ctx.beginPath(); ctx.moveTo(-hx - .08, hy0 + .01); ctx.lineTo(0, hy0 - hx * .55); ctx.lineTo(hx + .08, hy0 + .01); ctx.fill();
+  const side = hx - .16;
+  if (side - .07 > wx + .04) for (const sx of [-side, side]) {   // the other windows
+    ctx.fillStyle = "#2c4560"; ctx.fillRect(sx - .07, -.06, .14, .16);
+    ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.moveTo(sx - .07, .02); ctx.lineTo(sx - .02, -.06); ctx.lineTo(sx + .02, -.06); ctx.lineTo(sx - .07, .08); ctx.fill();
+    ctx.strokeStyle = "#f6f3ea"; ctx.lineWidth = .012; ctx.strokeRect(sx - .07, -.06, .14, .16);
+  }
+  if (spi) {   // the deck rail
+    ctx.fillStyle = "#f6f3ea"; ctx.fillRect(-hx - .04, hy1 - .1, 2 * hx + .08, .012);
+    for (let x = -hx - .03; x <= hx + .04; x += .035) ctx.fillRect(x, hy1 - .1, .007, .1);
+  }
+  ctx.save(); ctx.beginPath(); ctx.rect(-wx, wy0, 2 * wx, wy1 - wy0); ctx.clip();   // inside: the wall with the screen on it
+  const wall = ctx.createLinearGradient(0, wy0, 0, wy1); wall.addColorStop(0, "#efe3ca"); wall.addColorStop(1, "#d6c3a0");
+  ctx.fillStyle = wall; ctx.fillRect(-wx, wy0, 2 * wx, wy1 - wy0);
+  ctx.fillStyle = "#7a5634"; ctx.fillRect(-dw * .45, dh / 2 + .03, dw * .9, .012);   // a little shelf
+  ctx.fillStyle = "#9c5c3c"; ctx.fillRect(-wx + .02, wy1 - .045, .03, .045); ctx.fillStyle = "#3f8a46";   // a plant
+  for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.ellipse(-wx + .035 + (i - 2) * .007, wy1 - .055 - (i % 2) * .01, .006, .02, (i - 2) * .4, 0, 7); ctx.fill(); }
+  const b = .006; ctx.fillStyle = "#111"; ctx.fillRect(-dw / 2 - b, -dh / 2 - b, dw + 2 * b, dh + 2 * b);
+  ctx.drawImage(e.shot, -dw / 2, -dh / 2, dw, dh);
+  const gl = ctx.createLinearGradient(-dw / 2, -dh / 2, dw / 2, dh / 2);   // glare on the glass, gone by the time we're there
+  gl.addColorStop(0, `rgba(255,255,255,${(.22 * (1 - Q)).toFixed(3)})`); gl.addColorStop(.5, "rgba(255,255,255,0)");
+  ctx.fillStyle = gl; ctx.fillRect(-wx, wy0, 2 * wx, wy1 - wy0);
+  ctx.restore();
+  ctx.strokeStyle = "#fbf8f0"; ctx.lineWidth = .014; ctx.strokeRect(-wx, wy0, 2 * wx, wy1 - wy0);
+  ctx.fillStyle = "#fbf8f0"; ctx.fillRect(-wx - .025, wy1 + .006, 2 * wx + .05, .016);
+  ctx.restore();
+}
+function cosmos(e, u) {
+  const W = innerWidth, H = innerHeight, M = Math.min(W, H), tgt = LOCS[state.loc];
+  if (u < 13.7) galaxyStage(e, u, W, H, M);
+  if (u > 13 && u < 19.8) { ctx.save(); ctx.globalAlpha = clamp((u - 13) / .7, 0, 1); solarStage(e, u, W, H, M, tgt); ctx.restore(); }
+  if (u > 19.45) houseStage(e, u, W, H, M);
+  if (u > 18.9 && u < 20.6) {   // through the clouds
+    const v = u - 18.9, env = Math.sin(Math.PI * clamp(v / 1.6, 0, 1)), gr = Math.exp(v * 2.4) - 1;
+    ctx.fillStyle = `rgba(255,255,255,${(.92 * env ** 1.4).toFixed(3)})`; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = `rgba(250,252,255,${(.8 * env).toFixed(3)})`;
+    for (const p of e.puffs) { const d = p.d * M * (.2 + gr * .6), r = p.s * M * (.3 + gr * .5); ctx.beginPath(); ctx.arc(W / 2 + Math.cos(p.a) * d, H / 2 + Math.sin(p.a) * d, r, 0, 7); ctx.fill(); }
+  }
+}
 function bat(e, now) {
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, M = Math.min(W, H), hit = 3.15;
   if (!e.mesh) {
@@ -4990,8 +5288,10 @@ function bat(e, now) {
     e.piv = [e.c[0] - M * .55, e.c[1] + M * .25];   // the batter's hands, down to the left
     e.Lb = Math.hypot(e.c[0] - e.piv[0], e.c[1] - e.piv[1]) / .82; e.ac = Math.atan2(e.c[1] - e.piv[1], e.c[0] - e.piv[0]);
     e.to = [W * .3, H * .1];   // the bat swings up and to the left, so that's where it goes
+    cosmicInit(e);
   }
-  ctx.save(); ctx.globalAlpha = fadeBack(t, 8.2, 2);
+  if (t >= 7.4) { cosmos(e, t - 7.4); return; }
+  ctx.save();
   ctx.drawImage(e.sky, 0, 0, W, H);
   const k = clamp((t - .3) / 2, 0, 1);
   if (k < 1) sphereMesh(e, k);
@@ -5093,8 +5393,8 @@ function prismFace(e, c, W, H, light, k) {   // one flat face of the turning sig
   const pts = Array.from({ length: N + 1 }, (_, i) => P(i / N));
   for (let i = 0; i < N; i++) {
     const [x0, t0, b0] = pts[i], [x1, t1, b1] = pts[i + 1], s0 = i / N * W, s1 = (i + 1) / N * W;
-    texTri(e.tex, [[s0, 0], [s1, 0], [s1, H]], [[x0, t0], [x1, t1], [x1, b1]]);
-    texTri(e.tex, [[s0, 0], [s1, H], [s0, H]], [[x0, t0], [x1, b1], [x0, b0]]);
+    texTri(e.face || e.tex, [[s0, 0], [s1, 0], [s1, H]], [[x0, t0], [x1, t1], [x1, b1]]);
+    texTri(e.face || e.tex, [[s0, 0], [s1, H], [s0, H]], [[x0, t0], [x1, b1], [x0, b0]]);
   }
   const quad = () => { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[N][0], pts[N][1]); ctx.lineTo(pts[N][0], pts[N][2]); ctx.lineTo(pts[0][0], pts[0][2]); ctx.closePath(); };
   quad(); ctx.fillStyle = `rgba(0,0,0,${((1 - Math.cos(c)) * .55).toFixed(3)})`; ctx.fill();   // darker as it turns away
@@ -5198,8 +5498,8 @@ function driveScene(e, t, W, H, light) {   // the drive-in around the sign, in s
   bulbs(top.filter((_, i) => i % 2 === 0).concat(bot.filter((_, i) => i % 2 === 0).reverse()), t, H * .035);
 }
 function driveIn(e, now, sec) {
-  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, wipeAt = 13;
-  if (!e.tex) { e.tex = pageSnap(1); e.sky = nightSkyCanvas(); }
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
+  if (!e.tex) { e.tex = pageSnap(1); e.shot = pageSnap(); e.sky = nightSkyCanvas(); e.eatOn = eatSign(W, H, true); e.eatOff = eatSign(W, H, false); }
   const T1 = 5.5, tau = 1.5, w = 2 * Math.PI / (T1 - tau * (1 - Math.exp(-T1 / tau))), w2 = Math.PI / 5;   // gets going, once round, then on more gently
   const ang = t < T1 ? w * (t - tau * (1 - Math.exp(-t / tau))) : 2 * Math.PI + w2 * (t - T1) + (w - w2) * tau * (1 - Math.exp(-(t - T1) / tau));
   const u = ease(clamp((t - T1) / 3.5, 0, 1)), Z = Math.exp(Math.log(DI.zoom) * u);   // pulls back
@@ -5207,7 +5507,7 @@ function driveIn(e, now, sec) {
   const scene = () => {
     ctx.drawImage(e.sky, 0, 0, W, H);
     ctx.save(); ctx.translate(sx, sy); ctx.scale(Z, Z);
-    if (u > 0) driveScene(e, t, W, H, light * Z * 5);
+    if (u > 0) { driveScene(e, t, W, H, light * Z * 5); leaners(e, W, H, t); }
     const faces = [0, 1, 2].map(i => ang + i * 2 * Math.PI / 3).filter(c => Math.cos(c) > -.05).sort((a, b) => Math.cos(a) - Math.cos(b));
     const k = H * 2.2 * u;   // as we pull back we're looking up at it, so its triangular underside shows
     if (u > 0) prismCap(ang, W, H, k, light * Math.max(Z * 5, 1));
@@ -5217,8 +5517,58 @@ function driveIn(e, now, sec) {
     }
     ctx.restore();
   };
-  if (t < wipeAt) scene();
-  else wipe(e, clamp((t - wipeAt) / 1.7, 0, 1), sec, W, H, scene);   // the wave washes the forecast back in
+  // as it pulls back the sign flickers over to a blinking EAT AT LOUIS'S; a couple leaning on a parked car is checking the
+  // forecast on a tablet, and we slowly zoom into it until it's the screen again
+  const sw = t - 6.4;
+  e.face = sw < 0 ? null : sw < .6 ? (Math.floor(sw / .08) % 2 ? e.eatOn : null) : ((sw - .6) % .8 < .55 ? e.eatOn : e.eatOff);
+  const tb = DI.tab(W, H), Z0 = DI.zoom, ix = W * DI.at[0] + tb[0] * Z0, iy = H * DI.at[1] + tb[1] * Z0, tw = tb[2] * Z0, th = tb[3] * Z0;
+  const Q = ease(clamp((t - 10.6) / 5, 0, 1)), Zm = W / tw;
+  if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
+  const sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = ix + tw / 2, my = iy + th / 2;
+  ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
+  scene();
+  ctx.restore();
+}
+DI.tab = (W, H) => { const tw = W * .034; return [-W * .85 - tw / 2, H * 2.85 - W * .128, tw, tw * H / W]; };   // the tablet, in sign units: beside the blue car
+function eatSign(W, H, on) {   // the sign's new face, at the page snapshot's size (one unit a pixel)
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
+  x.fillStyle = "#0b0a1a"; x.fillRect(0, 0, W, H);
+  x.strokeStyle = on ? "#ff5fa8" : "#4a2a3a"; x.lineWidth = H * .025; x.strokeRect(H * .05, H * .05, W - H * .1, H * .9);
+  x.textAlign = "center"; x.textBaseline = "middle";
+  for (const [txt, y, sz, col] of [["EAT AT", .3, .22, "#ffe46b"], ["LOUIS'S", .65, .36, "#5ff4ff"]]) {
+    x.font = `900 ${H * sz}px system-ui, Roboto, sans-serif`;
+    if (on) { x.shadowColor = col; x.shadowBlur = H * .05; x.fillStyle = col; x.fillText(txt, W / 2, H * y, W * .86); x.shadowBlur = H * .015; }
+    else { x.shadowBlur = 0; x.fillStyle = "rgba(120,120,140,.35)"; }
+    x.fillText(txt, W / 2, H * y, W * .86);
+  }
+  return c;
+}
+function leaners(e, W, H, t) {   // a couple leaning back against the blue car, heads together over a tablet (sign units)
+  const [tx, ty, tw, th] = DI.tab(W, H), gy = H * 2.85 + W * .012, cx = tx + tw / 2, P = W * .2;   // P: how tall a person is
+  const person = (x, lean, top, pants, skin, hair, long, dir) => {
+    ctx.save(); ctx.translate(x, gy); ctx.rotate(lean);
+    ctx.fillStyle = pants; ctx.fillRect(-P * .07, -P * .48, P * .06, P * .48); ctx.fillRect(P * .01, -P * .48, P * .06, P * .48);   // legs
+    ctx.fillStyle = "#222"; ctx.fillRect(-P * .08, -P * .03, P * .08, P * .03); ctx.fillRect(P * .01, -P * .03, P * .08, P * .03);   // shoes
+    ctx.fillStyle = top; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-P * .1, -P * .84, P * .2, P * .4, P * .05) : ctx.rect(-P * .1, -P * .84, P * .2, P * .4); ctx.fill();   // body
+    ctx.fillStyle = skin; ctx.fillRect(-P * .025, -P * .89, P * .05, P * .06);   // neck
+    const hx = dir * P * .03, hy = -P * .95;   // head, tipped toward the tablet
+    if (long) { ctx.fillStyle = hair; ctx.beginPath(); ctx.ellipse(hx, hy + P * .05, P * .085, P * .12, 0, 0, 7); ctx.fill(); }
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.ellipse(hx, hy, P * .065, P * .075, dir * .25, 0, 7); ctx.fill();
+    ctx.fillStyle = hair; ctx.beginPath(); ctx.ellipse(hx, hy - P * .035, P * .07, P * .045, dir * .25, Math.PI, 0); ctx.fill();
+    ctx.restore();
+  };
+  person(cx - P * .1, -.07, "#c0303c", "#2c3550", "#e3b08a", "#3a2618", true, 1);
+  person(cx + P * .1, .07, "#3b5f8f", "#4a4a52", "#d9a07c", "#6b4a2e", false, -1);
+  const b = th * .07, hr = tw * .05, hy = ty + th + b + hr * .5, hlx = tx + tw * .1, hrx = tx + tw * .9;   // hands under its bottom corners, clear of the screen
+  ctx.lineCap = "round"; ctx.lineWidth = P * .045;   // their arms, holding the tablet up between them
+  ctx.strokeStyle = "#c0303c"; ctx.beginPath(); ctx.moveTo(cx - P * .12, gy - P * .78); ctx.quadraticCurveTo(cx - P * .1, gy - P * .5, hlx, hy); ctx.stroke();
+  ctx.strokeStyle = "#3b5f8f"; ctx.beginPath(); ctx.moveTo(cx + P * .12, gy - P * .78); ctx.quadraticCurveTo(cx + P * .1, gy - P * .5, hrx, hy); ctx.stroke();
+  const g = ctx.createRadialGradient(cx, ty + th / 2, 0, cx, ty + th / 2, tw * 1.4);   // its glow on them
+  g.addColorStop(0, "rgba(150,200,255,.3)"); g.addColorStop(1, "rgba(150,200,255,0)"); ctx.fillStyle = g; ctx.fillRect(cx - tw * 1.4, ty - th, tw * 2.8, th * 3);
+  ctx.fillStyle = "#0d0d10"; ctx.fillRect(tx - b, ty - b, tw + 2 * b, th + 2 * b);
+  ctx.drawImage(e.shot, tx, ty, tw, th);
+  ctx.fillStyle = "#e3b08a"; ctx.beginPath(); ctx.arc(hlx, hy, hr, 0, 7); ctx.fill();
+  ctx.fillStyle = "#d9a07c"; ctx.beginPath(); ctx.arc(hrx, hy, hr, 0, 7); ctx.fill();
 }
 // ---- 7. fire: a corner catches, scorches, and the flames spread until the whole screen has burned; the wave puts it out ----
 const BURN_CS = 8;   // size of the little squares the burning is worked out on

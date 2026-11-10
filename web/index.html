@@ -433,7 +433,7 @@ function readBuoy(j) {
 const cv = document.getElementById("c");
 let ctx = cv.getContext("2d");   // swapped to the animation layers while they draw
 const mainCtx = ctx;
-let hourBoxes = [], pctBoxes = [];   // tap areas of the x-axis time labels and the rain percentages
+let hourBoxes = [], pctBoxes = [], barBoxes = [];   // tap areas of the x-axis time labels, the rain percentages and the wind bars
 
 function setFont(size, bold) { ctx.font = `${bold ? "bold " : ""}${size}px system-ui, Roboto, sans-serif`; }
 function text(s, x, y, size, color, ax = .5, bold = false) {
@@ -893,8 +893,10 @@ function chart(W, H, f, now, top, placeEnd) {
   title("wind mph", L, wt, T.gray);
   line([L, wy(KITE), R, wy(KITE)], [...T.kite.slice(0, 3), .6], 1, [6, 6]);
   const gpts = [], best = new Map();
+  barBoxes = [];
   idx.forEach((i, k) => {
     const xx = L + k * bw;
+    barBoxes.push({ x: xx, y: wt, w: Math.max(1, Math.min(bw, R - xx)), h: wb - wt, tip: Math.min(wy(spd[i]), wy(gst[i])) - f * .3 });   // tap area: the bar's whole column
     rect(xx + bw * .15, wy(spd[i]), Math.max(0, Math.min(bw * .7, R - xx - bw * .15)), wb - wy(spd[i]), windColor(spd[i]));
     gpts.push(xx + bw / 2, wy(gst[i]));
     const key = isoDate(times[i]);
@@ -5806,14 +5808,17 @@ function pctList() {
 }
 const LIFE_LABEL = { dolphin: "Dolphin", redfish: "Redfish", seaturtle: "Sea turtle", stingray: "Stingray", pelican: "Pelican dive", manowar: "Man o' war",
   walleye: "Walleye", bluegill: "Bluegill", painted: "Painted turtle", gull: "Seagull" };
-function playPct(i) {
+function playPct(i) {   // the rain % shortcuts and the wind bars share the list
   const list = pctList(), [k] = list[i % list.length];
   if (k.startsWith("life:")) play("life", { sp: k.slice(5) }); else play(k);
 }
-const inPct = e => {
+const inBoxes = (boxes, e) => {
   const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-  return pctBoxes.findIndex(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
+  return boxes.findIndex(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
 };
+// the wind bars: each bar, from the left, plays the next animation in the same list (and the list repeats), shown as
+// [boxes, index]; the rain % come first since they sit just below the bars
+const inShortcut = e => { let i = inBoxes(pctBoxes, e); if (i >= 0) return [pctBoxes, i]; i = inBoxes(barBoxes, e); return i >= 0 ? [barBoxes, i] : null; };
 function playAny() {   // a random animation that's switched on here (or any of them, if none are)
   const lake = !LOC.station, cold = G && G.temp < LOC.cold;
   const all = [["kite", "aKite"], ["life", "aLife"], [cold ? "freeze" : "melt", "aMelt"], ["wipe", "aWipe"], ["bite", "aBite"],
@@ -5829,26 +5834,26 @@ const inTitle = e => {
 cv.addEventListener("click", e => {
   if (inTitle(e)) { menu.hidden ? openMenu() : (menu.hidden = true); return; }
   menu.hidden = true;
-  const pi = inPct(e);
-  if (pi >= 0) { if (pressShown) { pressShown = false; return; } hidePctTip(); playPct(pi); return; }
+  const sc = inShortcut(e);
+  if (sc) { if (pressShown) { pressShown = false; return; } hidePctTip(); playPct(sc[1]); return; }
   const h = inHour(e);
   if (h === 0) { showPage("anim"); dlg.hidden = false; }   // first time label: straight to the Animations page
   if (h === 1) playAny();                                    // second time label: play something
 });
 cv.addEventListener("mousemove", e => {
-  const pi = inPct(e);
-  cv.style.cursor = inTitle(e) || inHour(e) >= 0 || pi >= 0 ? "pointer" : "";
+  const sc = inShortcut(e);
+  cv.style.cursor = inTitle(e) || inHour(e) >= 0 || sc ? "pointer" : "";
   if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;   // a tap, not a real hover
-  pi >= 0 ? showPctTip(pi) : hidePctTip();
+  sc ? showPctTip(sc[1], 0, sc[0]) : hidePctTip();
 });
 cv.addEventListener("mouseleave", hidePctTip);
-// which animation a rain % plays: shown on hover, or on a long press on touch screens (which then doesn't play it)
+// which animation a rain % or wind bar plays: shown on hover, or on a long press on touch screens (which then doesn't play it)
 const pcttip = document.getElementById("pcttip");
 let tipTimer = 0, pressTimer = 0, pressShown = false;
-function showPctTip(i, ms) {
-  const b = pctBoxes[i], r = cv.getBoundingClientRect(), list = pctList();
+function showPctTip(i, ms, boxes = pctBoxes) {
+  const b = boxes[i], r = cv.getBoundingClientRect(), list = pctList();
   pcttip.textContent = "▶ " + list[i % list.length][1];
-  pcttip.style.left = `${Math.min(innerWidth - 90, Math.max(90, r.left + b.x + b.w / 2))}px`; pcttip.style.top = `${r.top + b.y}px`;
+  pcttip.style.left = `${Math.min(innerWidth - 90, Math.max(90, r.left + b.x + b.w / 2))}px`; pcttip.style.top = `${r.top + (b.tip ?? b.y)}px`;
   pcttip.hidden = false;
   clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(hidePctTip, ms);
 }
@@ -5856,11 +5861,11 @@ function hidePctTip() { pcttip.hidden = true; }
 cv.addEventListener("pointerdown", e => {
   if (e.pointerType !== "touch") return;
   pressShown = false; clearTimeout(pressTimer);
-  const pi = inPct(e);
-  if (pi >= 0) pressTimer = setTimeout(() => { pressShown = true; showPctTip(pi, 2000); }, 450);
+  const sc = inShortcut(e);
+  if (sc) pressTimer = setTimeout(() => { pressShown = true; showPctTip(sc[1], 2000, sc[0]); }, 450);
 });
 for (const ev of ["pointerup", "pointercancel", "pointermove"]) cv.addEventListener(ev, e => { if (ev !== "pointermove" || Math.abs(e.movementX) + Math.abs(e.movementY) > 6) clearTimeout(pressTimer); });
-cv.addEventListener("contextmenu", e => { if (inPct(e) >= 0) e.preventDefault(); });
+cv.addEventListener("contextmenu", e => { if (inShortcut(e)) e.preventDefault(); });
 hint.addEventListener("click", openMenu);
 menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); if (b) setLoc(b.dataset.loc); });
 bar.addEventListener("click", e => {

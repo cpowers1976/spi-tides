@@ -218,7 +218,7 @@
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night, where a couple leaning on their car is checking the forecast on a tablet</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
-    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up, and a little alien flies by with the forecast on his dashboard</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
+    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up, and two aliens fly by in a saucer with the forecast on their dashboard</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
@@ -3771,7 +3771,7 @@ function chaos(e, now) {
     return;
   }
   if (!e.snap) {   // boom: break up the wild screen, and quietly put the real data back underneath
-    e.snap = snapshot(); cv.style.transform = ""; FX.slot = null; draw(); ctx = fctx; e.shot = pageSnap();
+    e.snap = snapshot(); cv.style.transform = ""; FX.slot = null; draw(); ctx = fctx; e.shot = pageSnap(); e.space = spaceArt(innerWidth, innerHeight);
     const nx = 10, ny = 7, P = [], cx = W / 2, cy = H / 2;
     for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++)
       P.push([W * i / nx + (i % nx ? rnd(-.3, .3) * W / nx : 0), H * j / ny + (j % ny ? rnd(-.3, .3) * H / ny : 0)]);
@@ -3790,6 +3790,7 @@ function chaos(e, now) {
   }
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, innerWidth, innerHeight);
   const u = t - 30, R = Math.hypot(W, H) / 2;
+  if (u > .9 && u <= 3.2) { ctx.save(); ctx.globalAlpha = ease(clamp((u - .9) / 1.6, 0, 1)); ctx.drawImage(e.space, 0, 0, innerWidth, innerHeight); ctx.restore(); }   // out of the smoke: deep space
   if (u < 1.2) {
     for (const s of e.shards) {   // pieces fly out
       const x = s.vx * u, y = s.vy * u + 300 * u * u;
@@ -3809,67 +3810,182 @@ function chaos(e, now) {
       dot(W / 2 + vx * u, H / 2 + vy * u + 200 * u * u, 2.5 * (1 - q) + .5, [1, .75 + .25 * (1 - q), .3, 1 - q]);
     }
   }
-  if (u > 3.2) ufoScene(e, u - 3.2, now / 1000);   // after 2 s of black, a little alien flies by, and we zoom into the forecast on his dashboard
+  if (u > 3.2) ufoScene(e, u - 3.2, now / 1000);   // then a flying saucer with two aliens aboard drifts by, and we zoom into the forecast on his dashboard
+}
+function spaceArt(W, H) {   // deep space: a nebula, stars, a pair of suns, and a strange banded world with an orange moon
+  const c = document.createElement("canvas"), r = window.devicePixelRatio || 1, x = c.getContext("2d"), M = Math.min(W, H);
+  c.width = Math.round(W * r); c.height = Math.round(H * r); x.scale(r, r);
+  let g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#03040e"); g.addColorStop(1, "#0b0620");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 9; i++) {   // nebula clouds
+    const nx = rnd(0, W), ny = rnd(0, H * .7), nr = M * rnd(.25, .6), col = ["170,60,210", "40,170,210", "220,80,140", "90,90,230"][i % 4];
+    g = x.createRadialGradient(nx, ny, 0, nx, ny, nr); g.addColorStop(0, `rgba(${col},.13)`); g.addColorStop(1, `rgba(${col},0)`);
+    x.fillStyle = g; x.fillRect(nx - nr, ny - nr, nr * 2, nr * 2);
+  }
+  for (let i = 0; i < W * H / 1400; i++) {
+    const sx = Math.random() * W, sy = Math.random() * H, b = Math.random() ** 3, col = ["255,255,255", "190,210,255", "255,220,190", "255,190,230"][Math.floor(Math.random() * 4)];
+    x.fillStyle = `rgba(${col},${.3 + b * .7})`; x.beginPath(); x.arc(sx, sy, .4 + b * 1.4, 0, 7); x.fill();
+    if (b > .6) { x.fillStyle = `rgba(${col},.25)`; x.fillRect(sx - b * 6, sy - .4, b * 12, .8); x.fillRect(sx - .4, sy - b * 6, .8, b * 12); }
+  }
+  for (const [sx, sy, sr, col] of [[W * .14, H * .16, M * .03, "255,170,90"], [W * .2, H * .12, M * .018, "170,210,255"]]) {   // two suns
+    g = x.createRadialGradient(sx, sy, 0, sx, sy, sr * 8); g.addColorStop(0, `rgba(${col},.9)`); g.addColorStop(.12, `rgba(${col},.5)`); g.addColorStop(1, `rgba(${col},0)`);
+    x.fillStyle = g; x.fillRect(sx - sr * 8, sy - sr * 8, sr * 16, sr * 16);
+    x.fillStyle = "#fff"; x.beginPath(); x.arc(sx, sy, sr * .8, 0, 7); x.fill();
+  }
+  x.globalCompositeOperation = "source-over";
+  const px = W * .8, py = H * .8, pr = M * .36;   // the planet, lit from the suns at the upper left
+  g = x.createRadialGradient(px, py, pr * .9, px, py, pr * 1.18); g.addColorStop(0, "rgba(90,230,255,.45)"); g.addColorStop(1, "rgba(90,230,255,0)");
+  x.fillStyle = g; x.beginPath(); x.arc(px, py, pr * 1.18, 0, 7); x.fill();
+  x.save(); x.beginPath(); x.arc(px, py, pr, 0, 7); x.clip();
+  x.fillStyle = "#3a1d6b"; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+  const bands = ["#4b2780", "#2a7686", "#6f3290", "#22587a", "#9a4482", "#3f2a78", "#2f8a8c", "#5f2b80"];
+  x.globalAlpha = .85;
+  for (let i = 0; i < 16; i++) {   // swirly bands
+    const by = py - pr + i * pr / 8, ph = rnd(0, 7);
+    x.fillStyle = bands[i % bands.length]; x.beginPath(); x.moveTo(px - pr, by);
+    for (let k = 0; k <= 40; k++) { const bx = px - pr + k * pr / 20; x.lineTo(bx, by + Math.sin(k * .5 + ph) * pr * .03); }
+    for (let k = 40; k >= 0; k--) { const bx = px - pr + k * pr / 20; x.lineTo(bx, by + pr * .09 + Math.sin(k * .45 + ph + 1) * pr * .03); }
+    x.fill();
+  }
+  g = x.createRadialGradient(px, py, pr * .45, px, py, pr); g.addColorStop(0, "rgba(10,0,30,0)"); g.addColorStop(1, "rgba(10,0,30,.6)"); x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2);   // rounder at the edges
+  x.fillStyle = "rgba(255,170,220,.55)"; x.beginPath(); x.ellipse(px - pr * .3, py - pr * .25, pr * .16, pr * .07, -.15, 0, 7); x.fill();   // a giant storm
+  x.strokeStyle = "rgba(255,255,255,.35)"; x.lineWidth = pr * .012; x.beginPath(); x.ellipse(px - pr * .3, py - pr * .25, pr * .1, pr * .04, -.15, 0, 5.5); x.stroke();
+  g = x.createRadialGradient(px - pr * .5, py - pr * .55, pr * .2, px - pr * .2, py - pr * .2, pr * 1.45);   // shading: bright toward the suns, night on the far side
+  g.addColorStop(0, "rgba(255,255,255,.2)"); g.addColorStop(.35, "rgba(0,0,0,0)"); g.addColorStop(.7, "rgba(2,0,12,.7)"); g.addColorStop(1, "rgba(2,0,12,.95)");
+  x.fillStyle = g; x.fillRect(px - pr, py - pr, pr * 2, pr * 2); x.restore();
+  x.strokeStyle = "rgba(140,240,255,.6)"; x.lineWidth = pr * .015; x.beginPath(); x.arc(px, py, pr, Math.PI * .95, Math.PI * 1.55); x.stroke();
+  const mx = W * .2, my = H * .74, mr = M * .055;   // an orange moon
+  g = x.createRadialGradient(mx - mr * .4, my - mr * .4, mr * .1, mx, my, mr); g.addColorStop(0, "#ffc27a"); g.addColorStop(.6, "#c46a2a"); g.addColorStop(1, "#3a1608");
+  x.fillStyle = g; x.beginPath(); x.arc(mx, my, mr, 0, 7); x.fill();
+  x.fillStyle = "rgba(80,30,10,.35)"; for (const [cx, cy, cr] of [[-.3, .1, .18], [.25, -.2, .12], [.1, .35, .1]]) { x.beginPath(); x.arc(mx + cx * mr, my + cy * mr, cr * mr, 0, 7); x.fill(); }
+  return c;
+}
+const shade = (x, y, r, hi, mid, lo) => {   // a ball lit from the upper left
+  const g = ctx.createRadialGradient(x - r * .35, y - r * .4, r * .05, x, y, r * 1.05); g.addColorStop(0, hi); g.addColorStop(.55, mid); g.addColorStop(1, lo); return g;
+};
+function alien(x, y, s, o, sec, Q) {   // s: head radius; o: skin colours, eyes, and what the hands are doing
+  const [hi, mid, lo] = o.skin;
+  // shoulders in a shiny purple flight suit, with a gold badge
+  ctx.fillStyle = shade(x, y + s * 1.6, s * 1.3, "#b07ad8", "#6a2f9a", "#2a0f45");
+  ctx.beginPath(); ctx.ellipse(x, y + s * 1.75, s * 1.15, s * .8, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = shade(x + s * .45, y + s * 1.35, s * .14, "#fff3a0", "#e0a520", "#7a4a00"); ctx.beginPath(); ctx.arc(x + s * .45, y + s * 1.38, s * .13, 0, 7); ctx.fill();
+  ctx.fillStyle = shade(x, y + s * .95, s * .3, hi, mid, lo); ctx.fillRect(x - s * .25, y + s * .7, s * .5, s * .45);   // neck
+  ctx.fillStyle = "#c9d2dc"; ctx.beginPath(); ctx.ellipse(x, y + s * 1.08, s * .42, s * .12, 0, 0, 7); ctx.fill();   // suit collar ring
+  for (const sd of [-1, 1]) {   // antennae with glowing tips
+    const bx = x + sd * s * .4, tx = bx + sd * s * .45 + Math.sin(sec * 3 + sd) * s * .1, ty = y - s * 1.75;
+    ctx.strokeStyle = mid; ctx.lineWidth = s * .09; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(bx, y - s * .8); ctx.quadraticCurveTo(bx + sd * s * .1, y - s * 1.4, tx, ty); ctx.stroke();
+    ctx.save(); ctx.shadowColor = o.tip; ctx.shadowBlur = s * .6; ctx.fillStyle = shade(tx, ty, s * .17, "#fff", o.tip, "#333"); ctx.beginPath(); ctx.arc(tx, ty, s * .17, 0, 7); ctx.fill(); ctx.restore();
+  }
+  ctx.fillStyle = shade(x, y, s, hi, mid, lo); ctx.beginPath(); ctx.ellipse(x, y, s * 1.08, s, 0, 0, 7); ctx.fill();   // the head
+  ctx.strokeStyle = "rgba(140,240,255,.55)"; ctx.lineWidth = s * .06; ctx.beginPath(); ctx.ellipse(x, y, s * 1.05, s * .97, 0, -.9, .5); ctx.stroke();   // rim light from the dashboard
+  ctx.fillStyle = "rgba(255,120,150,.25)"; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.ellipse(x + sd * s * .62, y + s * .35, s * .18, s * .1, 0, 0, 7); ctx.fill(); }   // cheeks
+  for (const [ex, ey, er, lx, ly, lid] of o.eyes) {   // glossy eyes, droopy lids
+    const X = x + ex * s, Y = y + ey * s, R = er * s;
+    ctx.fillStyle = shade(X, Y, R, "#ffffff", "#f1f4f7", "#a9b4bf"); ctx.beginPath(); ctx.arc(X, Y, R, 0, 7); ctx.fill();
+    const ix = X + lx * R * .45, iy = Y + ly * R * .45;
+    ctx.fillStyle = shade(ix, iy, R * .5, "#ffe08a", o.iris, "#3a2200"); ctx.beginPath(); ctx.arc(ix, iy, R * .5, 0, 7); ctx.fill();
+    ctx.fillStyle = "#0a0a0a"; ctx.beginPath(); ctx.arc(ix, iy, R * .25, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(ix - R * .14, iy - R * .16, R * .1, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(ix + R * .1, iy + R * .08, R * .05, 0, 7); ctx.fill();
+    const blink = (sec * .7 + ex) % 4 < .12 ? 1 : lid;   // now and then a slow blink
+    ctx.fillStyle = shade(X, Y - R * .3, R * 1.05, hi, mid, lo); ctx.beginPath(); ctx.arc(X, Y, R * 1.06, Math.PI, 0); ctx.lineTo(X + R * 1.06, Y - R + blink * R * 2); ctx.quadraticCurveTo(X, Y - R + blink * R * 2.3, X - R * 1.06, Y - R + blink * R * 2); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = lo; ctx.lineWidth = R * .1; ctx.beginPath(); ctx.moveTo(X - R, Y - R + blink * R * 2); ctx.quadraticCurveTo(X, Y - R + blink * R * 2.3, X + R, Y - R + blink * R * 2); ctx.stroke();
+  }
+  ctx.fillStyle = "#2a0f14"; ctx.beginPath(); ctx.moveTo(x - s * .45, y + s * .38); ctx.quadraticCurveTo(x, y + s * (o.gape || .95), x + s * .5, y + s * .32); ctx.quadraticCurveTo(x, y + s * .55, x - s * .45, y + s * .38); ctx.fill();   // goofy grin
+  ctx.fillStyle = "#ff7a9a"; ctx.beginPath(); ctx.ellipse(x + s * .08, y + s * .66, s * .17, s * .09, 0, 0, 7); ctx.fill();   // tongue
+  if (o.tooth) { ctx.fillStyle = shade(x - s * .08, y + s * .5, s * .12, "#fff", "#f4f1e6", "#b9b39e"); ctx.fillRect(x - s * .15, y + s * .43, s * .15, s * .18); }   // the buck tooth
+}
+function hand(x, y, s, skin, rot) {   // a three-fingered hand
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = shade(0, 0, s, ...skin);
+  ctx.beginPath(); ctx.ellipse(0, 0, s * .55, s * .45, 0, 0, 7); ctx.fill();
+  for (const a of [-.6, 0, .6]) { ctx.beginPath(); ctx.ellipse(Math.sin(a) * s * .55, -Math.cos(a) * s * .55, s * .16, s * .32, a, 0, 7); ctx.fill(); }
+  ctx.restore();
 }
 function ufoScene(e, v, sec) {
   const W = innerWidth, H = innerHeight, M = Math.min(W, H), U = Math.min(W * .62, H * 1.15);
   const p = ease(clamp(v / 6, 0, 1)), Q = ease(clamp((v - 5.6) / 4.6, 0, 1));   // glides in and settles near the far side; then the zoom
   if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
   const bob = Math.sin(v * 2.2) * M * .02 * (1 - Q), x = -U * .6 + (W * .64 + U * .6) * p, y = H * .5 + bob, tilt = (1 - p) * .12 * Math.sin(v * 1.6) * (1 - Q);
-  const dh = Math.min(.1, .17 * H / W) * U, dw = dh * W / H, dy = -.075 * U;   // the forecast display on his dashboard, the screen's shape
+  const dh = Math.min(.1, .17 * H / W) * U, dw = dh * W / H, dy = -.08 * U;   // the forecast display on the dashboard, the screen's shape
   const ix = x - dw / 2, iy = y + dy - dh / 2, Zm = W / dw, sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = ix + dw / 2, my = iy + dh / 2;
   ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
+  ctx.drawImage(e.space, 0, 0, W, H);
   ctx.translate(x, y); ctx.rotate(tilt);
-  const D = .34 * U;   // the glass dome
-  const glow = ctx.createRadialGradient(0, .05 * U, 0, 0, .05 * U, U * .75); glow.addColorStop(0, "rgba(120,255,200,.18)"); glow.addColorStop(1, "rgba(120,255,200,0)");
-  ctx.fillStyle = glow; ctx.fillRect(-U, -U * .7, U * 2, U * 1.4);
-  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.closePath(); ctx.clip();
-  ctx.fillStyle = "#13283a"; ctx.fillRect(-D, -D, 2 * D, D);   // inside the bubble
-  // the pilot: a dopey green fellow with droopy eyelids, eyes that don't agree, and one buck tooth
-  const hx = Math.sin(sec * 1.3) * U * .006, hy = -.215 * U, hr = .085 * U, G = "#7ed957";
-  ctx.strokeStyle = G; ctx.lineWidth = U * .008; ctx.lineCap = "round";
-  for (const s of [-1, 1]) { const ax = hx + s * hr * .5, w = Math.sin(sec * 3 + s) * U * .01; ctx.beginPath(); ctx.moveTo(ax, hy - hr * .8); ctx.quadraticCurveTo(ax + s * U * .03, hy - hr * 1.5, ax + s * U * .025 + w, hy - hr * 1.75); ctx.stroke(); ctx.fillStyle = "#ffe14d"; ctx.beginPath(); ctx.arc(ax + s * U * .025 + w, hy - hr * 1.75, U * .012, 0, 7); ctx.fill(); }
-  ctx.fillStyle = G; ctx.fillRect(hx - hr * .9, hy, hr * 1.8, U * .2);   // shoulders down behind the dashboard
-  ctx.beginPath(); ctx.ellipse(hx, hy, hr * 1.05, hr, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = "#5fb33d"; ctx.beginPath(); ctx.ellipse(hx - hr * .35, hy - hr * .55, hr * .25, hr * .12, -.4, 0, 7); ctx.fill();   // a spot
-  for (const [ex, ey, er, lx, ly] of [[-.4, -.1, .33, .25, .35], [.38, -.05, .26, -.3, -.2]]) {   // the eyes, looking two different ways
-    const X = hx + ex * hr, Y = hy + ey * hr, r = er * hr;
-    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(X, Y, r, 0, 7); ctx.fill();
-    ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(X + lx * r, Y + ly * r, r * .38, 0, 7); ctx.fill();
-    ctx.fillStyle = "#6cc24a"; ctx.beginPath(); ctx.arc(X, Y, r * 1.05, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(X, Y - r * .1); ctx.fill();   // droopy eyelid
+  const D = .34 * U, Dy = D * .26, pulse = .5 + .5 * Math.sin(sec * 5);
+  // underneath: the engine ring glowing, and a faint beam
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  let g = ctx.createLinearGradient(0, .15 * U, 0, .8 * U); g.addColorStop(0, `rgba(120,255,220,${(.16 + .06 * pulse).toFixed(3)})`); g.addColorStop(1, "rgba(120,255,220,0)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-.16 * U, .16 * U); ctx.lineTo(.16 * U, .16 * U); ctx.lineTo(.3 * U, .8 * U); ctx.lineTo(-.3 * U, .8 * U); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = shade(0, .15 * U, .32 * U, "#5a6573", "#2b323b", "#0d1014"); ctx.beginPath(); ctx.ellipse(0, .13 * U, .33 * U, .07 * U, 0, 0, 7); ctx.fill();
+  ctx.save(); ctx.shadowColor = "#7fffe0"; ctx.shadowBlur = U * .04;
+  ctx.strokeStyle = `rgba(150,255,230,${(.6 + .4 * pulse).toFixed(3)})`; ctx.lineWidth = U * .014; ctx.beginPath(); ctx.ellipse(0, .155 * U, .17 * U, .03 * U, 0, 0, 7); ctx.stroke(); ctx.restore();
+  // the saucer: polished metal, panel seams and a highlight
+  g = ctx.createLinearGradient(0, -.06 * U, 0, .16 * U); g.addColorStop(0, "#f4f8fb"); g.addColorStop(.35, "#b9c4cf"); g.addColorStop(.62, "#6f7b88"); g.addColorStop(1, "#2a3038");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, .06 * U, .54 * U, .12 * U, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = "rgba(30,40,55,.35)"; ctx.lineWidth = U * .003;
+  for (const k of [.36, .46]) { ctx.beginPath(); ctx.ellipse(0, .045 * U, k * U, k * .2 * U, 0, .05, Math.PI - .05); ctx.stroke(); }
+  for (let i = 1; i < 10; i++) { const a = i / 10 * Math.PI; ctx.beginPath(); ctx.moveTo(Math.cos(a) * .34 * U, .045 * U + Math.sin(a) * .07 * U); ctx.lineTo(Math.cos(a) * .53 * U, .06 * U + Math.sin(a) * .115 * U); ctx.stroke(); }
+  g = ctx.createRadialGradient(-.25 * U, -.01 * U, 0, -.25 * U, -.01 * U, .22 * U); g.addColorStop(0, "rgba(255,255,255,.75)"); g.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(-.22 * U, .0 * U, .22 * U, .045 * U, -.05, 0, 7); ctx.fill();
+  for (let i = 0; i < 16; i++) {   // rim lights chasing round the front edge
+    const a = .12 + i / 15 * (Math.PI - .24), lx = Math.cos(a) * .5 * U, ly = .07 * U + Math.sin(a) * .1 * U, on = (i + Math.floor(sec * 9)) % 4 === 0;
+    const col = on ? "255,250,220" : ["255,95,143", "79,211,255", "245,197,66", "140,255,120"][i % 4], lr = U * (on ? .016 : .011);
+    g = ctx.createRadialGradient(lx, ly, 0, lx, ly, lr * 3); g.addColorStop(0, `rgba(${col},.9)`); g.addColorStop(.35, `rgba(${col},.45)`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lx, ly, lr * 3, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(lx - lr * .25, ly - lr * .25, lr * .35, 0, 7); ctx.fill();
   }
-  ctx.strokeStyle = "#2f5a1f"; ctx.lineWidth = U * .006; ctx.beginPath(); ctx.arc(hx + hr * .05, hy + hr * .35, hr * .45, .25, Math.PI - .5); ctx.stroke();   // a goofy grin
-  ctx.fillStyle = "#fff"; ctx.fillRect(hx + hr * .05, hy + hr * .76, hr * .14, hr * .16);   // buck tooth
-  // the dashboard: cartoon screens and buttons, and in the middle, the forecast
-  ctx.fillStyle = "#2b3440"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-D * .92, -.14 * U, D * 1.84, .15 * U, U * .02) : ctx.rect(-D * .92, -.14 * U, D * 1.84, .15 * U); ctx.fill();
-  ctx.fillStyle = G; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * U * .12, -.14 * U, U * .022, U * .014, 0, 0, 7); ctx.fill(); }   // his hands on the dash
-  const scr = (cx, w, h) => { ctx.fillStyle = "#050a0f"; ctx.fillRect(cx - w / 2, dy - h / 2, w, h); };
-  const L = -.2 * U, Rr = .2 * U, sw = .07 * U, s2 = sw / 2;
-  scr(L, sw, sw); ctx.strokeStyle = "#3f6"; ctx.lineWidth = U * .003;   // radar with a sweep and a blip
-  ctx.beginPath(); ctx.arc(L, dy, s2 * .8, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(L, dy, s2 * .4, 0, 7); ctx.stroke();
+  ctx.fillStyle = shade(0, 0, .42 * U, "#e8eef3", "#9aa7b4", "#4b5560"); ctx.beginPath(); ctx.ellipse(0, .015 * U, D * 1.12, Dy * 1.15, 0, 0, 7); ctx.fill();   // the deck the bubble sits on
+  // inside the bubble
+  const domePath = () => { ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.ellipse(0, 0, D, Dy, 0, 0, Math.PI); ctx.closePath(); };
+  ctx.save(); domePath(); ctx.clip();
+  g = ctx.createRadialGradient(0, -D * .3, D * .1, 0, -D * .2, D * 1.1); g.addColorStop(0, "#24405a"); g.addColorStop(1, "#08121c");
+  ctx.fillStyle = g; ctx.fillRect(-D, -D, 2 * D, D + Dy);
+  ctx.fillStyle = "rgba(120,200,255,.12)"; for (let i = -3; i <= 3; i++) ctx.fillRect(i * D * .27 - D * .01, -D, D * .02, D);   // ribs on the back wall
+  const pilot = { skin: ["#c8ff9a", "#6fd14a", "#2a6b1c"], iris: "#e0a020", tip: "#ffe14d", tooth: true, gape: 1,
+                  eyes: [[-.42, -.1, .36, .6, .2, .42], [.4, -.05, .28, -.5, -.4, .5]] };
+  const copilot = { skin: ["#b6fff0", "#3cc7aa", "#0f5a4c"], iris: "#ff5fa8", tip: "#ff8fd0", gape: .85, eyes: [[0, -.15, .5, .2, .3, .38]] };
+  const ps = .07 * U, cs = .055 * U;
+  alien(-.12 * U, -.2 * U + Math.sin(sec * 1.4) * U * .004, ps, pilot, sec, Q);
+  alien(.15 * U, -.175 * U + Math.sin(sec * 1.7 + 1) * U * .004, cs, copilot, sec + 2, Q);
+  hand(.15 * U + cs * 1.4, -.24 * U + Math.sin(sec * 7) * cs * .3, cs * .55, copilot.skin, Math.sin(sec * 7) * .4 + .3);   // the co-pilot waves
+  // the dashboard, curved toward us, with its screens
+  g = ctx.createLinearGradient(0, -.15 * U, 0, .03 * U); g.addColorStop(0, "#5d6b7a"); g.addColorStop(.12, "#3a4552"); g.addColorStop(1, "#151b22");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-D * .98, .02 * U); ctx.lineTo(-D * .9, -.14 * U); ctx.quadraticCurveTo(0, -.16 * U, D * .9, -.14 * U); ctx.lineTo(D * .98, .02 * U); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(200,230,255,.45)"; ctx.lineWidth = U * .004; ctx.beginPath(); ctx.moveTo(-D * .9, -.14 * U); ctx.quadraticCurveTo(0, -.16 * U, D * .9, -.14 * U); ctx.stroke();
+  hand(-.17 * U, -.145 * U, ps * .5, pilot.skin, -.3); hand(-.06 * U, -.15 * U, ps * .5, pilot.skin, .3);   // the pilot's hands on the dash
+  const bez = (cx, cy, w, h) => {   // a screen set into the dash: raised bezel, dark glass, glow
+    ctx.fillStyle = "#0b0e12"; ctx.fillRect(cx - w / 2 - U * .006, cy - h / 2 - U * .006, w + U * .012, h + U * .012);
+    ctx.fillStyle = "rgba(200,220,255,.35)"; ctx.fillRect(cx - w / 2 - U * .006, cy - h / 2 - U * .006, w + U * .012, U * .0025);
+    ctx.fillStyle = "#03080d"; ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
+  };
+  const L = -.235 * U, Rr = .235 * U, sw = .075 * U, s2 = sw / 2;
+  bez(L, dy, sw, sw); ctx.save(); ctx.shadowColor = "#3f6"; ctx.shadowBlur = U * .01; ctx.strokeStyle = "#3f6"; ctx.lineWidth = U * .003;   // radar
+  ctx.beginPath(); ctx.arc(L, dy, s2 * .8, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(L, dy, s2 * .45, 0, 7); ctx.stroke();
   const sa = sec * 3; ctx.beginPath(); ctx.moveTo(L, dy); ctx.lineTo(L + Math.cos(sa) * s2 * .8, dy + Math.sin(sa) * s2 * .8); ctx.stroke();
-  ctx.fillStyle = "#3f6"; ctx.beginPath(); ctx.arc(L + s2 * .35, dy - s2 * .3, U * .004, 0, 7); ctx.fill();
-  scr(Rr, sw, sw);   // bouncing bars and a wiggly line
-  for (let i = 0; i < 5; i++) { const bh = (.3 + .6 * Math.abs(Math.sin(sec * 4 + i * 1.3))) * sw * .5; ctx.fillStyle = ["#f5c542", "#ff5f8f", "#4fd3ff", "#8f6", "#c9f"][i]; ctx.fillRect(Rr - s2 * .8 + i * sw * .17, dy + s2 * .1 - bh, sw * .11, bh); }
-  ctx.strokeStyle = "#4fd3ff"; ctx.beginPath(); for (let i = 0; i <= 20; i++) ctx.lineTo(Rr - s2 * .85 + i * sw * .085, dy + s2 * .5 + Math.sin(sec * 6 + i * .7) * s2 * .15); ctx.stroke();
-  for (let i = 0; i < 9; i++) { ctx.fillStyle = (Math.floor(sec * 4) + i) % 3 ? "#7a2030" : "#ff4060"; if (i % 3 === 1) ctx.fillStyle = (Math.floor(sec * 3) + i) % 2 ? "#225" : "#6af"; ctx.beginPath(); ctx.arc(-D * .75 + i * D * .19, -.02 * U, U * .007, 0, 7); ctx.fill(); }   // blinky buttons
+  ctx.fillStyle = "#3f6"; ctx.beginPath(); ctx.arc(L + s2 * .35, dy - s2 * .3, U * .005, 0, 7); ctx.fill(); ctx.restore();
+  bez(Rr, dy, sw, sw); ctx.save(); ctx.shadowBlur = U * .008;   // bouncing bars and a wiggly line
+  for (let i = 0; i < 5; i++) { const bh = (.3 + .6 * Math.abs(Math.sin(sec * 4 + i * 1.3))) * sw * .5, col = ["#f5c542", "#ff5f8f", "#4fd3ff", "#8f6", "#c9f"][i]; ctx.shadowColor = col; ctx.fillStyle = col; ctx.fillRect(Rr - s2 * .8 + i * sw * .17, dy + s2 * .1 - bh, sw * .11, bh); }
+  ctx.shadowColor = "#4fd3ff"; ctx.strokeStyle = "#4fd3ff"; ctx.lineWidth = U * .003; ctx.beginPath(); for (let i = 0; i <= 20; i++) ctx.lineTo(Rr - s2 * .85 + i * sw * .085, dy + s2 * .5 + Math.sin(sec * 6 + i * .7) * s2 * .15); ctx.stroke(); ctx.restore();
+  for (let i = 0; i < 11; i++) {   // rows of round, glowing buttons
+    const bx = -D * .8 + i * D * .16, on = (Math.floor(sec * 4) + i * 7) % 3 === 0, col = ["#ff4060", "#4fd3ff", "#f5c542", "#8f6"][i % 4];
+    ctx.fillStyle = shade(bx, -.005 * U, U * .009, "#fff", on ? col : "#333a44", "#111"); ctx.beginPath(); ctx.arc(bx, -.005 * U, U * .009, 0, 7); ctx.fill();
+  }
   ctx.fillStyle = "#0b0b0e"; const b = dh * .06; ctx.fillRect(-dw / 2 - b, dy - dh / 2 - b, dw + 2 * b, dh + 2 * b);
-  ctx.drawImage(e.shot, -dw / 2, dy - dh / 2, dw, dh);
+  ctx.save(); ctx.shadowColor = "rgba(140,200,255,.8)"; ctx.shadowBlur = U * .03 * (1 - Q); ctx.drawImage(e.shot, -dw / 2, dy - dh / 2, dw, dh); ctx.restore();
   ctx.restore();
-  // the saucer under the bubble, its rim lights chasing round
-  const body = ctx.createLinearGradient(0, -.03 * U, 0, .14 * U); body.addColorStop(0, "#e9eef3"); body.addColorStop(.45, "#9aa7b4"); body.addColorStop(1, "#4b5560");
-  ctx.fillStyle = "#3b434c"; ctx.beginPath(); ctx.ellipse(0, .1 * U, .3 * U, .05 * U, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = body; ctx.beginPath(); ctx.ellipse(0, .055 * U, .5 * U, .075 * U, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = "#c7d0d9"; ctx.fillRect(-D, -.005 * U, 2 * D, .02 * U);
-  for (let i = 0; i < 12; i++) { const a = (i / 11 - .5) * 2.6, lx = Math.sin(a) * .45 * U, ly = .06 * U + Math.cos(a) * .028 * U, on = (i + Math.floor(sec * 8)) % 4 === 0;
-    ctx.fillStyle = on ? "#fffbe0" : ["#ff5f8f", "#4fd3ff", "#f5c542"][i % 3]; ctx.beginPath(); ctx.arc(lx, ly, U * (on ? .013 : .009), 0, 7); ctx.fill(); }
-  ctx.save(); ctx.globalAlpha = 1 - Q;   // the glass: a light tint and a shine, gone as we go through it
-  ctx.fillStyle = "rgba(170,230,255,.12)"; ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = "rgba(210,245,255,.7)"; ctx.lineWidth = U * .006; ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = U * .014; ctx.beginPath(); ctx.arc(0, 0, D * .86, Math.PI * 1.15, Math.PI * 1.4); ctx.stroke();
+  // the glass: brighter at its edges, a big curved shine, a sparkle; it fades as we pass through it
+  ctx.save(); ctx.globalAlpha = 1 - Q;
+  domePath(); g = ctx.createRadialGradient(0, 0, D * .55, 0, 0, D); g.addColorStop(0, "rgba(170,230,255,.04)"); g.addColorStop(1, "rgba(170,230,255,.3)"); ctx.fillStyle = g; ctx.fill();
+  ctx.strokeStyle = "rgba(220,245,255,.8)"; ctx.lineWidth = U * .005; ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = U * .02; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(0, 0, D * .87, Math.PI * 1.13, Math.PI * 1.42); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.3)"; ctx.lineWidth = U * .008; ctx.beginPath(); ctx.arc(0, 0, D * .8, Math.PI * 1.47, Math.PI * 1.55); ctx.stroke();
+  const sp = U * .018; ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.beginPath(); ctx.moveTo(D * .45, -D * .7 - sp); ctx.lineTo(D * .45 + sp * .25, -D * .7); ctx.lineTo(D * .45, -D * .7 + sp); ctx.lineTo(D * .45 - sp * .25, -D * .7); ctx.fill();
   ctx.restore();
+  ctx.strokeStyle = shade(0, 0, D, "#ffffff", "#b9c4cf", "#4b5560"); ctx.lineWidth = U * .02; ctx.beginPath(); ctx.ellipse(0, 0, D, Dy, 0, 0, Math.PI); ctx.stroke();   // chrome ring at the bubble's base
   ctx.fillStyle = "#9aa7b4"; ctx.fillRect(-U * .004, -D - U * .05, U * .008, U * .05);   // antenna on top, blinking
-  ctx.fillStyle = Math.floor(sec * 2) % 2 ? "#ff4060" : "#601020"; ctx.beginPath(); ctx.arc(0, -D - U * .055, U * .014, 0, 7); ctx.fill();
+  ctx.save(); const on = Math.floor(sec * 2) % 2; ctx.shadowColor = "#ff4060"; ctx.shadowBlur = on ? U * .03 : 0;
+  ctx.fillStyle = shade(0, -D - U * .055, U * .015, "#fff", on ? "#ff4060" : "#601020", "#300"); ctx.beginPath(); ctx.arc(0, -D - U * .055, U * .015, 0, 7); ctx.fill(); ctx.restore();
   ctx.restore();
 }
 // ---- big boats: one huge, faint vessel at a time slides by behind everything, as tall as the screen. Each is drawn

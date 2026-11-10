@@ -227,6 +227,7 @@
     <label class="row sub"><span>Fire<small>A corner catches fire and it spreads until the whole screen has burned, then the wave puts it out</small></span><span class="ctl"><button class="try" data-try="burn">▶</button><input type="checkbox" class="sw" data-set="aBurn"></span></label>
     <label class="row sub"><span>Rain on water<small>The screen is water. A few drops, then harder and harder until you can't read it, then it eases off</small></span><span class="ctl"><button class="try" data-try="rain">▶</button><input type="checkbox" class="sw" data-set="aRain"></span></label>
     <label class="row sub"><span>Iceberg<small>The Titanic comes out in front of the forecast and hits an iceberg. It sinks bow first and the stern drags the whole screen down with it</small></span><span class="ctl"><button class="try" data-try="liner">▶</button><input type="checkbox" class="sw" data-set="aLiner"></span></label>
+    <label class="row sub"><span>Tornado<small>A twister tears through the forecast and scatters it, leaving a black-and-white prairie. Then you drive down the road to a far-off billboard</small></span><span class="ctl"><button class="try" data-try="twist">▶</button><input type="checkbox" class="sw" data-set="aTwist"></span></label>
     <div class="row key"><span>Rain % shortcuts<small>Tap any rain % under the wind arrows to play an animation. From the left, they play these in order, then start over:</small><ol id="pctkey"></ol></span></div>
     <button class="done">Done</button>
   </div>
@@ -279,7 +280,7 @@ const WMO = {0:"Clear",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Fog",48
 const DIRS = "N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW".split(" ");
 
 // remembered settings
-const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG", "aPirate", "aTroll", "aDhow", "aGalleon", "aLiner", "aPara", "aHelo", "aR44"];   // one switch per animation
+const FXKEYS = ["aWaves", "aWind", "aKite", "aTide", "aWx", "aMelt", "aWipe", "aLife", "aNums", "aChaos", "aBite", "aRen", "aSub", "aTruck", "aRocket", "aSlot", "aQueen", "aCoaster", "aMariachi", "aBeach", "aShip", "aSpin", "aCrumple", "aDust", "aRock", "aBat", "aFlip", "aDrive", "aBurn", "aRain", "aParty", "aRaunchy", "aJet", "aSurf", "aBass", "aFab", "aDolph", "aCG", "aPirate", "aTroll", "aDhow", "aGalleon", "aLiner", "aTwist", "aPara", "aHelo", "aR44"];   // one switch per animation
 const SAVED = ["loc", "hintSeen", "days", "past", "rotate", "rotSec", "light", "clock24", "showTides", "showWaves", "showWx", "showMoon", "textSize", "anim", "lifeMin", "boatMin", "otherMin", "pageMin", "craftMin", "airMin", "partyFall", ...FXKEYS];
 const state = { loc: "spi", hintSeen: false, days: 3, past: false, rotate: false, rotSec: 20, light: false, clock24: false, showTides: true, showWaves: true, showWx: true, showMoon: true,
                 textSize: "m", lifeMin: 2, boatMin: 2, otherMin: 10, pageMin: 15, craftMin: 10, airMin: 10, partyFall: false, data: null, updated: null, error: "",
@@ -1362,7 +1363,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, twist: 22800, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -4624,7 +4625,7 @@ function r44Tour(e, now, dt, sec, P) {
 // ---- page animations: the whole page (chart and buttons) gets crumpled and thrown in an office wastebasket, ages to dust
 //      and is swept away, is smashed like a windshield, or turns into a ball that's hit out into the night sky.
 //      They have their own timer, never play with a beach scene, and the live page fades back in at the end ----
-const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"], ["liner", "aLiner", "Iceberg"]];
+const PAGE_LIST = [["spin", "aSpin", "Screen spin"], ["drivein", "aDrive", "Drive-in sign"], ["chaos", "aChaos", "Haywire forecast"], ["flip", "aFlip", "End over end"], ["crumple", "aCrumple", "Crumple and toss"], ["dust", "aDust", "Turn to dust"], ["rock", "aRock", "Rock through the glass"], ["bat", "aBat", "Home run"], ["burn", "aBurn", "Fire"], ["rain", "aRain", "Rain on water"], ["liner", "aLiner", "Iceberg"], ["twist", "aTwist", "Tornado"]];
 const PAGE_KIND = Object.fromEntries(PAGE_LIST.map(([k]) => [k, 1]));
 const CRAFT_LIST = [["sub", "aSub", "Yellow submarine"], ["party", "aParty", "Bachelorette pontoon"], ["jetski", "aJet", "Jet ski crash"], ["surf", "aSurf", "Wake surf bros"],
   ["bass", "aBass", "Rednecks in a bass boat"], ["fab", "aFab", "Fabulous party boat"], ["dolphin", "aDolph", "Dolphin watch"], ["cg", "aCG", "Raft and the Coast Guard"],
@@ -5453,6 +5454,183 @@ function seaScene(e, u, sec) {   // u: seconds since the glass broke
   }
 }
 
+// ---- tornado: a twister tears across the forecast and scatters it, leaving a black-and-white prairie; then we drive
+// down the road to a far-off billboard, which turns out to be showing the forecast, and pull right up into it ----
+const TW = { pass: [.4, 7.2], drive: [7.6, 15], cols: 18 };   // the funnel crosses during pass; the drive takes drive[1] seconds
+function twInit(e, W, H) {
+  const r = (e.tex = pageSnap()).width / W;
+  e.gray = document.createElement("canvas"); e.gray.width = e.tex.width; e.gray.height = e.tex.height;
+  const g = e.gray.getContext("2d"); g.filter = "grayscale(1) contrast(1.1)"; g.drawImage(e.tex, 0, 0); g.filter = "none";
+  const n = W < 640 ? 10 : TW.cols, tw = W / n, rows = Math.ceil(H / tw), th = H / rows;
+  e.tiles = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < n; i++) e.tiles.push({ x: i * tw, y: j * th, w: tw, h: th, r, th0: rnd(0, 6.283), om: rnd(3, 6), rise: rnd(.25, .7), orb: rnd(1, 2.2), spin: rnd(-6, 6), out: rnd(.6, 1.4) });
+  e.tiles.sort(() => Math.random() - .5);
+  const B = Math.min(12, 8 * W / H);   // the billboard's face: the screen's shape, in metres
+  e.bb = { X: 10, Z: 150, Yb: 4, Bw: B, Bh: B * H / W };
+  e.props = [];
+  for (let z = 4; z < 320; z += 9) e.props.push({ k: "post", X: -5, Z: z });
+  for (let z = 12; z < 340; z += 38) e.props.push({ k: "pole", X: -8, Z: z });
+  e.props.push({ k: "house", X: -26, Z: 62 }, { k: "barn", X: -46, Z: 100 }, { k: "silo", X: -36, Z: 108 }, { k: "mill", X: 22, Z: 48 }, { k: "bb", X: e.bb.X, Z: e.bb.Z });
+  for (let i = 0; i < 26; i++) e.props.push({ k: "tree", X: (Math.random() < .5 ? -1 : 1) * rnd(14, 90), Z: rnd(70, 380), s: rnd(.7, 1.4) });
+  for (let i = 0; i < 18; i++) e.props.push({ k: "bale", X: rnd(9, 40) * (Math.random() < .35 ? -1 : 1) + (Math.random() < .5 ? 0 : 0), Z: rnd(10, 160) });
+  e.props = e.props.filter(p => !(p.k === "bale" && Math.abs(p.X - e.bb.X) < 8 && p.Z > 120));
+  e.clouds = Array.from({ length: 14 }, () => [rnd(-.1, 1.1), rnd(.02, .35), rnd(.08, .2)]);
+  e.debris = Array.from({ length: 70 }, () => [rnd(0, 6.283), rnd(.2, 1), rnd(2, 6), rnd(1, 3.5)]);
+}
+function twCam(e, t, W, H) {   // where the camera is: on the road, then pulled up level with the billboard's face
+  const { X, Z, Yb, Bw, Bh } = e.bb, F = twF(W, H), d = Bw * F / W;
+  const p = clamp((t - TW.drive[0]) / TW.drive[1], 0, 1), q = ease(clamp((p - .5) / .5, 0, 1));
+  const z = (Z - d) * ease(p);
+  return { x: X * q, y: 1.6 + (Yb + Bh / 2 - 1.6) * q, z, p, F, hy: H * .5 };
+}
+const twF = (W, H) => Math.max(W, H * .9) * .8;
+function twScene(e, c, W, H, sec, storm) {   // the black-and-white prairie, from the camera c
+  const { F, hy } = c, P = (X, Y, Z) => { const z = Z - c.z; return [W / 2 + (X - c.x) * F / z, hy + (c.y - Y) * F / z, F / z]; };
+  const fog = Z => clamp(1 - (Z - c.z) / 420, 0, 1);
+  const g0 = 70 + 120 * (1 - storm), g1 = 120 + 105 * (1 - storm);
+  let g = ctx.createLinearGradient(0, 0, 0, hy); g.addColorStop(0, `rgb(${g0},${g0},${g0})`); g.addColorStop(1, `rgb(${g1},${g1},${g1})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, hy + 1);
+  for (const [cx, cy, cr] of e.clouds) {   // soft clouds, darker while the storm is overhead
+    const x = cx * W - c.x * F / 300, y = cy * hy, r = cr * W, v = Math.round(g0 + 40 - storm * 30);
+    const cg = ctx.createRadialGradient(x, y, 0, x, y, r); cg.addColorStop(0, `rgba(${v + 30},${v + 30},${v + 30},.55)`); cg.addColorStop(1, `rgba(${v},${v},${v},0)`);
+    ctx.fillStyle = cg; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  g = ctx.createLinearGradient(0, hy, 0, H); g.addColorStop(0, "#9a9a9a"); g.addColorStop(1, "#5e5e5e");
+  ctx.fillStyle = g; ctx.fillRect(0, hy, W, H - hy);
+  ctx.strokeStyle = "rgba(60,60,60,.35)"; ctx.lineWidth = 1;   // crop rows running off to the horizon
+  ctx.beginPath();
+  for (let k = -40; k <= 40; k++) { const X = k * 4 + 2; if (Math.abs(X) < 6) continue; const a = P(X, 0, c.z + .6), b = P(X, 0, c.z + 600); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.08)";   // furrows across, sliding past as you drive
+  ctx.beginPath(); for (let Z = Math.ceil(c.z / 6) * 6; Z < c.z + 200; Z += 6) { if (Z - c.z < .8) continue; const y = P(0, 0, Z)[1]; ctx.moveTo(0, y); ctx.lineTo(W, y); } ctx.stroke();
+  // the road
+  const z0 = c.z + .5, rd = (X, Z) => P(X, 0, Z);
+  let a = rd(-3.2, z0), b = rd(3.2, z0), f1 = rd(3.2, c.z + 900), f2 = rd(-3.2, c.z + 900);
+  ctx.fillStyle = "#4c4c4c"; ctx.beginPath(); ctx.moveTo(...a); ctx.lineTo(...b); ctx.lineTo(f1[0], f1[1]); ctx.lineTo(f2[0], f2[1]); ctx.fill();
+  ctx.fillStyle = "#7a7a7a";   // gravel shoulders
+  for (const s of [-1, 1]) { const p1 = rd(s * 3.2, z0), p2 = rd(s * 4, z0), p3 = rd(s * 4, c.z + 900), p4 = rd(s * 3.2, c.z + 900); ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.lineTo(p3[0], p3[1]); ctx.lineTo(p4[0], p4[1]); ctx.fill(); }
+  ctx.fillStyle = "#dcdcdc";   // center dashes
+  for (let Z = Math.ceil(c.z / 8) * 8; Z < c.z + 300; Z += 8) {
+    const n0 = Math.max(Z, c.z + .5), n1 = Z + 3.5; if (n1 <= n0) continue;
+    const q1 = rd(-.08, n0), q2 = rd(.08, n0), q3 = rd(.08, n1), q4 = rd(-.08, n1);
+    ctx.globalAlpha = fog(Z); ctx.beginPath(); ctx.moveTo(q1[0], q1[1]); ctx.lineTo(q2[0], q2[1]); ctx.lineTo(q3[0], q3[1]); ctx.lineTo(q4[0], q4[1]); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // everything standing up, far to near
+  const vis = e.props.filter(p => p.Z - c.z > .6).sort((p, q) => q.Z - p.Z);
+  let lastPole = null;
+  for (const p of vis) {
+    const [x, y, s] = P(p.X, 0, p.Z);
+    if (x < -W * 2 || x > W * 3) continue;
+    ctx.save(); ctx.globalAlpha = fog(p.Z);
+    if (p.k === "post") { ctx.fillStyle = "#3a3a3a"; ctx.fillRect(x - .07 * s, y - 1.2 * s, .14 * s, 1.2 * s); ctx.strokeStyle = "rgba(40,40,40,.7)"; ctx.lineWidth = Math.max(.6, .03 * s); const nx = P(p.X, 0, p.Z + 9); ctx.beginPath(); for (const hh of [.6, 1.05]) { ctx.moveTo(x, y - hh * s); ctx.lineTo(nx[0], nx[1] - hh * nx[2]); } ctx.stroke(); }
+    else if (p.k === "pole") {
+      ctx.fillStyle = "#2e2e2e"; ctx.fillRect(x - .14 * s, y - 9 * s, .28 * s, 9 * s); ctx.fillRect(x - 1.2 * s, y - 8.4 * s, 2.4 * s, .18 * s);
+      const nx = P(p.X, 0, p.Z + 38); ctx.strokeStyle = "rgba(30,30,30,.6)"; ctx.lineWidth = Math.max(.6, .03 * s);
+      for (const o of [-1.1, 1.1]) { ctx.beginPath(); ctx.moveTo(x + o * s, y - 8.4 * s); ctx.quadraticCurveTo((x + o * s + nx[0] + o * nx[2]) / 2, (y - 8.4 * s + nx[1] - 8.4 * nx[2]) / 2 + 1.2 * s, nx[0] + o * nx[2], nx[1] - 8.4 * nx[2]); ctx.stroke(); }
+    }
+    else if (p.k === "tree") { const r = 3 * p.s * s; ctx.fillStyle = "#333"; ctx.fillRect(x - .2 * s, y - 4 * p.s * s, .4 * s, 4 * p.s * s); ctx.fillStyle = "#4a4a4a"; ctx.beginPath(); ctx.arc(x, y - 5.5 * p.s * s, r, 0, 7); ctx.arc(x - r * .6, y - 4.6 * p.s * s, r * .7, 0, 7); ctx.arc(x + r * .6, y - 4.8 * p.s * s, r * .75, 0, 7); ctx.fill(); }
+    else if (p.k === "bale") { const r = .8 * s; ctx.fillStyle = "#8d8d8d"; ctx.beginPath(); ctx.arc(x, y - r, r, 0, 7); ctx.fill(); ctx.strokeStyle = "#6a6a6a"; ctx.lineWidth = Math.max(.5, r * .08); ctx.beginPath(); ctx.arc(x, y - r, r * .6, 0, 7); ctx.arc(x, y - r, r * .3, 0, 7); ctx.stroke(); }
+    else if (p.k === "house") {
+      const w = 10 * s, h = 5 * s; ctx.fillStyle = "#cfcfcf"; ctx.fillRect(x - w / 2, y - h, w, h);
+      ctx.fillStyle = "#3c3c3c"; ctx.beginPath(); ctx.moveTo(x - w * .58, y - h); ctx.lineTo(x, y - h * 1.9); ctx.lineTo(x + w * .58, y - h); ctx.fill();
+      ctx.fillRect(x + w * .2, y - h * 2.05, w * .08, h * .6);   // chimney
+      ctx.fillStyle = "#555"; for (const wx of [-.32, .2]) ctx.fillRect(x + wx * w, y - h * .75, w * .14, h * .32); ctx.fillRect(x - w * .05, y - h * .62, w * .12, h * .62);
+      ctx.fillStyle = "#8a8a8a"; ctx.fillRect(x - w * .55, y - h * .5, w * 1.1, h * .06);   // porch
+    }
+    else if (p.k === "barn") {
+      const w = 14 * s, h = 7 * s; ctx.fillStyle = "#6c6c6c"; ctx.beginPath(); ctx.moveTo(x - w / 2, y); ctx.lineTo(x - w / 2, y - h); ctx.lineTo(x - w * .3, y - h * 1.45); ctx.lineTo(x + w * .3, y - h * 1.45); ctx.lineTo(x + w / 2, y - h); ctx.lineTo(x + w / 2, y); ctx.fill();
+      ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = Math.max(.6, .15 * s); ctx.strokeRect(x - w * .18, y - h * .7, w * .36, h * .7); ctx.beginPath(); ctx.moveTo(x - w * .18, y - h * .7); ctx.lineTo(x + w * .18, y); ctx.moveTo(x + w * .18, y - h * .7); ctx.lineTo(x - w * .18, y); ctx.stroke();
+    }
+    else if (p.k === "silo") { const w = 4 * s, h = 13 * s; ctx.fillStyle = "#a8a8a8"; ctx.fillRect(x - w / 2, y - h, w, h); ctx.beginPath(); ctx.arc(x, y - h, w / 2, Math.PI, 0); ctx.fill(); ctx.strokeStyle = "#888"; ctx.lineWidth = Math.max(.5, .06 * s); for (let k = 1; k < 8; k++) { ctx.beginPath(); ctx.moveTo(x - w / 2, y - h * k / 8); ctx.lineTo(x + w / 2, y - h * k / 8); ctx.stroke(); } }
+    else if (p.k === "mill") {
+      const h = 14 * s; ctx.strokeStyle = "#333"; ctx.lineWidth = Math.max(.7, .15 * s);
+      ctx.beginPath(); ctx.moveTo(x - 1.6 * s, y); ctx.lineTo(x, y - h); ctx.lineTo(x + 1.6 * s, y); for (let k = 1; k < 5; k++) { const yy = y - h * k / 5, ww = 1.6 * s * (1 - k / 5); ctx.moveTo(x - ww, yy); ctx.lineTo(x + ww, yy); } ctx.stroke();
+      ctx.save(); ctx.translate(x, y - h); ctx.rotate(sec * (1.5 + storm * 6)); ctx.fillStyle = "#2a2a2a";
+      for (let k = 0; k < 12; k++) { ctx.rotate(Math.PI / 6); ctx.beginPath(); ctx.moveTo(.3 * s, -.18 * s); ctx.lineTo(2.6 * s, -.32 * s); ctx.lineTo(2.6 * s, .32 * s); ctx.lineTo(.3 * s, .18 * s); ctx.fill(); }
+      ctx.restore(); ctx.fillStyle = "#2a2a2a"; ctx.beginPath(); ctx.moveTo(x, y - h); ctx.lineTo(x - 3.2 * s, y - h - .6 * s); ctx.lineTo(x - 3.2 * s, y - h + .6 * s); ctx.fill();   // tail vane
+    }
+    else if (p.k === "bb") twBoard(e, c, P, W, H);
+    ctx.restore();
+  }
+}
+function twBoard(e, c, P, W, H) {   // the billboard on two legs; its face shows the forecast, washed out until you're close
+  const { X, Z, Yb, Bw, Bh } = e.bb, [x0, y0] = P(X - Bw / 2, Yb + Bh, Z), [x1, y1, s] = P(X + Bw / 2, Yb, Z);
+  ctx.fillStyle = "#2f2f2f";
+  for (const lx of [-.3, .3]) { const [lxx, lyy] = P(X + lx * Bw, 0, Z + .05); ctx.fillRect(lxx - .18 * s, y1, .36 * s, lyy - y1); }
+  const m = .25 * s;
+  ctx.fillStyle = "#3a3a3a"; ctx.fillRect(x0 - m, y0 - m, x1 - x0 + m * 2, y1 - y0 + m * 2);
+  ctx.fillStyle = "#555"; ctx.fillRect(x0 - m, y1 + m, x1 - x0 + m * 2, .12 * s);   // catwalk
+  const col = ease(clamp((c.p - .62) / .25, 0, 1)), haze = clamp(1 - (Z - c.z) / 190, 0, 1);
+  ctx.save(); ctx.globalAlpha = 1; ctx.drawImage(e.gray, x0, y0, x1 - x0, y1 - y0);
+  if (col > 0) { ctx.globalAlpha = col; ctx.drawImage(e.tex, x0, y0, x1 - x0, y1 - y0); }
+  ctx.restore();
+  if (haze < 1) { ctx.fillStyle = `rgba(205,205,205,${Math.min(.85, (1 - haze) * 1.1).toFixed(3)})`; ctx.fillRect(x0 - m, y0 - m, x1 - x0 + m * 2, y1 - y0 + m * 2); }   // faint, way off in the distance
+}
+function twFunnel(x, W, H, sec, a) {   // the twister: a dark wall cloud, the snaking funnel, dust boiling at its foot
+  const top = -H * .05, bot = H * .9, N = 46, M = Math.min(W, H);
+  ctx.save(); ctx.globalAlpha *= a;
+  const at = q => x + Math.sin(sec * 1.7 + q * 3.2) * M * .05 * q + (q - .5) * M * .06;
+  for (let i = 0; i < N; i++) {
+    const q = i / (N - 1), y = top + (bot - top) * q, w = M * (.035 + .28 * (1 - q) ** 1.7), cx = at(q), v = Math.round(48 + 26 * Math.sin(q * 30 - sec * 8));
+    ctx.fillStyle = `rgba(${v},${v},${v},.6)`; ctx.beginPath(); ctx.ellipse(cx, y, w, M * .03, 0, 0, 7); ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(170,170,170,.35)"; ctx.lineWidth = M * .006;   // streaks winding round it
+  for (let k = 0; k < 7; k++) { ctx.beginPath(); for (let i = 0; i <= 30; i++) { const q = i / 30, w = M * (.03 + .26 * (1 - q) ** 1.7); ctx.lineTo(at(q) + Math.sin(sec * 9 + q * 14 + k) * w * .9, top + (bot - top) * q); } ctx.stroke(); }
+  for (let i = 0; i < 14; i++) {   // dust at the base
+    const ang = i / 14 * 6.283 + sec * 2, r = M * (.06 + .07 * ((i * .37) % 1)), dx = at(1) + Math.cos(ang) * r * 1.4, dy = bot + Math.sin(ang) * r * .3;
+    const g = ctx.createRadialGradient(dx, dy, 0, dx, dy, r); g.addColorStop(0, "rgba(110,110,110,.55)"); g.addColorStop(1, "rgba(110,110,110,0)");
+    ctx.fillStyle = g; ctx.fillRect(dx - r, dy - r, r * 2, r * 2);
+  }
+  ctx.restore();
+}
+function twister(e, now) {
+  const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000, sec = now / 1000, M = Math.min(W, H);
+  if (!e.tex) twInit(e, W, H);
+  const c = twCam(e, t, W, H);
+  if (c.p >= 1) { ctx.drawImage(e.tex, 0, 0, W, H); return; }
+  const [p0, p1] = TW.pass, tx = -W * .3 + (W * 1.6) * clamp((t - p0) / (p1 - p0), 0, 1), storm = 1 - ease(clamp((t - 5) / 4, 0, 1));
+  ctx.save();
+  twScene(e, c, W, H, sec, storm);
+  if (storm > 0) { ctx.fillStyle = `rgba(30,30,30,${(.35 * storm).toFixed(3)})`; ctx.fillRect(0, 0, W, H * .35); }
+  // the forecast in pieces: whole until the funnel gets to them, then sucked up, whirled round and flung away
+  const fa = twFunnel, back = [], front = [];
+  const shake = (1 - clamp((t - p1) / 1, 0, 1)) * M * .004;
+  for (const s of e.tiles) {
+    const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
+    if (s.tc === undefined && t > p0 && tx + M * .18 * (1 - cy / H * .5) > cx - s.w) s.tc = t;
+    if (s.tc === undefined) {
+      const near = clamp(1 - (cx - tx) / (W * .45), 0, 1), j = shake * (1 + near * 4);
+      ctx.drawImage(e.tex, s.x * s.r, s.y * s.r, s.w * s.r, s.h * s.r, s.x + rnd(-j, j), s.y + rnd(-j, j), s.w + .5, s.h + .5);
+      continue;
+    }
+    const u = t - s.tc;
+    if (u > s.orb + 1.6) continue;
+    let x, y, sc, ang, d;
+    const fx = clamp(tx, -W, W * 2);
+    if (u < s.orb) {   // whirled round the funnel, rising
+      const th = s.th0 + s.om * u, r = M * (.06 + .16 * Math.min(1, u / .5)) * (1 - (cy / H) * .4), lift = Math.min(1, u / s.orb);
+      x = fx + Math.cos(th) * r * 1.3; y = cy + (H * .15 - cy) * lift * s.rise * 1.6; d = Math.sin(th);
+      const k = Math.min(1, u / .35); x = cx + (x - cx) * k; y = cy + (y - cy) * k;
+      sc = .8 + .25 * d; ang = s.spin * u;
+    } else {   // flung out
+      const v = u - s.orb, th = s.th0 + s.om * s.orb, r = M * .22;
+      x = fx + Math.cos(th) * r * 1.3 - Math.sin(th) * v * W * .9 * s.out; y = cy + (H * .15 - cy) * s.rise * 1.6 - v * H * .5 * s.out + v * v * H * .15; d = 1;
+      sc = 1.05 + v * .6; ang = s.spin * u;
+    }
+    (d < 0 ? back : front).push([s, x, y, sc, ang]);
+  }
+  const draw = ([s, x, y, sc, ang]) => { ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(sc, sc); ctx.drawImage(e.tex, s.x * s.r, s.y * s.r, s.w * s.r, s.h * s.r, -s.w / 2, -s.h / 2, s.w, s.h); ctx.restore(); };
+  back.forEach(draw);
+  if (t < p1 + 1.5) {
+    fa(tx, W, H, sec, 1);
+    ctx.fillStyle = "rgba(50,50,50,.8)";   // grit whirling round it
+    for (const [a0, rr, om, sz] of e.debris) { const th = a0 + sec * om, y = H * (.1 + .8 * rr), w = M * (.03 + .26 * (1 - rr) ** 1.7) * 1.2; ctx.fillRect(tx + Math.cos(th) * w, y + Math.sin(th) * M * .02, sz, sz); }
+  }
+  front.forEach(draw);
+  ctx.restore();
+}
+
 // ---- 4. the page rolls up into a ball (stitched like a baseball) and a bat knocks it out into the night sky ----
 function sphereMesh(e, k) {
   const { V, tris } = e.mesh, D = e.D, q = ease(k), [cx, cy] = e.c, R = e.R;
@@ -5871,6 +6049,7 @@ function pageFx(e, now, dt) {
   if (e.kind === "drivein") driveIn(e, now, now / 1000);
   if (e.kind === "burn") burn(e, now, dt, now / 1000);
   if (e.kind === "rain") rain(e, now, dt, now / 1000);
+  if (e.kind === "twist") twister(e, now);
 }
 // ---- 5. end over end: the screen tumbles head over heels, stops back to front (everything backwards), struggles to turn
 //      over, falls back a couple of times, then flips the right way round ----
@@ -6217,7 +6396,7 @@ function fxFrame(now) {
     busy = true;
   }
   FX.events = FX.events.filter(e => now - e.t0 < e.dur);
-  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, pirate: 0, troller: 0, dhow: 0, galleon: 0, para: 0, helo: 0, r44: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3, liner: 3 };   // melt and freeze cover everything else; the page animations cover even them
+  const order = { kite: 0, life: 0, bite: 0, ren: 0, mariachi: 0, sub: 0, party: 0, jetski: 0, surf: 0, bass: 0, fab: 0, dolphin: 0, cg: 0, pirate: 0, troller: 0, dhow: 0, galleon: 0, para: 0, helo: 0, r44: 0, truck: 0, queen: 0, coaster: 0, ship: 0, spin: 0, rocket: 1, wipe: 1, melt: 2, freeze: 2, chaos: 2, crumple: 3, dust: 3, rock: 3, bat: 3, flip: 0, drivein: 3, burn: 3, rain: 3, liner: 3, twist: 3 };   // melt and freeze cover everything else; the page animations cover even them
   for (const e of [...FX.events].sort((a, b) => order[a.kind] - order[b.kind])) {
     const p = (now - e.t0) / e.dur;
     if (e.kind === "kite") kiteboarder(e, p, sec, P);

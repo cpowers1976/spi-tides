@@ -453,7 +453,7 @@ function reelLeft(x, y, i = 0) {  // how many digits this reel still has to turn
     return { r: 1e4 - (8 * tt + 9 * tt * tt) - x * .37 - i * 1.7, since: -1 };
   }
   const t = (performance.now() - FX.slot.t0) / 1000, W = cv.clientWidth || 1, A = REEL_A, D = REEL_D;
-  const stop = 1.9 + 2.4 * Math.min(1, Math.max(0, x / W)) + .25 * (y / (cv.clientHeight || 1)) + i * .06;
+  const stop = 3 + 4.6 * Math.min(1, Math.max(0, x / W)) + .4 * (y / (cv.clientHeight || 1)) + i * .06;   // the last ones land around 8 s
   const k = A / 3 + (stop - D - A) + D / 2;   // distance covered at a speed of 1
   const total = 10 * Math.ceil((REEL_V * k + i * 1.7) / 10), v = total / k;   // whole turns, so it starts on the real value
   const done = t < A ? v * t ** 3 / (3 * A * A)   // starts slow and speeds up
@@ -669,7 +669,7 @@ function worldFlag(spec, x, cy, h) {
   if (spec.disc) { const [c, px, r] = spec.disc; dot(x + w * px, cy, h * r, c.match(/\w\w/g).map(v => parseInt(v, 16) / 255).concat(1)); }
   if (state.light) { ctx.strokeStyle = rgba(T.sep); ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
 }
-const PLACE_T = 6.2, PLACE_A = 1.2, PLACE_D = 1.8;   // the place reel lands last, and turns slowly enough to read
+const PLACE_T = 9.4, PLACE_A = 1.2, PLACE_D = 2.2;   // the place reel lands last, and turns slowly enough to read
 function placeReel(f, top, ps, clipR) {
   const sl = FX.slot, t = (performance.now() - sl.t0) / 1000, N = sl.places.length;
   if (sl.wild) {   // haywire: whirls through the world faster and faster, never landing
@@ -1303,7 +1303,7 @@ function play(kind, opt = {}) {
   if (kind === "nums") { for (const k in NUM) delete NUM[k]; draw(); return; }
   if (kind === "slot") {
     const pool = [...WORLD].sort(() => Math.random() - .5);
-    FX.slot = { t0: now, end: now + (PLACE_T + .6) * 1000, places: pool.slice(0, 12) };
+    FX.slot = { t0: now, end: now + (PLACE_T + .6) * 1000, places: pool.slice(0, 18) };   // 10 seconds in all
     fxKick(); return;
   }
   if (kind === "wipe" && !opt.old) opt.old = snapshot();

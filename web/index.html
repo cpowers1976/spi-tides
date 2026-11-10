@@ -91,6 +91,41 @@
   #hint::before { content: ""; position: absolute; top: -8px; left: 28px; border: 8px solid transparent;
                   border-top: 0; border-bottom-color: var(--on); }
   @keyframes bob { 50% { transform: translateY(4px); } }
+
+  /* phones and Safari: no double-tap zoom or grey tap flash, and keep clear of the notch and home bar */
+  body { height: 100dvh; box-sizing: border-box;
+         padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); }
+  button, canvas, select, .row { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  #bar { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .sm { display: none; }
+  /* phone held upright: short labels, buttons share the width evenly, "Updated" gets its own line above */
+  @media (max-width: 640px) and (orientation: portrait) {
+    #bar { flex-wrap: wrap; gap: 6px; padding: 4px 8px max(10px, env(safe-area-inset-bottom)); }
+    #upd { order: -1; flex: 1 0 100%; font-size: 14px; }
+    #bar button { flex: 1 1 0; min-width: 0; min-height: 50px; padding: 6px 2px; font-size: 18px; font-weight: 600;
+                  justify-content: center; }
+    #gear, #spin { flex: 0 0 52px !important; }
+    #spin .lbl { display: none; }
+    body.rot #spin { flex: 1 1 auto !important; } body.rot #spin .lbl { display: inline; }
+    .lg { display: none; } .sm { display: inline; }
+    .panel { padding: 14px 16px 18px; font-size: 18px; max-height: calc(100dvh - 24px); }
+    .row { gap: 10px; }
+    .seg button { padding: 10px 10px; }
+    .key ol { columns: 1; }
+    #hint { font-size: 16px; padding: 8px 12px; }
+  }
+  @media (max-width: 380px) and (orientation: portrait) {
+    #bar { gap: 5px; padding-left: 6px; padding-right: 6px; }
+    #bar button { font-size: 16px; }
+    #gear, #spin { flex-basis: 44px !important; }
+  }
+  /* phone on its side: short screen, so smaller buttons */
+  @media (max-height: 500px) and (orientation: landscape) {
+    #bar { padding-top: 4px; gap: 8px; }
+    #bar button { font-size: 16px; padding: 8px 12px; min-height: 40px; }
+    #upd { font-size: 14px; }
+    .panel { max-height: calc(100dvh - 16px); }
+  }
 </style>
 </head>
 <body>
@@ -99,12 +134,12 @@
 <canvas id="fxf"></canvas>
 <canvas id="beach"></canvas>
 <div id="bar">
-  <button id="past">Past 24h</button>
+  <button id="past"><span class="lg">Past 24h</span><span class="sm">Past</span></button>
   <span id="upd"></span>
-  <button data-days="1">24 hours</button>
-  <button data-days="3">3 days</button>
-  <button data-days="5">5 days</button>
-  <button data-days="10">10 days</button>
+  <button data-days="1"><span class="lg">24 hours</span><span class="sm">24h</span></button>
+  <button data-days="3"><span class="lg">3 days</span><span class="sm">3d</span></button>
+  <button data-days="5"><span class="lg">5 days</span><span class="sm">5d</span></button>
+  <button data-days="10"><span class="lg">10 days</span><span class="sm">10d</span></button>
   <button id="spin" aria-label="Rotate forecast range" title="Rotate 24 hours, 3 days, 5 days, 10 days">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M19 2v4.2h-4.2"/><path d="M5 22v-4.2h4.2"/></svg>
     <span class="lbl"></span>
@@ -176,7 +211,7 @@
     <h3>Aircraft</h3>
     <label class="row sub"><span>Time between aircraft<small>Things that fly over the forecast. On their own timer, give or take 20%</small></span><select class="pick" data-min="airMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Paramotor<small>Buzzes in under a very colorful wing, makes a big U-turn and heads back out the way it came</small></span><span class="ctl"><button class="try" data-try="para">▶</button><input type="checkbox" class="sw" data-set="aPara"></span></label>
-    <label class="row sub"><span>Coast Guard helicopter<small>An MH-65 Dolphin on patrol. Sometimes it stops to hoist up someone who fell off a boat. If it's one of the bachelorettes (raunchy), the helicopter really struggles</small></span><span class="ctl"><button class="try" data-try="helo" data-mode="patrol">▶ Fly by</button><button class="try" data-try="helo" data-mode="rescue">▶ Rescue</button><button class="try" data-try="helo" data-mode="bride">▶ Bachelorette</button><input type="checkbox" class="sw" data-set="aHelo"></span></label>
+    <label class="row sub"><span>Coast Guard helicopter<small>An MH-65 Dolphin on patrol. When someone falls off the party pontoon or the wake surf boat, it comes and hoists them up. If it's the big girl from the bachelorette party (raunchy), the helicopter really struggles. ▶ Rescue and ▶ Bachelorette play the boat first</small></span><span class="ctl"><button class="try" data-try="helo" data-mode="patrol">▶ Fly by</button><button class="try" data-try="helo" data-mode="rescue">▶ Rescue</button><button class="try" data-try="helo" data-mode="bride">▶ Bachelorette</button><input type="checkbox" class="sw" data-set="aHelo"></span></label>
     <label class="row sub"><span>Sightseeing helicopter<small>A Robinson R44 tour goes by slowly. The tourists are taking pictures of you</small></span><span class="ctl"><button class="try" data-try="r44">▶</button><input type="checkbox" class="sw" data-set="aR44"></span></label>
     <h3>Page animations</h3>
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -658,7 +693,7 @@ function placeReel(f, top, ps, clipR) {
     if (j > N) continue;
     const y = top + dy + bounce;
     if (j === N) {   // home again
-      const tw = text(LOC.name, f * 1.2, y, ps, T.text, 0, true);
+      const tw = text(placeName(), f * 1.2, y, ps, T.text, 0, true);
       (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, y, ps * .95);
     } else {
       const [name, spec] = sl.places[j], s2 = fit(name, ps, clipR - f * 1.9 - ps * 1.6, true);
@@ -670,6 +705,8 @@ function placeReel(f, top, ps, clipR) {
 }
 
 let titleBox = null;   // where the place name is drawn, for tapping
+let PHONE = false;      // narrow portrait screen (a phone held upright): bigger text, two-line header, short place name
+const placeName = () => PHONE ? LOC.short : LOC.name;
 const SCALE = { s: .88, m: 1, l: 1.14 };
 function draw() {
   const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
@@ -679,13 +716,14 @@ function draw() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (state.anim) ctx.clearRect(0, 0, W, H);   // see-through, so the background animation layer shows
   else rect(0, 0, W, H, T.bg);
-  const f = Math.min(H / 46, W / 76) * (SCALE[state.textSize] || 1), now = new Date(), top = f * 2.1;
-  const ps = fit(LOC.name, f * 1.5, W * .3, true);
+  PHONE = W < 640 && H > W * 1.15;
+  const f = (PHONE ? Math.min(H / 46, W / 40) : Math.min(H / 46, W / 76)) * (SCALE[state.textSize] || 1), now = new Date(), top = f * 2.1;
+  const pn = placeName(), ps = fit(pn, f * 1.5, W * (PHONE ? .5 : .3), true);
   setFont(ps, true);
-  const tw = ctx.measureText(LOC.name).width, cx0 = f * 1.9 + tw + ps * 1.45 + ps * .65;
+  const tw = ctx.measureText(pn).width, cx0 = f * 1.9 + tw + ps * 1.45 + ps * .65;
   if (FX.slot) placeReel(f, top, ps, cx0 - ps * .6);   // slot machine: the place spins through the world first
   else {
-    text(LOC.name, f * 1.2, top, ps, T.text, 0, true);
+    text(pn, f * 1.2, top, ps, T.text, 0, true);
     (LOC.flag === "iowa" ? iowaFlag : texasFlag)(f * 1.9 + tw, top, ps * .95);
   }
   caret(cx0, top, ps * .55, T.gray);
@@ -721,7 +759,8 @@ function chart(W, H, f, now, top, placeEnd) {
   const L = f * 3.4, R = W - f * 3.2, pw = R - L, span = t1 - ts, bw = pw * 3600e3 / span;
   const xt = t => L + (t - ts) / span * pw;
   const hourly = n <= 50;                           // 24 hour view: show every hour
-  const step = n <= 30 ? 1 : n <= 50 ? 2 : n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
+  let step = n <= 30 ? 1 : n <= 50 ? 2 : n <= 100 ? 3 : n <= 170 ? 6 : 12;   // arrow spacing in hours
+  if (PHONE) step = [1, 2, 3, 6, 12, 24].find(h => pw / n * h >= f * 2.9) || 24;   // phone: as many as fit without touching
 
   // ---- current conditions in header ----
   // measured wind from the NOAA station when it's recent, otherwise the forecast for this hour
@@ -740,26 +779,39 @@ function chart(W, H, f, now, top, placeEnd) {
   if (wv0) extra += `   waves ${num("wave", wv0[0]).toFixed(1)} ft @ ${Math.round(num("per", wv0[1]))}s`;
   if (wt0 != null) extra += `   water ${Math.round(num("water", wt0))}°F`;
   const mphW = (setFont(f * 2.3, true), ctx.measureText(mph).width);
+  const wobble = on("aNums");   // the animation layer draws the arrow so it can wobble
+  let arrowX, hdr = 0;
+  if (PHONE) {   // phone: place and wind speed on the first line, the rest on a second line
+    const mphX = W - f * 1.2 - mphW;
+    arrowX = mphX - f * 1.4;
+    if (!wobble) arrow(arrowX, top, d0, f * 1.9, wc);
+    text(mph, mphX, top, f * 2.3, wc, 0, true);
+    if (srcTag) text(srcTag, W - f * 1.2, top + f * 1.6, f * .85, T.gray, 1);
+    hdr = f * 2.6;
+    text(extra, f * 1.2, top + f * 3.1, fit(extra, f * 1.35, W - f * 2.4, false), T.text, 0);
+  } else {
   let es = f * 1.45;
   setFont(es); let ew = ctx.measureText(extra).width;
   const need = () => f * 3.6 + mphW + f * 1.2 + ew;
   let cx = Math.max(W * .36, placeEnd + f * 1.5);
   if (cx + need() > W - f * 1.2) cx = Math.max(placeEnd + f * 1.5, W - f * 1.2 - need());
   if (cx + need() > W - f * 1.2) { es = fit(extra, es, W - f * 1.2 - cx - f * 4.8 - mphW, false); setFont(es); ew = ctx.measureText(extra).width; }
-  const wobble = on("aNums");   // the animation layer draws the arrow so it can wobble
-  if (!wobble) arrow(cx + f, top, d0, f * 1.9, wc);
+  arrowX = cx + f;
+  if (!wobble) arrow(arrowX, top, d0, f * 1.9, wc);
   let x = cx + f * 2.4;
   const mphX = x;
   x += text(mph, x, top, f * 2.3, wc, 0, true) + f * 1.2;
   if (srcTag) text(srcTag, mphX + mphW / 2, top + f * 1.6, f * .85, T.gray, .5);   // "live at the jetty 1:36p" under the speed
   text(extra, x, top, es, T.text, 0);
+  }
 
   // ---- vertical layout ----
   const fullCol = 86400e3 / (endFor(state.days) - ts) * pw;
-  const mode = fullCol > pw * .18 ? "wide" : fullCol > pw * .07 ? "mid" : "narrow";
+  const mode = PHONE ? (fullCol > f * 20 ? "wide" : fullCol > f * 7 ? "mid" : "narrow")
+                     : fullCol > pw * .18 ? "wide" : fullCol > pw * .07 ? "mid" : "narrow";
   const rh = f * 1.5, rows = mode === "wide" ? 3 : mode === "mid" ? 4 : 1;
   const h0 = state.showWx ? rh * 1.4 : rh;  // taller name row so weather icons don't touch the next line
-  const dayTop = top + f * 2.2, dayBot = dayTop + h0 + (rows - 1) * rh;
+  const dayTop = top + f * 2.2 + hdr, dayBot = dayTop + h0 + (rows - 1) * rh;
   const rowY = r => r ? dayTop + h0 + rh * (r - .5) : dayTop + h0 / 2;
   const arrowY = dayBot + f * 1.1, pctY = arrowY + f * 1.35, tempY = pctY + f * 1.2;
   const pBot = H - f * 1.7, gap = f * 2.1;  // room for hour labels and panel titles
@@ -776,7 +828,7 @@ function chart(W, H, f, now, top, placeEnd) {
   G = { W, H, f, L, R, wt, wb, top, pBot, dayBot, spd: s0, gst: g0, dir: d0,
         temp: hr.temperature_2m[inow], code: code == null ? dy.weather_code[dy.time.indexOf(isoDate(now))] : code,
         isDay: hr.is_day[inow], wave: wv0, lakeCalm: !!buoy && !wv0, tide: null,
-        arrow: wobble ? { x: cx + f, y: top, size: f * 1.9, color: wc } : null };
+        arrow: wobble ? { x: arrowX, y: top, size: f * 1.9, color: wc } : null };
 
   // day / night shading
   for (let k = 0; k < idx.length;) {
@@ -899,8 +951,14 @@ function chart(W, H, f, now, top, placeEnd) {
         if (t < ts || t > t1) continue;
         const xx = xt(t), yy = ty(v);
         dot(xx, yy, Math.max(4, f * .3), T.dot);
+        const up = typ === "H" ? -1 : 1;
+        if (PHONE) {   // narrow: time above the height (or below for lows), or just the height, or nothing when too tight
+          if (fullCol >= f * 7) { text(v.toFixed(1), xx, yy + up * f * .95, f * .9); text(short(t), xx, yy + up * f * 1.95, f * .8, T.gray); }
+          else if (fullCol >= f * 4.5) text(v.toFixed(1), xx, yy + up * f * .95, f * .9);
+          continue;
+        }
         const lbl = n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1);
-        text(lbl, xx, yy + (typ === "H" ? -f * .95 : f * .95), f * (n <= 170 ? .95 : 1));
+        text(lbl, xx, yy + up * f * .95, f * (n <= 170 ? .95 : 1));
       }
     }
   }
@@ -981,7 +1039,11 @@ function chart(W, H, f, now, top, placeEnd) {
   }
 
   // hour ticks, past dimming and "now" line
-  const tick = n <= 30 ? [...Array(24).keys()] : n <= 50 ? [0, 3, 6, 9, 12, 15, 18, 21] : n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
+  let tick = n <= 30 ? [...Array(24).keys()] : n <= 50 ? [0, 3, 6, 9, 12, 15, 18, 21] : n <= 100 ? [6, 12, 18] : n <= 170 ? [12] : [];
+  if (PHONE) {   // phone: only as many hour labels as fit
+    const every = [1, 2, 3, 6, 12].find(h => pw / n * h >= f * 3.3);
+    tick = !every ? [] : [...Array(24).keys()].filter(h => h % every === 0 && (every < 6 || h));
+  }
   hourBoxes = [];   // remembered so the first two time labels can be tapped (hidden shortcuts)
   idx.forEach((i, k) => {
     if (!tick.includes(times[i].getHours())) return;
@@ -1273,10 +1335,15 @@ function play(kind, opt = {}) {
   if (kind in AIR_DRAW) { opt.dir = Math.random() < .5 ? -1 : 1; opt.y = kind === "para" ? rnd(.5, .6) : rnd(.28, .42); }
   if (kind === "helo") {   // usually a patrol flyby; sometimes a rescue (the bachelorette one is raunchy)
     if (!opt.mode) { const r = Math.random(); opt.mode = r < .45 ? "patrol" : r < .7 && state.aRaunchy ? "bride" : "rescue"; }
+    // a rescue is for someone who really fell off a boat: the boat goes by first, and the helicopter comes for whoever went in
+    // (the party boat's big girl makes it struggle). Without raunchy ones, it's a man whose boat left without him
+    if (opt.tx == null && opt.mode !== "patrol" && (opt.tried || state.aRaunchy)) {
+      play(opt.mode === "bride" ? "party" : "surf", { mode: "fall", heli: true }); return;
+    }
     if (opt.mode !== "patrol") opt.y = rnd(.42, .5);
     opt.who = Math.random() < .5 ? 0 : 1; opt.dur = { patrol: 13000, rescue: 36000, bride: 46000 }[opt.mode];
   }
-  if (kind in CRAFT_DRAW) { opt.puke = []; opt.fall = null; opt.dir = Math.random() < .5 ? -1 : 1; }
+  if (kind in CRAFT_DRAW) { opt.puke = []; opt.fall = null; opt.handed = false; opt.dir = Math.random() < .5 ? -1 : 1; }
   if (kind === "jetski") { opt.pass = opt.pass ?? Math.random() < .5; opt.xc = rnd(.42, .58); }
   if (kind === "sub" || kind === "queen") opt.dir = Math.random() < .5 ? -1 : 1;
   if (kind === "ren" || kind === "mariachi") opt.dir = Math.random() < .5 ? -1 : 1;
@@ -2465,7 +2532,12 @@ function person(g, u, sec, ph, o = {}) {   // a cartoon person, facing you. Feet
 const partyGirl = person;
 // someone who went over the back: tumbles in, comes up waving, and is left behind in the wake (never seen again once the boat's gone)
 function overboard(e, g, u, sec, dt, now, wl, W, d, fade, cry) {
-  const F = e.fall; if (!F) return;
+  const F = e.fall; if (!F || e.handed) return;
+  // the boat's leaving: the Coast Guard helicopter comes for them (if it's switched on, or this was its ▶ Rescue)
+  if (F.wet && (now - e.t0) / e.dur >= .9 && (e.heli || state.aHelo) && F.x > u && F.x < W - u) {
+    e.handed = true;
+    play("helo", { mode: g === BIG_GIRL ? "bride" : "rescue", tx: F.x, pu: u, victim: g, wet0: F.wet }); return;
+  }
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, wl + .08 * u); ctx.clip();   // whatever's under the water doesn't show
   if (!F.wet) {
     F.vy += 900 * dt; F.x += F.vx * dt; F.y += F.vy * dt; F.a -= 4 * dt;
@@ -2475,7 +2547,12 @@ function overboard(e, g, u, sec, dt, now, wl, W, d, fade, cry) {
     if (F.y > wl + 1.2 * u) F.wet = now;   // under, then bobs back up
   } else {
     F.x -= d * 6 * dt;   // left behind in the wake
-    const t = (now - F.wet) / 1000, bob = Math.sin(t * 3) * .07 * u, x = F.x, y = wl - .1 * u + bob, hat = g.hat || g.cap;
+    treadWater(g, F.x, wl, u, (now - F.wet) / 1000, d, fade, cry);
+  }
+  ctx.restore();
+}
+function treadWater(g, x, wl, u, t, d, fade, cry) {   // just a head and waving arms above the water, the hat floating off
+  { const bob = Math.sin(t * 3) * .07 * u, y = wl - .1 * u + bob, hat = g.hat || g.cap;
     ctx.lineCap = "round";
     for (const s of [-1, 1]) {   // arms waving over the head
       const a = Math.sin(t * 5 + (s > 0 ? 0 : 1.6)) * .35;
@@ -2493,9 +2570,8 @@ function overboard(e, g, u, sec, dt, now, wl, W, d, fade, cry) {
     ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1.5;
     for (let k = 0; k < 3; k++) { const r = ((t * .8 + k / 3) % 1); ctx.globalAlpha = fade * (1 - r); ctx.beginPath(); ctx.ellipse(x, wl, (.5 + r * 1.4) * u, (.08 + r * .14) * u, 0, 0, 7); ctx.stroke(); }
     ctx.globalAlpha = fade;
-    if (t > 1.2 && t < 4) say(x, y - 1.2 * u, cry, u * .32);
+    if (cry && t > 1.2 && t < 4) say(x, y - 1.2 * u, cry, u * .32);
   }
-  ctx.restore();
 }
 function pukeDrops(e, dt, wl, now) {   // what's coming up over the rail, in screen coordinates
   e.puke = e.puke.filter(b => b.y < wl);
@@ -2537,7 +2613,7 @@ function partyPontoon(e, now, dt, sec, P) {
     }
   }
   ctx.save(); ctx.globalAlpha = fade;
-  overboard(e, PARTY_GIRLS[0], u, sec, dt, now, wl, W, d, fade, "Guys?");   // the girl who fell in, in the water behind the boat
+  overboard(e, e.mode === "fall" ? BIG_GIRL : PARTY_GIRLS[0], u, sec, dt, now, wl, W, d, fade, "Guys?");   // the girl who fell in, in the water behind the boat
   pukeDrops(e, dt, wl, now);
   ctx.save(); ctx.translate(bx, by); ctx.rotate(Math.sin(sec * 1.3 + 1) * .015); if (d < 0) ctx.scale(-1, 1);
   ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2;   // wake
@@ -2574,7 +2650,8 @@ function partyPontoon(e, now, dt, sec, P) {
   PARTY_GIRLS.forEach((g, i) => {
     if (i === 0 && e.fall) return;
     ctx.save(); ctx.translate(i === 0 ? g0.x : g.x * u, deck);
-    partyGirl(g, u, sec, i * 1.7, i === 0 ? { ...g0, d } : { d }); ctx.restore();
+    const look = e.mode !== "fall" ? g : i === 0 ? BIG_GIRL : i === 4 ? PARTY_GIRLS[0] : g;   // falls-in trips: she's at the back
+    partyGirl(look, u, sec, i * 1.7, i === 0 ? { ...g0, d } : { d }); ctx.restore();
   });
   // the rail, in front of them
   ctx.lineCap = "round";
@@ -4212,12 +4289,13 @@ function dolphinRotor(u, sec, droop) {   // four blades: a blur seen edge on, th
   pBlob(.25 * u, -3 * u, .28 * u, .14 * u, "#333");
 }
 function dolphinHelo(e, now, dt, sec, P) {
-  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = f * 2.1, p = (now - e.t0) / e.dur, d = e.dir;
+  const W = cv.clientWidth, H = cv.clientHeight, f = G ? G.f : H / 46, u = e.pu ? Math.max(f * 2.1, e.pu * .8 / .62) : f * 2.1, p = (now - e.t0) / e.dur, d = e.dir;
   const s = .62 * u, big = e.mode === "bride", rescue = e.mode !== "patrol";
+  const xc = e.tx != null ? (d > 0 ? e.tx - 2.95 * u : W - e.tx - 2.95 * u) : .4 * W;   // where it hovers: the hoist right over them
   let x0, sag = 0, hov = false;
   if (!rescue) x0 = -.25 * W + 1.5 * W * p;
   else {   // fly in, hover for the rescue, fly off
-    const xc = .4 * W, ease = q => q * q * (3 - 2 * q);
+    const ease = q => q * q * (3 - 2 * q);
     if (p < .18) x0 = -.25 * W + (xc + .25 * W) * (1 - (1 - p / .18) ** 2);
     else if (p < .72) { x0 = xc; hov = true; }
     else { const q = (p - .72) / .28; x0 = xc + 1.1 * W * q * q * (big ? .8 : 1); }
@@ -4238,14 +4316,19 @@ function dolphinHelo(e, now, dt, sec, P) {
     else if (p >= up1 && p < .72) who = "in";
     else if (p >= .72) who = "inside";
   }
-  const victim = big ? BIG_GIRL : OVERBOARD[e.who || 0];
+  const victim = e.victim || (big ? BIG_GIRL : OVERBOARD[e.who || 0]);
   // the one who fell in: bobbing and waving until they're picked up
   if (rescue && (who === "door" || who === "down")) {
-    const vx = d > 0 ? .4 * W + d * 2.95 * u : W - .4 * W + d * 2.95 * u, by = wy + Math.sin(sec * 2.2) * .08 * u;
+    const vx = d > 0 ? xc + d * 2.95 * u : W - xc + d * 2.95 * u, by = wy + Math.sin(sec * 2.2) * .08 * u;
+    if (e.victim) {   // the one who fell off the boat, still treading water where the boat left them
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, wy + .08 * u); ctx.clip(); treadWater(victim, vx, wy, s, (now - e.wet0) / 1000, -d, 1, ""); ctx.restore();
+      if (p > .02 && p < .16) say(vx, by - 1.6 * s, big ? "Help! I fell off the party boat!" : "Bro?! Anyone?! HELP!", f * .64);
+    } else {
     ctx.save(); ctx.beginPath(); ctx.rect(vx - 3 * s, by - 5 * s, 6 * s, 5 * s); ctx.clip(); ctx.translate(vx, by + 1.75 * s);
     person(victim, s, sec, 1, { arms: "up", still: true, d }); ctx.restore();
     pBlob(vx, by, 1 * s + Math.sin(sec * 6) * .1 * s, .18 * s, "rgba(255,255,255,.75)");
     if (p > .02 && p < .3) say(vx, by - 3.3 * s, big ? "Help! I fell off the party boat!" : "Help! My boat left without me!", f * .64);
+    }
   }
   // the cable and whoever's on it
   if (L > 0 || who === "water") {
@@ -4518,7 +4601,7 @@ const area2 = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (r[0] - p[0]) * (q[1]
 const fadeBack = (t, start, len) => t < start ? 1 : 1 - ease(Math.min(1, (t - start) / len));   // how much of the animation still covers the page
 
 // ---- 1. crumpled up like a piece of paper and tossed in the office wastebasket ----
-function officeArt(W, H, bk) {
+function officeArt(W, H, bk, shot) {   // shot: the forecast as it looks now, shown on the desk monitor
   const c = document.createElement("canvas"), r = window.devicePixelRatio || 1, x = c.getContext("2d"), fl = H * .7, M = Math.min(W, H);
   c.width = Math.round(W * r); c.height = Math.round(H * r); x.scale(r, r);
   let g = x.createLinearGradient(0, 0, 0, fl); g.addColorStop(0, "#e4d8bf"); g.addColorStop(1, "#cbbb98");   // wall
@@ -4561,7 +4644,12 @@ function officeArt(W, H, bk) {
   x.fillStyle = "#7a5634"; x.fillRect(dx0, dy - M * .03, dx1 - dx0, M * .035);
   x.fillStyle = "#222"; x.fillRect(W * .15, dy - M * .05, W * .08, M * .02); x.fillRect(W * .18, dy - M * .1, W * .02, M * .06);
   x.fillStyle = "#1c1c1f"; x.fillRect(W * .1, dy - M * .32, W * .18, M * .23);
-  x.fillStyle = "#2c5f8a"; x.fillRect(W * .1 + 6, dy - M * .32 + 6, W * .18 - 12, M * .23 - 12);
+  const sx = W * .1 + 6, sy = dy - M * .32 + 6, sw = W * .18 - 12, sh = M * .23 - 12;   // the screen: this forecast app, running
+  x.fillStyle = rgba(T.bg); x.fillRect(sx, sy, sw, sh);
+  if (shot) { const k = Math.min(sw / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k; x.drawImage(shot, sx + (sw - w) / 2, sy + (sh - h) / 2, w, h); }
+  g = x.createLinearGradient(sx, sy, sx + sw, sy + sh); g.addColorStop(0, "rgba(255,255,255,.16)"); g.addColorStop(.45, "rgba(255,255,255,.03)"); g.addColorStop(.46, "rgba(255,255,255,0)");
+  x.fillStyle = g; x.fillRect(sx, sy, sw, sh);   // a little glare on the glass
+  x.fillStyle = "#4ade80"; x.beginPath(); x.arc(W * .19, dy - M * .32 + M * .23 - 3, 1.5, 0, 7); x.fill();   // power light
   x.fillStyle = "#fff"; x.fillRect(W * .32, dy - M * .085, M * .05, M * .055);
   x.strokeStyle = "#fff"; x.lineWidth = 4; x.beginPath(); x.arc(W * .32 + M * .05, dy - M * .06, M * .016, -1.4, 1.4); x.stroke();
   const pl = bk.x + bk.wt * 1.05, pb = bk.bot;   // a potted plant next to the wastebasket
@@ -4620,7 +4708,7 @@ function crumple(e, now) {
       const a = Math.atan2(y - H / 2, x - W / 2) + rnd(-.7, .7), d = clamp(Math.hypot((x - W / 2) / W, (y - H / 2) / H) / .71, 0, 1), rr = R * (.25 + .8 * Math.sqrt(d)) * rnd(.75, 1.05);
       return [Math.cos(a) * rr, Math.sin(a) * rr, rnd(0, 7), d];
     });
-    e.office = officeArt(W, H, e.bk);
+    e.office = officeArt(W, H, e.bk, e.tex);
   }
   ctx.save(); ctx.globalAlpha = fadeBack(t, 5.6, 2);   // the office fades out as the page fades back in
   ctx.drawImage(e.office, 0, 0, W, H);
@@ -5449,7 +5537,7 @@ dlg.addEventListener("click", e => {
   const pg = e.target.closest("[data-page]");
   if (pg) { showPage(pg.dataset.page); return; }
   const t = e.target.closest("[data-try]");
-  if (t) { e.preventDefault(); dlg.hidden = true; showPage("main"); play(t.dataset.try, t.dataset.mode ? { mode: t.dataset.mode } : {}); return; }
+  if (t) { e.preventDefault(); dlg.hidden = true; showPage("main"); play(t.dataset.try, t.dataset.mode ? { mode: t.dataset.mode, tried: true } : { tried: true }); return; }
   const b = e.target.closest("[data-size]");
   if (b) { state.textSize = b.dataset.size; changed(); }
   const l = e.target.closest("[data-loc]");

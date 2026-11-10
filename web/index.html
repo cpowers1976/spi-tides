@@ -1360,7 +1360,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 7700, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 14800, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -4646,7 +4646,7 @@ function officeArt(W, H, bk, shot) {   // shot: the forecast as it looks now, sh
   x.fillStyle = "#1c1c1f"; x.fillRect(W * .1, dy - M * .32, W * .18, M * .23);
   const sx = W * .1 + 6, sy = dy - M * .32 + 6, sw = W * .18 - 12, sh = M * .23 - 12;   // the screen: this forecast app, running
   x.fillStyle = rgba(T.bg); x.fillRect(sx, sy, sw, sh);
-  if (shot) { const k = Math.min(sw / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k; x.drawImage(shot, sx + (sw - w) / 2, sy + (sh - h) / 2, w, h); }
+  if (shot) { const k = Math.min(sw / shot.width, sh / shot.height), w = shot.width * k, h = shot.height * k; c.scr = [sx + (sw - w) / 2, sy + (sh - h) / 2, w, h]; x.drawImage(shot, ...c.scr); }
   g = x.createLinearGradient(sx, sy, sx + sw, sy + sh); g.addColorStop(0, "rgba(255,255,255,.16)"); g.addColorStop(.45, "rgba(255,255,255,.03)"); g.addColorStop(.46, "rgba(255,255,255,0)");
   x.fillStyle = g; x.fillRect(sx, sy, sw, sh);   // a little glare on the glass
   x.fillStyle = "#4ade80"; x.beginPath(); x.arc(W * .19, dy - M * .32 + M * .23 - 3, 1.5, 0, 7); x.fill();   // power light
@@ -4708,10 +4708,18 @@ function crumple(e, now) {
       const a = Math.atan2(y - H / 2, x - W / 2) + rnd(-.7, .7), d = clamp(Math.hypot((x - W / 2) / W, (y - H / 2) / H) / .71, 0, 1), rr = R * (.25 + .8 * Math.sqrt(d)) * rnd(.75, 1.05);
       return [Math.cos(a) * rr, Math.sin(a) * rr, rnd(0, 7), d];
     });
-    e.office = officeArt(W, H, e.bk, e.tex);
+    e.office = officeArt(W, H, e.bk, e.tex); e.shot = pageSnap();
   }
-  ctx.save(); ctx.globalAlpha = fadeBack(t, 5.6, 2);   // the office fades out as the page fades back in
+  const [ix, iy, iw, ih] = e.office.scr, Z = W / iw, Q = ease(clamp((t - 5.4) / 2.6, 0, 1));   // then we zoom into the desk monitor until it is the screen again
+  if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
+  const sc = Math.exp(Math.log(Z) * Q), f = (sc - 1) / (Z - 1), mx = ix + iw / 2, my = iy + ih / 2;
+  ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
   ctx.drawImage(e.office, 0, 0, W, H);
+  if (Q > 0) {   // the monitor's picture, sharp, its glare fading as we get there
+    ctx.drawImage(e.shot, ix, iy, iw, ih);
+    const gl = ctx.createLinearGradient(ix, iy, ix + iw, iy + ih); gl.addColorStop(0, `rgba(255,255,255,${(.16 * (1 - Q)).toFixed(3)})`); gl.addColorStop(.45, "rgba(255,255,255,0)");
+    ctx.fillStyle = gl; ctx.fillRect(ix, iy, iw, ih);
+  }
   const k = clamp((t - .3) / 2.7, 0, 1);
   let tilt = 0;
   if (t > 4.95) tilt = Math.sin((t - 4.95) * 22) * .09 * Math.exp(-(t - 4.95) * 5);   // the basket rocks when it lands

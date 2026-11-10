@@ -217,7 +217,7 @@
     <label class="row sub"><span>Time between page animations<small>The whole page melts or freezes, spins, tumbles, goes haywire, gets crumpled, turned to dust, smashed or hit out of the park, burned, rained on, or sunk by an iceberg. On their own timer, give or take 20%</small></span><select class="pick" data-min="pageMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
-    <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night, where a couple is checking the forecast on a tablet</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
+    <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night, where a couple leaning on their car is checking the forecast on a tablet</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
     <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
@@ -1360,7 +1360,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 15400, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -5393,8 +5393,8 @@ function prismFace(e, c, W, H, light, k) {   // one flat face of the turning sig
   const pts = Array.from({ length: N + 1 }, (_, i) => P(i / N));
   for (let i = 0; i < N; i++) {
     const [x0, t0, b0] = pts[i], [x1, t1, b1] = pts[i + 1], s0 = i / N * W, s1 = (i + 1) / N * W;
-    texTri(e.tex, [[s0, 0], [s1, 0], [s1, H]], [[x0, t0], [x1, t1], [x1, b1]]);
-    texTri(e.tex, [[s0, 0], [s1, H], [s0, H]], [[x0, t0], [x1, b1], [x0, b0]]);
+    texTri(e.face || e.tex, [[s0, 0], [s1, 0], [s1, H]], [[x0, t0], [x1, t1], [x1, b1]]);
+    texTri(e.face || e.tex, [[s0, 0], [s1, H], [s0, H]], [[x0, t0], [x1, b1], [x0, b0]]);
   }
   const quad = () => { ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[N][0], pts[N][1]); ctx.lineTo(pts[N][0], pts[N][2]); ctx.lineTo(pts[0][0], pts[0][2]); ctx.closePath(); };
   quad(); ctx.fillStyle = `rgba(0,0,0,${((1 - Math.cos(c)) * .55).toFixed(3)})`; ctx.fill();   // darker as it turns away
@@ -5499,7 +5499,7 @@ function driveScene(e, t, W, H, light) {   // the drive-in around the sign, in s
 }
 function driveIn(e, now, sec) {
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
-  if (!e.tex) { e.tex = pageSnap(1); e.shot = pageSnap(); e.sky = nightSkyCanvas(); }
+  if (!e.tex) { e.tex = pageSnap(1); e.shot = pageSnap(); e.sky = nightSkyCanvas(); e.eatOn = eatSign(W, H, true); e.eatOff = eatSign(W, H, false); }
   const T1 = 5.5, tau = 1.5, w = 2 * Math.PI / (T1 - tau * (1 - Math.exp(-T1 / tau))), w2 = Math.PI / 5;   // gets going, once round, then on more gently
   const ang = t < T1 ? w * (t - tau * (1 - Math.exp(-t / tau))) : 2 * Math.PI + w2 * (t - T1) + (w - w2) * tau * (1 - Math.exp(-(t - T1) / tau));
   const u = ease(clamp((t - T1) / 3.5, 0, 1)), Z = Math.exp(Math.log(DI.zoom) * u);   // pulls back
@@ -5507,7 +5507,7 @@ function driveIn(e, now, sec) {
   const scene = () => {
     ctx.drawImage(e.sky, 0, 0, W, H);
     ctx.save(); ctx.translate(sx, sy); ctx.scale(Z, Z);
-    if (u > 0) driveScene(e, t, W, H, light * Z * 5);
+    if (u > 0) { driveScene(e, t, W, H, light * Z * 5); leaners(e, W, H, t); }
     const faces = [0, 1, 2].map(i => ang + i * 2 * Math.PI / 3).filter(c => Math.cos(c) > -.05).sort((a, b) => Math.cos(a) - Math.cos(b));
     const k = H * 2.2 * u;   // as we pull back we're looking up at it, so its triangular underside shows
     if (u > 0) prismCap(ang, W, H, k, light * Math.max(Z * 5, 1));
@@ -5517,45 +5517,58 @@ function driveIn(e, now, sec) {
     }
     ctx.restore();
   };
-  // then a couple, seen from behind, steps into the foreground looking at a tablet running this forecast, and we zoom slowly into it
-  const th = H * (W > H ? .26 : .34), tw = th * W / H, ix = W / 2 - tw / 2, iy = H * .56 - th / 2, rise = (1 - ease(clamp((t - 9.2) / 1.6, 0, 1))) * H * .7;
-  const Q = ease(clamp((t - 11.3) / 4, 0, 1)), Zm = W / tw;
+  // as it pulls back the sign flickers over to a blinking EAT AT LOUIS'S; a couple leaning on a parked car is checking the
+  // forecast on a tablet, and we slowly zoom into it until it's the screen again
+  const sw = t - 6.4;
+  e.face = sw < 0 ? null : sw < .6 ? (Math.floor(sw / .08) % 2 ? e.eatOn : null) : ((sw - .6) % .8 < .55 ? e.eatOn : e.eatOff);
+  const tb = DI.tab(W, H), Z0 = DI.zoom, ix = W * DI.at[0] + tb[0] * Z0, iy = H * DI.at[1] + tb[1] * Z0, tw = tb[2] * Z0, th = tb[3] * Z0;
+  const Q = ease(clamp((t - 10.6) / 5, 0, 1)), Zm = W / tw;
   if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
-  const sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = W / 2, my = iy + th / 2;
+  const sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = ix + tw / 2, my = iy + th / 2;
   ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
   scene();
-  if (t > 9.2) couple(e, ix, iy + rise, tw, th, W, H, t, Q);
   ctx.restore();
 }
-function couple(e, ix, iy, tw, th, W, H, t, Q) {
-  const r = Math.min(tw, th) * .42, cx = ix + tw / 2, by = iy + th + r * 6, b = th * .07, sway = Math.sin(t * 1.3) * r * .03;
-  const body = (x, col, rim) => {   // shoulders and back, going off the bottom
-    ctx.fillStyle = col; ctx.beginPath();
-    ctx.moveTo(x - r * 2.1, by); ctx.quadraticCurveTo(x - r * 2.1, hy + r * 1.6, x - r * .9, hy + r * 1.4);
-    ctx.lineTo(x + r * .9, hy + r * 1.4); ctx.quadraticCurveTo(x + r * 2.1, hy + r * 1.6, x + r * 2.1, by); ctx.fill();
-    ctx.strokeStyle = rim; ctx.lineWidth = r * .05; ctx.stroke();
-  };
-  const hl = ix - r * .55 + sway, hr = ix + tw + r * .6 - sway, hy = iy + th * .45;   // the two heads lean in toward the screen
-  const g = ctx.createRadialGradient(cx, iy + th / 2, th * .2, cx, iy + th / 2, tw * .9);   // the screen's glow
-  g.addColorStop(0, "rgba(140,190,255,.28)"); g.addColorStop(1, "rgba(140,190,255,0)");
-  ctx.fillStyle = g; ctx.fillRect(cx - tw, iy - th, tw * 2, th * 3);
-  ctx.fillStyle = "#0d0d10"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(ix - b, iy - b, tw + 2 * b, th + 2 * b, b * 1.4) : ctx.rect(ix - b, iy - b, tw + 2 * b, th + 2 * b); ctx.fill();
-  ctx.drawImage(e.shot, ix, iy, tw, th);
-  const gl = ctx.createLinearGradient(ix, iy, ix + tw, iy + th); gl.addColorStop(0, `rgba(255,255,255,${(.14 * (1 - Q)).toFixed(3)})`); gl.addColorStop(.45, "rgba(255,255,255,0)");
-  ctx.fillStyle = gl; ctx.fillRect(ix, iy, tw, th);
-  body(hl, "#b0303a", "rgba(255,120,200,.5)"); body(hr, "#3b5f8f", "rgba(120,240,255,.5)");
-  ctx.lineCap = "round";   // arms out to the tablet, and the hands holding its edges
-  for (const [sx, hx, col] of [[hl + r * .9, ix - b * .3, "#b0303a"], [hr - r * .9, ix + tw + b * .3, "#3b5f8f"]]) {
-    ctx.strokeStyle = col; ctx.lineWidth = r * .55; ctx.beginPath(); ctx.moveTo(sx, hy + r * 2.2); ctx.quadraticCurveTo(sx, iy + th * 1.1, hx, iy + th * .78); ctx.stroke();
-    ctx.fillStyle = "#e0ac85"; ctx.beginPath(); ctx.ellipse(hx, iy + th * .74, r * .17, r * .26, 0, 0, 7); ctx.fill();
+DI.tab = (W, H) => { const tw = W * .034; return [-W * .85 - tw / 2, H * 2.85 - W * .128, tw, tw * H / W]; };   // the tablet, in sign units: beside the blue car
+function eatSign(W, H, on) {   // the sign's new face, at the page snapshot's size (one unit a pixel)
+  const c = document.createElement("canvas"); c.width = W; c.height = H; const x = c.getContext("2d");
+  x.fillStyle = "#0b0a1a"; x.fillRect(0, 0, W, H);
+  x.strokeStyle = on ? "#ff5fa8" : "#4a2a3a"; x.lineWidth = H * .025; x.strokeRect(H * .05, H * .05, W - H * .1, H * .9);
+  x.textAlign = "center"; x.textBaseline = "middle";
+  for (const [txt, y, sz, col] of [["EAT AT", .3, .22, "#ffe46b"], ["LOUIS'S", .65, .36, "#5ff4ff"]]) {
+    x.font = `900 ${H * sz}px system-ui, Roboto, sans-serif`;
+    if (on) { x.shadowColor = col; x.shadowBlur = H * .05; x.fillStyle = col; x.fillText(txt, W / 2, H * y, W * .86); x.shadowBlur = H * .015; }
+    else { x.shadowBlur = 0; x.fillStyle = "rgba(120,120,140,.35)"; }
+    x.fillText(txt, W / 2, H * y, W * .86);
   }
-  ctx.fillStyle = "#d9a07c"; ctx.beginPath(); ctx.arc(hr + r * .92, hy + r * .05, r * .16, 0, 7); ctx.fill();   // his ear
-  ctx.fillStyle = "#3a2618"; ctx.beginPath(); ctx.arc(hl, hy, r, 0, 7); ctx.fill();   // her long hair, down over her shoulders
-  ctx.beginPath(); ctx.moveTo(hl - r * .95, hy); ctx.quadraticCurveTo(hl - r * 1.15, hy + r * 1.6, hl - r * .5, hy + r * 2.1); ctx.lineTo(hl + r * .6, hy + r * 2.1); ctx.quadraticCurveTo(hl + r * 1.1, hy + r * 1.4, hl + r * .95, hy); ctx.fill();
-  ctx.strokeStyle = "rgba(255,120,200,.45)"; ctx.lineWidth = r * .05; ctx.beginPath(); ctx.arc(hl, hy, r, Math.PI * 1.05, Math.PI * 1.6); ctx.stroke();
-  ctx.fillStyle = "#6b4a2e"; ctx.beginPath(); ctx.arc(hr, hy, r * .92, 0, 7); ctx.fill();   // his short hair
-  ctx.fillStyle = "#d9a07c"; ctx.fillRect(hr - r * .42, hy + r * .78, r * .84, r * .4);   // the back of his neck
-  ctx.strokeStyle = "rgba(120,240,255,.45)"; ctx.beginPath(); ctx.arc(hr, hy, r * .92, Math.PI * 1.4, Math.PI * 1.95); ctx.stroke();
+  return c;
+}
+function leaners(e, W, H, t) {   // a couple leaning back against the blue car, heads together over a tablet (sign units)
+  const [tx, ty, tw, th] = DI.tab(W, H), gy = H * 2.85 + W * .012, cx = tx + tw / 2, P = W * .2;   // P: how tall a person is
+  const person = (x, lean, top, pants, skin, hair, long, dir) => {
+    ctx.save(); ctx.translate(x, gy); ctx.rotate(lean);
+    ctx.fillStyle = pants; ctx.fillRect(-P * .07, -P * .48, P * .06, P * .48); ctx.fillRect(P * .01, -P * .48, P * .06, P * .48);   // legs
+    ctx.fillStyle = "#222"; ctx.fillRect(-P * .08, -P * .03, P * .08, P * .03); ctx.fillRect(P * .01, -P * .03, P * .08, P * .03);   // shoes
+    ctx.fillStyle = top; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-P * .1, -P * .84, P * .2, P * .4, P * .05) : ctx.rect(-P * .1, -P * .84, P * .2, P * .4); ctx.fill();   // body
+    ctx.fillStyle = skin; ctx.fillRect(-P * .025, -P * .89, P * .05, P * .06);   // neck
+    const hx = dir * P * .03, hy = -P * .95;   // head, tipped toward the tablet
+    if (long) { ctx.fillStyle = hair; ctx.beginPath(); ctx.ellipse(hx, hy + P * .05, P * .085, P * .12, 0, 0, 7); ctx.fill(); }
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.ellipse(hx, hy, P * .065, P * .075, dir * .25, 0, 7); ctx.fill();
+    ctx.fillStyle = hair; ctx.beginPath(); ctx.ellipse(hx, hy - P * .035, P * .07, P * .045, dir * .25, Math.PI, 0); ctx.fill();
+    ctx.restore();
+  };
+  person(cx - P * .1, -.07, "#c0303c", "#2c3550", "#e3b08a", "#3a2618", true, 1);
+  person(cx + P * .1, .07, "#3b5f8f", "#4a4a52", "#d9a07c", "#6b4a2e", false, -1);
+  const b = th * .07, hr = tw * .05, hy = ty + th + b + hr * .5, hlx = tx + tw * .1, hrx = tx + tw * .9;   // hands under its bottom corners, clear of the screen
+  ctx.lineCap = "round"; ctx.lineWidth = P * .045;   // their arms, holding the tablet up between them
+  ctx.strokeStyle = "#c0303c"; ctx.beginPath(); ctx.moveTo(cx - P * .12, gy - P * .78); ctx.quadraticCurveTo(cx - P * .1, gy - P * .5, hlx, hy); ctx.stroke();
+  ctx.strokeStyle = "#3b5f8f"; ctx.beginPath(); ctx.moveTo(cx + P * .12, gy - P * .78); ctx.quadraticCurveTo(cx + P * .1, gy - P * .5, hrx, hy); ctx.stroke();
+  const g = ctx.createRadialGradient(cx, ty + th / 2, 0, cx, ty + th / 2, tw * 1.4);   // its glow on them
+  g.addColorStop(0, "rgba(150,200,255,.3)"); g.addColorStop(1, "rgba(150,200,255,0)"); ctx.fillStyle = g; ctx.fillRect(cx - tw * 1.4, ty - th, tw * 2.8, th * 3);
+  ctx.fillStyle = "#0d0d10"; ctx.fillRect(tx - b, ty - b, tw + 2 * b, th + 2 * b);
+  ctx.drawImage(e.shot, tx, ty, tw, th);
+  ctx.fillStyle = "#e3b08a"; ctx.beginPath(); ctx.arc(hlx, hy, hr, 0, 7); ctx.fill();
+  ctx.fillStyle = "#d9a07c"; ctx.beginPath(); ctx.arc(hrx, hy, hr, 0, 7); ctx.fill();
 }
 // ---- 7. fire: a corner catches, scorches, and the flames spread until the whole screen has burned; the wave puts it out ----
 const BURN_CS = 8;   // size of the little squares the burning is worked out on

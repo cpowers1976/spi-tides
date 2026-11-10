@@ -218,7 +218,7 @@
     <label class="row sub"><span>Melt or freeze<small>80°F+ melts, under <span id="coldF">60</span>°F freezes</small></span><span class="ctl"><button class="try" data-try="melt">▶ Melt</button><button class="try" data-try="freeze">▶ Freeze</button><input type="checkbox" class="sw" data-set="aMelt"></span></label>
     <label class="row sub"><span>Screen spin<small>The whole screen spins one way or the other, speeds up, slows down and lands upside down, then turns itself the right way up</small></span><span class="ctl"><button class="try" data-try="spin">▶</button><input type="checkbox" class="sw" data-set="aSpin"></span></label>
     <label class="row sub"><span>Drive-in sign<small>Spins as one side of a three-sided sign, then pulls back to a busy neon drive-in at night, where a couple leaning on their car is checking the forecast on a tablet</small></span><span class="ctl"><button class="try" data-try="drivein">▶</button><input type="checkbox" class="sw" data-set="aDrive"></span></label>
-    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
+    <label class="row sub"><span>Haywire forecast<small>Numbers go wild for 30 s, then it blows up, and a little alien flies by with the forecast on his dashboard</small></span><span class="ctl"><button class="try" data-try="chaos">▶</button><input type="checkbox" class="sw" data-set="aChaos"></span></label>
     <label class="row sub"><span>End over end<small>Tumbles head over heels, stops backwards, struggles, then flips the right way round</small></span><span class="ctl"><button class="try" data-try="flip">▶</button><input type="checkbox" class="sw" data-set="aFlip"></span></label>
     <label class="row sub"><span>Crumple and toss<small>Crumpled up like paper and thrown in an office wastebasket</small></span><span class="ctl"><button class="try" data-try="crumple">▶</button><input type="checkbox" class="sw" data-set="aCrumple"></span></label>
     <label class="row sub"><span>Turn to dust<small>Yellows, crinkles, crumbles to dust and gets swept away</small></span><span class="ctl"><button class="try" data-try="dust">▶</button><input type="checkbox" class="sw" data-set="aDust"></span></label>
@@ -1360,7 +1360,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 32400, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 10500, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -3771,7 +3771,7 @@ function chaos(e, now) {
     return;
   }
   if (!e.snap) {   // boom: break up the wild screen, and quietly put the real data back underneath
-    e.snap = snapshot(); cv.style.transform = ""; FX.slot = null; draw(); ctx = fctx;
+    e.snap = snapshot(); cv.style.transform = ""; FX.slot = null; draw(); ctx = fctx; e.shot = pageSnap();
     const nx = 10, ny = 7, P = [], cx = W / 2, cy = H / 2;
     for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++)
       P.push([W * i / nx + (i % nx ? rnd(-.3, .3) * W / nx : 0), H * j / ny + (j % ny ? rnd(-.3, .3) * H / ny : 0)]);
@@ -3809,7 +3809,68 @@ function chaos(e, now) {
       dot(W / 2 + vx * u, H / 2 + vy * u + 200 * u * u, 2.5 * (1 - q) + .5, [1, .75 + .25 * (1 - q), .3, 1 - q]);
     }
   }
-  if (t >= 32.2 && !e.wiped) { e.wiped = 1; play("wipe", { old: e.black }); }   // after 1 s of black, the wave brings it back
+  if (u > 3.2) ufoScene(e, u - 3.2, now / 1000);   // after 2 s of black, a little alien flies by, and we zoom into the forecast on his dashboard
+}
+function ufoScene(e, v, sec) {
+  const W = innerWidth, H = innerHeight, M = Math.min(W, H), U = Math.min(W * .62, H * 1.15);
+  const p = ease(clamp(v / 6, 0, 1)), Q = ease(clamp((v - 5.6) / 4.6, 0, 1));   // glides in and settles near the far side; then the zoom
+  if (Q >= 1) { ctx.drawImage(e.shot, 0, 0, W, H); return; }
+  const bob = Math.sin(v * 2.2) * M * .02 * (1 - Q), x = -U * .6 + (W * .64 + U * .6) * p, y = H * .5 + bob, tilt = (1 - p) * .12 * Math.sin(v * 1.6) * (1 - Q);
+  const dh = Math.min(.1, .17 * H / W) * U, dw = dh * W / H, dy = -.075 * U;   // the forecast display on his dashboard, the screen's shape
+  const ix = x - dw / 2, iy = y + dy - dh / 2, Zm = W / dw, sc = Math.exp(Math.log(Zm) * Q), f = (sc - 1) / (Zm - 1), mx = ix + dw / 2, my = iy + dh / 2;
+  ctx.save(); ctx.translate(mx + (W / 2 - mx) * f - mx * sc, my + (H / 2 - my) * f - my * sc); ctx.scale(sc, sc);
+  ctx.translate(x, y); ctx.rotate(tilt);
+  const D = .34 * U;   // the glass dome
+  const glow = ctx.createRadialGradient(0, .05 * U, 0, 0, .05 * U, U * .75); glow.addColorStop(0, "rgba(120,255,200,.18)"); glow.addColorStop(1, "rgba(120,255,200,0)");
+  ctx.fillStyle = glow; ctx.fillRect(-U, -U * .7, U * 2, U * 1.4);
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.closePath(); ctx.clip();
+  ctx.fillStyle = "#13283a"; ctx.fillRect(-D, -D, 2 * D, D);   // inside the bubble
+  // the pilot: a dopey green fellow with droopy eyelids, eyes that don't agree, and one buck tooth
+  const hx = Math.sin(sec * 1.3) * U * .006, hy = -.215 * U, hr = .085 * U, G = "#7ed957";
+  ctx.strokeStyle = G; ctx.lineWidth = U * .008; ctx.lineCap = "round";
+  for (const s of [-1, 1]) { const ax = hx + s * hr * .5, w = Math.sin(sec * 3 + s) * U * .01; ctx.beginPath(); ctx.moveTo(ax, hy - hr * .8); ctx.quadraticCurveTo(ax + s * U * .03, hy - hr * 1.5, ax + s * U * .025 + w, hy - hr * 1.75); ctx.stroke(); ctx.fillStyle = "#ffe14d"; ctx.beginPath(); ctx.arc(ax + s * U * .025 + w, hy - hr * 1.75, U * .012, 0, 7); ctx.fill(); }
+  ctx.fillStyle = G; ctx.fillRect(hx - hr * .9, hy, hr * 1.8, U * .2);   // shoulders down behind the dashboard
+  ctx.beginPath(); ctx.ellipse(hx, hy, hr * 1.05, hr, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#5fb33d"; ctx.beginPath(); ctx.ellipse(hx - hr * .35, hy - hr * .55, hr * .25, hr * .12, -.4, 0, 7); ctx.fill();   // a spot
+  for (const [ex, ey, er, lx, ly] of [[-.4, -.1, .33, .25, .35], [.38, -.05, .26, -.3, -.2]]) {   // the eyes, looking two different ways
+    const X = hx + ex * hr, Y = hy + ey * hr, r = er * hr;
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(X, Y, r, 0, 7); ctx.fill();
+    ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(X + lx * r, Y + ly * r, r * .38, 0, 7); ctx.fill();
+    ctx.fillStyle = "#6cc24a"; ctx.beginPath(); ctx.arc(X, Y, r * 1.05, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(X, Y - r * .1); ctx.fill();   // droopy eyelid
+  }
+  ctx.strokeStyle = "#2f5a1f"; ctx.lineWidth = U * .006; ctx.beginPath(); ctx.arc(hx + hr * .05, hy + hr * .35, hr * .45, .25, Math.PI - .5); ctx.stroke();   // a goofy grin
+  ctx.fillStyle = "#fff"; ctx.fillRect(hx + hr * .05, hy + hr * .76, hr * .14, hr * .16);   // buck tooth
+  // the dashboard: cartoon screens and buttons, and in the middle, the forecast
+  ctx.fillStyle = "#2b3440"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-D * .92, -.14 * U, D * 1.84, .15 * U, U * .02) : ctx.rect(-D * .92, -.14 * U, D * 1.84, .15 * U); ctx.fill();
+  ctx.fillStyle = G; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(s * U * .12, -.14 * U, U * .022, U * .014, 0, 0, 7); ctx.fill(); }   // his hands on the dash
+  const scr = (cx, w, h) => { ctx.fillStyle = "#050a0f"; ctx.fillRect(cx - w / 2, dy - h / 2, w, h); };
+  const L = -.2 * U, Rr = .2 * U, sw = .07 * U, s2 = sw / 2;
+  scr(L, sw, sw); ctx.strokeStyle = "#3f6"; ctx.lineWidth = U * .003;   // radar with a sweep and a blip
+  ctx.beginPath(); ctx.arc(L, dy, s2 * .8, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(L, dy, s2 * .4, 0, 7); ctx.stroke();
+  const sa = sec * 3; ctx.beginPath(); ctx.moveTo(L, dy); ctx.lineTo(L + Math.cos(sa) * s2 * .8, dy + Math.sin(sa) * s2 * .8); ctx.stroke();
+  ctx.fillStyle = "#3f6"; ctx.beginPath(); ctx.arc(L + s2 * .35, dy - s2 * .3, U * .004, 0, 7); ctx.fill();
+  scr(Rr, sw, sw);   // bouncing bars and a wiggly line
+  for (let i = 0; i < 5; i++) { const bh = (.3 + .6 * Math.abs(Math.sin(sec * 4 + i * 1.3))) * sw * .5; ctx.fillStyle = ["#f5c542", "#ff5f8f", "#4fd3ff", "#8f6", "#c9f"][i]; ctx.fillRect(Rr - s2 * .8 + i * sw * .17, dy + s2 * .1 - bh, sw * .11, bh); }
+  ctx.strokeStyle = "#4fd3ff"; ctx.beginPath(); for (let i = 0; i <= 20; i++) ctx.lineTo(Rr - s2 * .85 + i * sw * .085, dy + s2 * .5 + Math.sin(sec * 6 + i * .7) * s2 * .15); ctx.stroke();
+  for (let i = 0; i < 9; i++) { ctx.fillStyle = (Math.floor(sec * 4) + i) % 3 ? "#7a2030" : "#ff4060"; if (i % 3 === 1) ctx.fillStyle = (Math.floor(sec * 3) + i) % 2 ? "#225" : "#6af"; ctx.beginPath(); ctx.arc(-D * .75 + i * D * .19, -.02 * U, U * .007, 0, 7); ctx.fill(); }   // blinky buttons
+  ctx.fillStyle = "#0b0b0e"; const b = dh * .06; ctx.fillRect(-dw / 2 - b, dy - dh / 2 - b, dw + 2 * b, dh + 2 * b);
+  ctx.drawImage(e.shot, -dw / 2, dy - dh / 2, dw, dh);
+  ctx.restore();
+  // the saucer under the bubble, its rim lights chasing round
+  const body = ctx.createLinearGradient(0, -.03 * U, 0, .14 * U); body.addColorStop(0, "#e9eef3"); body.addColorStop(.45, "#9aa7b4"); body.addColorStop(1, "#4b5560");
+  ctx.fillStyle = "#3b434c"; ctx.beginPath(); ctx.ellipse(0, .1 * U, .3 * U, .05 * U, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = body; ctx.beginPath(); ctx.ellipse(0, .055 * U, .5 * U, .075 * U, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#c7d0d9"; ctx.fillRect(-D, -.005 * U, 2 * D, .02 * U);
+  for (let i = 0; i < 12; i++) { const a = (i / 11 - .5) * 2.6, lx = Math.sin(a) * .45 * U, ly = .06 * U + Math.cos(a) * .028 * U, on = (i + Math.floor(sec * 8)) % 4 === 0;
+    ctx.fillStyle = on ? "#fffbe0" : ["#ff5f8f", "#4fd3ff", "#f5c542"][i % 3]; ctx.beginPath(); ctx.arc(lx, ly, U * (on ? .013 : .009), 0, 7); ctx.fill(); }
+  ctx.save(); ctx.globalAlpha = 1 - Q;   // the glass: a light tint and a shine, gone as we go through it
+  ctx.fillStyle = "rgba(170,230,255,.12)"; ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(210,245,255,.7)"; ctx.lineWidth = U * .006; ctx.beginPath(); ctx.arc(0, 0, D, Math.PI, 0); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = U * .014; ctx.beginPath(); ctx.arc(0, 0, D * .86, Math.PI * 1.15, Math.PI * 1.4); ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = "#9aa7b4"; ctx.fillRect(-U * .004, -D - U * .05, U * .008, U * .05);   // antenna on top, blinking
+  ctx.fillStyle = Math.floor(sec * 2) % 2 ? "#ff4060" : "#601020"; ctx.beginPath(); ctx.arc(0, -D - U * .055, U * .014, 0, 7); ctx.fill();
+  ctx.restore();
 }
 // ---- big boats: one huge, faint vessel at a time slides by behind everything, as tall as the screen. Each is drawn
 //      once at full strength with the waterline along the bottom and the bow pointing right (b.mir flips it to go left,

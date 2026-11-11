@@ -996,10 +996,22 @@ function chart(W, H, f, now, top, placeEnd) {
   // ---- wave chart: height (filled, left axis ft), period (right axis sec), water temp (labelled line) ----
   if (box.wave && !buoy) {
     const [vt, vb] = box.wave;
-    const tw1 = title("wave height ft", L, vt, T.wave);
-    const tw2 = title("water °F", L + tw1 + f * 1.5, vt, T.water);
-    title("air °F", L + tw1 + tw2 + f * 3, vt, T.air);
-    title("period sec", R, vt, T.period, 1);
+    // legend: one row above the chart, a little sample of each line next to its name, spread evenly across
+    const legend = [["wave height ft", T.wave, "fill"], ["period sec", T.period, []], ["water °F", T.water, [6, 4]], ["air °F", T.air, []]];
+    const sw = f * 1.8, sg = f * .45, ly = vt - f * 1.0;
+    let lsz = f * 1.05;
+    setFont(lsz);
+    const lw = () => legend.map(([s]) => sw + sg + ctx.measureText(s).width);
+    let ws = lw(), room = R - L - f * 1.5 * (legend.length - 1);
+    if (ws.reduce((a, b) => a + b) > room) { lsz *= Math.max(.7, room / ws.reduce((a, b) => a + b)); setFont(lsz); ws = lw(); }
+    const space = (R - L - ws.reduce((a, b) => a + b)) / legend.length;
+    let lx = L + space / 2;
+    legend.forEach(([s, c, how], k) => {
+      if (how === "fill") { rect(lx, ly - f * .4, sw, f * .8, T.wave_fill); line([lx, ly - f * .4, lx + sw, ly - f * .4], c, 2.5); }
+      else line([lx, ly, lx + sw, ly], c, 2.5, how);
+      text(s, lx + sw + sg, ly, lsz, c, 0);
+      lx += ws[k] + space;
+    });
     const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
     if (wv.length) {
       const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));

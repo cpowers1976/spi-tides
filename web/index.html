@@ -257,7 +257,7 @@ const DARK = {
   day: [.55,.7,.95,.16], night: [0,0,0,.45], past: [0,0,0,.3], gust: [1,1,1,.5], now: [1,1,1,.85],
   dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1],
   wave_fill: [.2,.8,.75,.3], wave: [.35,.9,.85,1], period: [.95,.6,.95,1], rain: [.45,.72,1,1],
-  water: [1,.62,.3,1],
+  water: [1,.62,.3,1], air: [1,.42,.55,1],
   moon: [.96,.94,.82,1], moon_dark: [.22,.25,.32,1],
   light: [.4,.48,.6,1], breezy: [.98,.8,.3,1], kite: [.29,.87,.5,1], strong: [.97,.45,.3,1],
   btn: [.16,.2,.27,1], btntext: [1,1,1,1] };
@@ -266,7 +266,7 @@ const LIGHT = {
   day: [1,.9,.5,.3], night: [.25,.3,.45,.18], past: [1,1,1,.45], gust: [0,0,0,.45], now: [.1,.1,.1,.8],
   dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1],
   wave_fill: [.1,.6,.55,.25], wave: [.05,.5,.45,1], period: [.6,.2,.6,1], rain: [.1,.4,.8,1],
-  water: [.85,.4,.05,1],
+  water: [.85,.4,.05,1], air: [.8,.12,.3,1],
   moon: [.98,.82,.3,1], moon_dark: [.3,.33,.4,1],
   light: [.55,.6,.68,1], breezy: [.9,.62,.05,1], kite: [.1,.65,.3,1], strong: [.88,.3,.15,1],
   btn: [.85,.87,.9,1], btntext: [.1,.12,.16,1] };
@@ -819,6 +819,7 @@ function chart(W, H, f, now, top, placeEnd) {
   if (state.showTides && LOC.station) panels.push(["tide", 1]);   // lakes have no tides
   const buoyOut = buoy && !(buoy.live && (buoy.waveFt != null || buoy.waterF != null));
   if (state.showWaves) panels.push(["wave", buoyOut ? .22 : buoy ? .4 : 1]);   // buoy out: short strip
+  if (LOC.buoy) panels.push(["air", .8]);   // lakes: forecast air temp gets its own chart (the sea has it on the wave chart)
   let y = (hourly ? tempY : pctY) + f * .9;
   const totW = panels.reduce((a, p) => a + p[1], 0), avail = pBot - y - gap * panels.length;
   const box = {};
@@ -982,23 +983,50 @@ function chart(W, H, f, now, top, placeEnd) {
     } else {
       rect(L, vt, pw, vb - vt, [...T.gray.slice(0, 3), .12]);
       const why = buoy.time
-        ? `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`
+        ? (PHONE ? `Buoy out (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; taken out for winter)`
+                 : `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`)
         : "Buoy data not available (couldn't reach the lake buoy)";
       let x = L + f;
+      const src = buoy.lake ? `LakeMonster, ${buoy.lake.updated}` : "";
+      setFont(f * 1.2, true);
+      const ww = buoy.lake ? ctx.measureText(`water ${Math.round(buoy.lake.waterF)}°F`).width + f * .6 : 0;
+      setFont(f * .9);
+      const sw2 = buoy.lake ? ctx.measureText(src).width + f * 2 : 0;
+      setFont(f * 1.0);
+      const oneLine = ctx.measureText(why).width <= R - f - (x + ww + sw2);
+      const y1 = oneLine || !buoy.lake ? my : my - f * .75, y2 = oneLine || !buoy.lake ? my : my + f * .75;
       if (buoy.lake) {   // backup water temp
-        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, my, f * 1.2, T.water, 0, true) + f * .6;
-        x += text(`LakeMonster, ${buoy.lake.updated}`, x, my, f * .9, T.gray, 0) + f * 2;
+        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, y1, f * 1.2, T.water, 0, true) + f * .6;
+        x += text(src, x, y1, fit(src, f * .9, R - f - x), T.gray, 0) + f * 2;
       }
-      text(why, x, my, fit(why, f * 1.0, R - f - x), T.gray, 0);
+      if (!oneLine && buoy.lake) x = L + f;   // not enough room: the note goes on its own line underneath
+      text(why, x, y2, fit(why, f * 1.0, R - f - x), T.gray, 0);
     }
   }
 
   // ---- wave chart: height (filled, left axis ft), period (right axis sec), water temp (labelled line) ----
   if (box.wave && !buoy) {
     const [vt, vb] = box.wave;
-    const tw1 = title("wave height ft", L, vt, T.wave);
-    title("water °F", L + tw1 + f * 1.5, vt, T.water);
-    title("period sec", R, vt, T.period, 1);
+    // legend row above the chart: wave height over the left axis, period over the right axis,
+    // water and air temp in the middle; each name has a little sample of its line
+    const legend = [["wave height ft", T.wave, "fill"], ["water °F", T.water, [6, 4]], ["air °F", T.air, []], ["wave period sec", T.period, []]];
+    const sw = f * 1.8, sg = f * .45, ly = vt - f * 1.0;
+    let lsz = f * 1.05;
+    setFont(lsz);
+    const lw = () => legend.map(([s]) => sw + sg + ctx.measureText(s).width);
+    let ws = lw(), room = R - L - f * 1.5 * (legend.length - 1);
+    if (ws.reduce((a, b) => a + b) > room) { lsz *= Math.max(.7, room / ws.reduce((a, b) => a + b)); setFont(lsz); ws = lw(); }
+    const swatch = (x, c, how) => {
+      if (how === "fill") { rect(x, ly - f * .4, sw, f * .8, T.wave_fill); line([x, ly - f * .4, x + sw, ly - f * .4], c, 2.5); }
+      else line([x, ly, x + sw, ly], c, 2.5, how);
+    };
+    const item = (k, x) => { const [s, c, how] = legend[k]; swatch(x, c, how); text(s, x + sw + sg, ly, lsz, c, 0); };
+    item(0, L);                                   // left: wave height (left axis)
+    const pw3 = R - ws[3];                        // right: period (right axis), name ends at the right edge
+    item(3, pw3);
+    const midL = L + ws[0], midR = pw3, gapM = f * 2;   // middle: water and air, centered in what's left
+    let mx = (midL + midR - (ws[1] + gapM + ws[2])) / 2;
+    item(1, mx); item(2, mx + ws[1] + gapM);
     const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
     if (wv.length) {
       const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));
@@ -1022,21 +1050,63 @@ function chart(W, H, f, now, top, placeEnd) {
     } else {
       text("Wave data unavailable", (L + R) / 2, (vb + vt) / 2, f, T.gray);
     }
-    // water temp: own scale in the upper part of the panel, values written on the line
+    // water and forecast air temp: one shared scale in the upper part of the panel, values written on the lines
     const wtp = idx.filter(i => water.has(hr.time[i])).map(i => [times[i], water.get(hr.time[i])]);
-    if (wtp.length) {
-      const vs = wtp.map(v => v[1]), lo = Math.min(...vs) - 1, hi = Math.max(...vs) + 1;
-      const top2 = vt + (vb - vt) * .12, bot2 = vt + (vb - vt) * .55;
+    const atp = idx.filter(i => hr.temperature_2m[i] != null).map(i => [times[i], hr.temperature_2m[i]]);
+    if (wtp.length || atp.length) {
+      const vs = [...wtp, ...atp].map(v => v[1]), lo = Math.min(...vs) - 1, hi = Math.max(...vs) + 1;
+      const top2 = vt + (vb - vt) * .14, bot2 = vt + (vb - vt) * .6;
       const wy2 = v => bot2 - (v - lo) / (hi - lo) * (bot2 - top2);
-      const pl = wtp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]);
-      line(pl, T.water, 2.5, [8, 5]);
+      const wAt = new Map(wtp.map(([t, v]) => [+t, v])), aAt = new Map(atp.map(([t, v]) => [+t, v]));
+      if (atp.length) line(atp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]), T.air, 2.5);
+      if (wtp.length) line(wtp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]), T.water, 2.5, [8, 5]);
+      // label the first point and each noon, if there is room; the higher line gets its label above, the lower one below
+      const labels = (pts, col, other) => {
+        let lx = -1e9;
+        pts.forEach(([t, v], k) => {
+          const xx = xt(t) + bw / 2;
+          if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
+          const o = other.get(+t), below = o != null && o > v;
+          text(`${Math.round(v)}°`, k ? xx : xx + f * .3, wy2(v) + (below ? f * .8 : -f * .8), f * .95, col, k ? .5 : 0, true);
+          lx = xx;
+        });
+      };
+      labels(atp, T.air, wAt);
+      labels(wtp, T.water, aAt);
+    }
+  }
+
+  // ---- lake: forecast air temp chart, values written on the line ----
+  if (box.air) {
+    const [vt, vb] = box.air;
+    const sw = f * 1.8, ly = vt - f * 1.0;
+    line([L, ly, L + sw, ly], T.air, 2.5);
+    text("air °F", L + sw + f * .45, ly, f * 1.05, T.air, 0);
+    const atp = idx.filter(i => hr.temperature_2m[i] != null).map(i => [times[i], hr.temperature_2m[i]]);
+    if (atp.length) {
+      const vs = atp.map(v => v[1]), step = Math.max(...vs) - Math.min(...vs) > 30 ? 10 : 5;
+      const lo = Math.floor((Math.min(...vs) - 1) / step) * step, hi = Math.ceil((Math.max(...vs) + 1) / step) * step;
+      const top2 = vt + f * 1.4, bot2 = vb - f * .4;
+      const ay = v => bot2 - (v - lo) / (hi - lo) * (bot2 - top2);
+      for (let v = lo; v <= hi; v += step) {
+        line([L, ay(v), R, ay(v)], T.grid, 1);
+        yLab(v, ay(v), vt, T.air);
+      }
+      if (lo < 32 && hi > 32) {   // freezing
+        line([L, ay(32), R, ay(32)], [...T.rain.slice(0, 3), .7], 1.2, [4, 4]);
+        text("freezing", R - f * .3, ay(32) + f * .7, f * .85, T.rain, 1);
+      }
+      axis(vt, vb);
+      line(atp.flatMap(([t, v]) => [xt(t) + bw / 2, ay(v)]), T.air, 2.5);
       let lx = -1e9;   // label the first point and each noon, if there is room
-      wtp.forEach(([t, v], k) => {
+      atp.forEach(([t, v], k) => {
         const xx = xt(t) + bw / 2;
         if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
-        text(`${Math.round(v)}°`, k ? xx : xx + f * .3, wy2(v) - f * .8, f * .95, T.water, k ? .5 : 0, true);
+        text(`${Math.round(v)}°`, k ? xx : xx + f * .3, ay(v) - f * .8, f * .95, T.air, k ? .5 : 0, true);
         lx = xx;
       });
+    } else {
+      text("Air temp forecast unavailable", (L + R) / 2, (vb + vt) / 2, f, T.gray);
     }
   }
 

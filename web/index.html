@@ -257,7 +257,7 @@ const DARK = {
   day: [.55,.7,.95,.16], night: [0,0,0,.45], past: [0,0,0,.3], gust: [1,1,1,.5], now: [1,1,1,.85],
   dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1],
   wave_fill: [.2,.8,.75,.3], wave: [.35,.9,.85,1], period: [.95,.6,.95,1], rain: [.45,.72,1,1],
-  water: [1,.62,.3,1],
+  water: [1,.62,.3,1], air: [1,.42,.55,1],
   moon: [.96,.94,.82,1], moon_dark: [.22,.25,.32,1],
   light: [.4,.48,.6,1], breezy: [.98,.8,.3,1], kite: [.29,.87,.5,1], strong: [.97,.45,.3,1],
   btn: [.16,.2,.27,1], btntext: [1,1,1,1] };
@@ -266,7 +266,7 @@ const LIGHT = {
   day: [1,.9,.5,.3], night: [.25,.3,.45,.18], past: [1,1,1,.45], gust: [0,0,0,.45], now: [.1,.1,.1,.8],
   dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1],
   wave_fill: [.1,.6,.55,.25], wave: [.05,.5,.45,1], period: [.6,.2,.6,1], rain: [.1,.4,.8,1],
-  water: [.85,.4,.05,1],
+  water: [.85,.4,.05,1], air: [.8,.12,.3,1],
   moon: [.98,.82,.3,1], moon_dark: [.3,.33,.4,1],
   light: [.55,.6,.68,1], breezy: [.9,.62,.05,1], kite: [.1,.65,.3,1], strong: [.88,.3,.15,1],
   btn: [.85,.87,.9,1], btntext: [.1,.12,.16,1] };
@@ -997,7 +997,8 @@ function chart(W, H, f, now, top, placeEnd) {
   if (box.wave && !buoy) {
     const [vt, vb] = box.wave;
     const tw1 = title("wave height ft", L, vt, T.wave);
-    title("water °F", L + tw1 + f * 1.5, vt, T.water);
+    const tw2 = title("water °F", L + tw1 + f * 1.5, vt, T.water);
+    title("air °F", L + tw1 + tw2 + f * 3, vt, T.air);
     title("period sec", R, vt, T.period, 1);
     const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
     if (wv.length) {
@@ -1022,21 +1023,29 @@ function chart(W, H, f, now, top, placeEnd) {
     } else {
       text("Wave data unavailable", (L + R) / 2, (vb + vt) / 2, f, T.gray);
     }
-    // water temp: own scale in the upper part of the panel, values written on the line
+    // water and forecast air temp: one shared scale in the upper part of the panel, values written on the lines
     const wtp = idx.filter(i => water.has(hr.time[i])).map(i => [times[i], water.get(hr.time[i])]);
-    if (wtp.length) {
-      const vs = wtp.map(v => v[1]), lo = Math.min(...vs) - 1, hi = Math.max(...vs) + 1;
-      const top2 = vt + (vb - vt) * .12, bot2 = vt + (vb - vt) * .55;
+    const atp = idx.filter(i => hr.temperature_2m[i] != null).map(i => [times[i], hr.temperature_2m[i]]);
+    if (wtp.length || atp.length) {
+      const vs = [...wtp, ...atp].map(v => v[1]), lo = Math.min(...vs) - 1, hi = Math.max(...vs) + 1;
+      const top2 = vt + (vb - vt) * .14, bot2 = vt + (vb - vt) * .6;
       const wy2 = v => bot2 - (v - lo) / (hi - lo) * (bot2 - top2);
-      const pl = wtp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]);
-      line(pl, T.water, 2.5, [8, 5]);
-      let lx = -1e9;   // label the first point and each noon, if there is room
-      wtp.forEach(([t, v], k) => {
-        const xx = xt(t) + bw / 2;
-        if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
-        text(`${Math.round(v)}°`, k ? xx : xx + f * .3, wy2(v) - f * .8, f * .95, T.water, k ? .5 : 0, true);
-        lx = xx;
-      });
+      const wAt = new Map(wtp.map(([t, v]) => [+t, v])), aAt = new Map(atp.map(([t, v]) => [+t, v]));
+      if (atp.length) line(atp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]), T.air, 2.5);
+      if (wtp.length) line(wtp.flatMap(([t, v]) => [xt(t) + bw / 2, wy2(v)]), T.water, 2.5, [8, 5]);
+      // label the first point and each noon, if there is room; the higher line gets its label above, the lower one below
+      const labels = (pts, col, other) => {
+        let lx = -1e9;
+        pts.forEach(([t, v], k) => {
+          const xx = xt(t) + bw / 2;
+          if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
+          const o = other.get(+t), below = o != null && o > v;
+          text(`${Math.round(v)}°`, k ? xx : xx + f * .3, wy2(v) + (below ? f * .8 : -f * .8), f * .95, col, k ? .5 : 0, true);
+          lx = xx;
+        });
+      };
+      labels(atp, T.air, wAt);
+      labels(wtp, T.water, aAt);
     }
   }
 

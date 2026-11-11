@@ -819,6 +819,7 @@ function chart(W, H, f, now, top, placeEnd) {
   if (state.showTides && LOC.station) panels.push(["tide", 1]);   // lakes have no tides
   const buoyOut = buoy && !(buoy.live && (buoy.waveFt != null || buoy.waterF != null));
   if (state.showWaves) panels.push(["wave", buoyOut ? .22 : buoy ? .4 : 1]);   // buoy out: short strip
+  if (LOC.buoy) panels.push(["air", .8]);   // lakes: forecast air temp gets its own chart (the sea has it on the wave chart)
   let y = (hourly ? tempY : pctY) + f * .9;
   const totW = panels.reduce((a, p) => a + p[1], 0), avail = pBot - y - gap * panels.length;
   const box = {};
@@ -1062,6 +1063,40 @@ function chart(W, H, f, now, top, placeEnd) {
       };
       labels(atp, T.air, wAt);
       labels(wtp, T.water, aAt);
+    }
+  }
+
+  // ---- lake: forecast air temp chart, values written on the line ----
+  if (box.air) {
+    const [vt, vb] = box.air;
+    const sw = f * 1.8, ly = vt - f * 1.0;
+    line([L, ly, L + sw, ly], T.air, 2.5);
+    text("air °F", L + sw + f * .45, ly, f * 1.05, T.air, 0);
+    const atp = idx.filter(i => hr.temperature_2m[i] != null).map(i => [times[i], hr.temperature_2m[i]]);
+    if (atp.length) {
+      const vs = atp.map(v => v[1]), step = Math.max(...vs) - Math.min(...vs) > 30 ? 10 : 5;
+      const lo = Math.floor((Math.min(...vs) - 1) / step) * step, hi = Math.ceil((Math.max(...vs) + 1) / step) * step;
+      const top2 = vt + f * 1.4, bot2 = vb - f * .4;
+      const ay = v => bot2 - (v - lo) / (hi - lo) * (bot2 - top2);
+      for (let v = lo; v <= hi; v += step) {
+        line([L, ay(v), R, ay(v)], T.grid, 1);
+        yLab(v, ay(v), vt, T.air);
+      }
+      if (lo < 32 && hi > 32) {   // freezing
+        line([L, ay(32), R, ay(32)], [...T.rain.slice(0, 3), .7], 1.2, [4, 4]);
+        text("freezing", R - f * .3, ay(32) + f * .7, f * .85, T.rain, 1);
+      }
+      axis(vt, vb);
+      line(atp.flatMap(([t, v]) => [xt(t) + bw / 2, ay(v)]), T.air, 2.5);
+      let lx = -1e9;   // label the first point and each noon, if there is room
+      atp.forEach(([t, v], k) => {
+        const xx = xt(t) + bw / 2;
+        if ((k && t.getHours() !== 12) || xx - lx < f * 3.5) return;
+        text(`${Math.round(v)}°`, k ? xx : xx + f * .3, ay(v) - f * .8, f * .95, T.air, k ? .5 : 0, true);
+        lx = xx;
+      });
+    } else {
+      text("Air temp forecast unavailable", (L + R) / 2, (vb + vt) / 2, f, T.gray);
     }
   }
 

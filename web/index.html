@@ -983,14 +983,24 @@ function chart(W, H, f, now, top, placeEnd) {
     } else {
       rect(L, vt, pw, vb - vt, [...T.gray.slice(0, 3), .12]);
       const why = buoy.time
-        ? `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`
+        ? (PHONE ? `Buoy out (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; taken out for winter)`
+                 : `Buoy data not available (last report ${buoy.time.toLocaleDateString("en-US", { month: "short", day: "numeric" })}; it's taken out for winter)`)
         : "Buoy data not available (couldn't reach the lake buoy)";
       let x = L + f;
+      const src = buoy.lake ? `LakeMonster, ${buoy.lake.updated}` : "";
+      setFont(f * 1.2, true);
+      const ww = buoy.lake ? ctx.measureText(`water ${Math.round(buoy.lake.waterF)}°F`).width + f * .6 : 0;
+      setFont(f * .9);
+      const sw2 = buoy.lake ? ctx.measureText(src).width + f * 2 : 0;
+      setFont(f * 1.0);
+      const oneLine = ctx.measureText(why).width <= R - f - (x + ww + sw2);
+      const y1 = oneLine || !buoy.lake ? my : my - f * .75, y2 = oneLine || !buoy.lake ? my : my + f * .75;
       if (buoy.lake) {   // backup water temp
-        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, my, f * 1.2, T.water, 0, true) + f * .6;
-        x += text(`LakeMonster, ${buoy.lake.updated}`, x, my, f * .9, T.gray, 0) + f * 2;
+        x += text(`water ${Math.round(buoy.lake.waterF)}°F`, x, y1, f * 1.2, T.water, 0, true) + f * .6;
+        x += text(src, x, y1, fit(src, f * .9, R - f - x), T.gray, 0) + f * 2;
       }
-      text(why, x, my, fit(why, f * 1.0, R - f - x), T.gray, 0);
+      if (!oneLine && buoy.lake) x = L + f;   // not enough room: the note goes on its own line underneath
+      text(why, x, y2, fit(why, f * 1.0, R - f - x), T.gray, 0);
     }
   }
 

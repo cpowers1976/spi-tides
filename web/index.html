@@ -996,22 +996,26 @@ function chart(W, H, f, now, top, placeEnd) {
   // ---- wave chart: height (filled, left axis ft), period (right axis sec), water temp (labelled line) ----
   if (box.wave && !buoy) {
     const [vt, vb] = box.wave;
-    // legend: one row above the chart, a little sample of each line next to its name, spread evenly across
-    const legend = [["wave height ft", T.wave, "fill"], ["period sec", T.period, []], ["water °F", T.water, [6, 4]], ["air °F", T.air, []]];
+    // legend row above the chart: wave height over the left axis, period over the right axis,
+    // water and air temp in the middle; each name has a little sample of its line
+    const legend = [["wave height ft", T.wave, "fill"], ["water °F", T.water, [6, 4]], ["air °F", T.air, []], ["wave period sec", T.period, []]];
     const sw = f * 1.8, sg = f * .45, ly = vt - f * 1.0;
     let lsz = f * 1.05;
     setFont(lsz);
     const lw = () => legend.map(([s]) => sw + sg + ctx.measureText(s).width);
     let ws = lw(), room = R - L - f * 1.5 * (legend.length - 1);
     if (ws.reduce((a, b) => a + b) > room) { lsz *= Math.max(.7, room / ws.reduce((a, b) => a + b)); setFont(lsz); ws = lw(); }
-    const space = (R - L - ws.reduce((a, b) => a + b)) / legend.length;
-    let lx = L + space / 2;
-    legend.forEach(([s, c, how], k) => {
-      if (how === "fill") { rect(lx, ly - f * .4, sw, f * .8, T.wave_fill); line([lx, ly - f * .4, lx + sw, ly - f * .4], c, 2.5); }
-      else line([lx, ly, lx + sw, ly], c, 2.5, how);
-      text(s, lx + sw + sg, ly, lsz, c, 0);
-      lx += ws[k] + space;
-    });
+    const swatch = (x, c, how) => {
+      if (how === "fill") { rect(x, ly - f * .4, sw, f * .8, T.wave_fill); line([x, ly - f * .4, x + sw, ly - f * .4], c, 2.5); }
+      else line([x, ly, x + sw, ly], c, 2.5, how);
+    };
+    const item = (k, x) => { const [s, c, how] = legend[k]; swatch(x, c, how); text(s, x + sw + sg, ly, lsz, c, 0); };
+    item(0, L);                                   // left: wave height (left axis)
+    const pw3 = R - ws[3];                        // right: period (right axis), name ends at the right edge
+    item(3, pw3);
+    const midL = L + ws[0], midR = pw3, gapM = f * 2;   // middle: water and air, centered in what's left
+    let mx = (midL + midR - (ws[1] + gapM + ws[2])) / 2;
+    item(1, mx); item(2, mx + ws[1] + gapM);
     const wv = idx.filter(i => waves.has(hr.time[i])).map(i => [times[i], ...waves.get(hr.time[i])]);
     if (wv.length) {
       const hmax = Math.max(2, Math.ceil(Math.max(...wv.map(v => v[1]))));

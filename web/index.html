@@ -192,7 +192,7 @@
     <label class="row sub"><span>Cybertruck<small>A beach rises and Elon drives along it, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
     <label class="row sub"><span>Mariachi band<small>A beach rises and the band plays and dances across it</small></span><span class="ctl"><button class="try" data-try="mariachi">▶</button><input type="checkbox" class="sw" data-set="aMariachi"></span></label>
     <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
-    <label class="row sub"><span>Starship Flight 15<small>Launches from Mechazilla on the beach; the booster is caught and carted off by the techs, the ship crosses the screen 14 times pushing V3 satellites out of its side, then comes home to the same tower</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
+    <label class="row sub"><span>Starship Flight 15<small>Launches from Mechazilla on the beach; the booster is caught and carted off by the techs, the ship laps the screen 14 times letting V3 satellites out of its door, then comes home to the same tower</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <h3>Boats</h3>
     <label class="row sub"><span>Time between boats<small>Boats that ride along the water. On their own timer, give or take 20%</small></span><select class="pick" data-min="craftMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -1432,7 +1432,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 96000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 64000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2187,7 +2187,7 @@ const BEACH = { move: 2.2, h: .42 };   // seconds to rise or sink, share of the 
 const BEACH_KIND = {
   ren: { pre: 5, max: 13, draw: (e, now, dt, sec, g) => { ren(e, now, dt, sec, g.gy, g.t, g.hb * .22); return g.t > 3 && e.renOff && e.birdsOff; } },
   truck: { pre: 3, max: 12, draw: (e, now, dt, sec, g) => truckOnBeach(e, now, sec, g) },
-  rocket: { pre: 2.4, max: 86, draw: (e, now, dt, sec, g) => starship(e, now, g) },
+  rocket: { pre: 2.4, max: 56, draw: (e, now, dt, sec, g) => starship(e, now, g) },
   mariachi: { pre: 3, max: 22, draw: (e, now, dt, sec, g) => mariachiBand(e, now, sec, g) },
 };
 const beachCv = document.getElementById("beach"), beachCtx = beachCv.getContext("2d");
@@ -3531,9 +3531,9 @@ function cybertruck(u, sec, wave) {   // facing +x, wheels on y = 0; u = size un
 }
 
 // ---- Starship Flight 15: the full stack blasts off, the booster comes straight back and is caught, then set on a
-// transporter and driven off by the techs; the ship crosses the screen 14 times, turning nose-up to let a train of V3 satellites out of its door that
+// transporter and driven off by the techs; the ship crosses the screen 7 times (each counted as 2 orbits), turning nose-up to let a train of V3 satellites out of its door that
 // spiral up off the top, then comes back in belly first, flips, and is caught by the same tower ----
-const F15 = { lift: 3.2, ts: 2.8, catchB: 6.4, P: 4.5, N: 14, sats: 22, satGap: .75, back: 7.4 };   // P: seconds a lap
+const F15 = { lift: 3.2, ts: 2.8, catchB: 6.4, P: 4.5, N: 7, sats: 22, satGap: .45, back: 7.4 };   // P: seconds a lap
 function plume(x, y, ang, len, w, a = 1) {   // flame out of the engines, pointing along ang (0 = straight down)
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   const L = len * (.85 + Math.random() * .3), g = ctx.createLinearGradient(0, 0, 0, L);
@@ -3615,7 +3615,7 @@ function satSlab(s) {   // a V3 satellite still folded flat, the way they come o
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, dy * s, s * .3, 0, 7); ctx.fill();
   }
 }
-// the ship's 14 laps: each one a slow pass across the screen from left to right, in a gentle arc. For the deploy it turns
+// the ship's 7 laps (counted as 14 orbits): each one a slow pass across the screen from left to right, in a gentle arc. For the deploy it turns
 // nose-up, opens the payload door, and the V3 satellites slide out of the stack one at a time, thrusters glowing; once clear
 // they spread their wings, drift back into a train and creep up the screen lap by lap until they're off the top.
 // t0 = start of lap 1, O = { y: middle of the passes, A: height of the arc, W, H }
@@ -3630,7 +3630,7 @@ function f15Orbits(e, t, O, t0, w, Ls) {
     e.sats = [];
     for (let td = t0 + P; e.sats.length < F15.sats; td += F15.satGap) {
       const f = ((td - t0) / P) % 1;
-      if (f > .08 && f < .72) e.sats.push({ td, sp: .86 - e.sats.length * .004 + rnd(-.01, .01), ph: rnd(0, 6) });
+      if (f > .08 && f < .78) e.sats.push({ td, sp: .86 - e.sats.length * .004 + rnd(-.01, .01), ph: rnd(0, 6) });
     }
   }
   const S0 = e.sats[0].td, S1 = e.sats[e.sats.length - 1].td + EJ;
@@ -3687,7 +3687,7 @@ function f15Return(r, A, B, C, w, Ls) {
 function f15Clock(t, orb0, H, y) {   // mission readout in the corner: FLIGHT 15 · T+00:23 · ORBIT 4 OF 14
   const f = G ? G.f : H / 46, s = f * .9, T = Math.abs(t), mm = String(Math.floor(T / 60)).padStart(2, "0"), ss = String(Math.floor(T % 60)).padStart(2, "0");
   let txt = `FLIGHT 15 · T${t < 0 ? "−" : "+"}${mm}:${ss}`;
-  if (t >= orb0 && t < orb0 + F15.P * F15.N) txt += ` · ORBIT ${Math.min(F15.N, Math.floor((t - orb0) / F15.P) + 1)} OF ${F15.N}`;
+  if (t >= orb0 && t < orb0 + F15.P * F15.N) txt += ` · ORBIT ${2 * Math.min(F15.N, Math.floor((t - orb0) / F15.P) + 1)} OF ${2 * F15.N}`;   // each pass counts as two orbits
   setFont(s, true); const tw = ctx.measureText(txt).width;
   ctx.fillStyle = "rgba(10,14,20,.6)"; ctx.beginPath(); ctx.roundRect(f * .6, y - s * .8, tw + s * 1.2, s * 1.6, s * .4); ctx.fill();
   ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.fillText(txt, f * .6 + s * .6, y);

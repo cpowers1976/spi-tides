@@ -192,7 +192,7 @@
     <label class="row sub"><span>Cybertruck<small>A beach rises and Elon drives along it, waving</small></span><span class="ctl"><button class="try" data-try="truck">▶</button><input type="checkbox" class="sw" data-set="aTruck"></span></label>
     <label class="row sub"><span>Mariachi band<small>A beach rises and the band plays and dances across it</small></span><span class="ctl"><button class="try" data-try="mariachi">▶</button><input type="checkbox" class="sw" data-set="aMariachi"></span></label>
     <label class="row sub"><span>Slot machine<small>Every number and wind arrow spins like a reel, then lands</small></span><span class="ctl"><button class="try" data-try="slot">▶</button><input type="checkbox" class="sw" data-set="aSlot"></span></label>
-    <label class="row sub"><span>Starship launch<small>A beach rises, Starship fades in on Mechazilla, launches, and the booster comes back to be caught</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
+    <label class="row sub"><span>Starship Flight 15<small>Launches from Mechazilla on the beach; the booster is caught and carted off by the techs, the ship laps the screen 14 times letting V3 satellites out of its door, then comes home to the same tower</small></span><span class="ctl"><button class="try" data-try="rocket">▶</button><input type="checkbox" class="sw" data-set="aRocket"></span></label>
     <label class="row sub"><span><span id="bitename">Shark bite</span><small>Bites a chunk out of the screen</small></span><span class="ctl"><button class="try" data-try="bite">▶</button><input type="checkbox" class="sw" data-set="aBite"></span></label>
     <h3>Boats</h3>
     <label class="row sub"><span>Time between boats<small>Boats that ride along the water. On their own timer, give or take 20%</small></span><select class="pick" data-min="craftMin"><option value="2">2 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">60 min</option></select></label>
@@ -1432,7 +1432,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 40000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 64000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2187,7 +2187,7 @@ const BEACH = { move: 2.2, h: .42 };   // seconds to rise or sink, share of the 
 const BEACH_KIND = {
   ren: { pre: 5, max: 13, draw: (e, now, dt, sec, g) => { ren(e, now, dt, sec, g.gy, g.t, g.hb * .22); return g.t > 3 && e.renOff && e.birdsOff; } },
   truck: { pre: 3, max: 12, draw: (e, now, dt, sec, g) => truckOnBeach(e, now, sec, g) },
-  rocket: { pre: 2.4, max: 22, draw: (e, now, dt, sec, g) => starship(e, now, g) },
+  rocket: { pre: 2.4, max: 56, draw: (e, now, dt, sec, g) => starship(e, now, g) },
   mariachi: { pre: 3, max: 22, draw: (e, now, dt, sec, g) => mariachiBand(e, now, sec, g) },
 };
 const beachCv = document.getElementById("beach"), beachCtx = beachCv.getContext("2d");
@@ -2206,7 +2206,7 @@ function beachScene(e, now, dt, sec) {
   if (e.plain == null) e.plain = !on("aBeach");   // decided once, when it starts
   if (e.plain) {   // beach scene switched off: no scrunch, they go by along the wave band
     e.rise = 0;
-    if (e.kind === "rocket") { starshipFly(e, now); if (t > 9.6) e.dur = now - e.t0; return; }
+    if (e.kind === "rocket") { if (starshipFly(e, now)) e.dur = now - e.t0; return; }
     const P = bandParams({ w: W, h: H }), gy = P.y0 - P.A * .2;
     ctx.save(); const done = K.draw(e, now, dt, sec, { W, H, yb: gy, hb: H * BEACH.h, gy, t, lake }); ctx.restore();
     if (done || t > K.max + 2) e.dur = now - e.t0;
@@ -3530,8 +3530,10 @@ function cybertruck(u, sec, wave) {   // facing +x, wheels on y = 0; u = size un
   ctx.lineCap = "butt"; ctx.lineJoin = "miter";
 }
 
-// ---- Starship: the full stack blasts up, they separate, the ship flies off the top,
-// the booster flips, boosts back, flips upright again and drops off the bottom on its landing burn ----
+// ---- Starship Flight 15: the full stack blasts off, the booster comes straight back and is caught, then set on a
+// transporter and driven off by the techs; the ship crosses the screen 7 times (each counted as 2 orbits), turning nose-up to let a train of V3 satellites out of its door that
+// spiral up off the top, then comes back in belly first, flips, and is caught by the same tower ----
+const F15 = { lift: 3.2, ts: 2.8, catchB: 6.4, P: 4.5, N: 7, sats: 22, satGap: .45, back: 7.4 };   // P: seconds a lap
 function plume(x, y, ang, len, w, a = 1) {   // flame out of the engines, pointing along ang (0 = straight down)
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   const L = len * (.85 + Math.random() * .3), g = ctx.createLinearGradient(0, 0, 0, L);
@@ -3554,11 +3556,19 @@ function booster(w, L, finsOut) {   // engines at y = 0, pointing down; body goe
   const fy = -L + w * .5, fw = finsOut ? w * .55 : w * .3;
   ctx.fillRect(-w / 2 - fw, fy, fw, w * .45); ctx.fillRect(w / 2, fy, fw, w * .45);
 }
-function ship(w, L) {   // engines at y = 0, nose at -L
+function ship(w, L, slot) {   // engines at y = 0, nose at -L; slot: payload door open, with this much of the satellite stack left (0 = shut)
   steelBody(-w / 2, -L * .82, w, L * .82);
   ctx.fillStyle = "#e9edf0"; ctx.beginPath(); ctx.moveTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L, 0, -L); ctx.quadraticCurveTo(w / 2, -L, w / 2, -L * .82); ctx.fill();   // nose
   ctx.fillStyle = "#1d1f23"; ctx.beginPath();   // black heat-shield side
   ctx.moveTo(-w / 2, 0); ctx.lineTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L * .99, -w * .1, -L * .99); ctx.lineTo(-w * .1, 0); ctx.fill();
+  if (slot) {   // the open payload door with the stack of flat satellites inside, shrinking as they go out
+    const top = -L * .7, h = L * .26, sh = h * Math.min(1, slot);
+    ctx.fillStyle = "#0d0e10"; ctx.fillRect(-w * .08, top, w * .54, h);
+    ctx.fillStyle = "#4a5059"; ctx.fillRect(-w * .05, top + h - sh, w * .48, sh);
+    ctx.strokeStyle = "rgba(200,210,225,.55)"; ctx.lineWidth = Math.max(.5, L * .004); ctx.beginPath();
+    for (let y = top + h - L * .02; y > top + h - sh; y -= L * .02) { ctx.moveTo(-w * .05, y); ctx.lineTo(w * .43, y); }
+    ctx.stroke(); ctx.fillStyle = "rgba(255,207,122,.7)"; ctx.fillRect(-w * .08, top, w * .54, L * .01);
+  }   // the satellite slot, lit inside
   ctx.fillStyle = "#26292e";   // flaps
   ctx.beginPath(); ctx.moveTo(-w / 2, -L * .18); ctx.lineTo(-w * .95, -L * .08); ctx.lineTo(-w / 2, -L * .04); ctx.fill();
   ctx.beginPath(); ctx.moveTo(w / 2, -L * .18); ctx.lineTo(w * .95, -L * .08); ctx.lineTo(w / 2, -L * .04); ctx.fill();
@@ -3572,28 +3582,162 @@ function mechazilla(x, top, ground, tw, side, armY, armOpen, reach) {   // the l
     ctx.beginPath(); ctx.moveTo(x - tw / 2, y); ctx.lineTo(x + tw / 2, y + tw); ctx.moveTo(x + tw / 2, y); ctx.lineTo(x - tw / 2, y + tw); ctx.stroke();
   }
   ctx.fillStyle = "#c9ced4"; ctx.fillRect(x - tw * .65, top - tw * .4, tw * 1.3, tw * .4);   // top cap
+  ctx.fillStyle = "#5b6067"; ctx.fillRect(x - tw * .6, armY - tw * .35, tw * 1.2, tw * .85);   // the carriage the arms ride up and down on
   for (const k of [0, 1]) {   // two arms, one a little behind the other
     ctx.save(); ctx.translate(x - side * tw * .5, armY + k * tw * .25); ctx.rotate(side * armOpen);
     ctx.fillStyle = k ? "#5b6067" : "#7d838a"; ctx.fillRect(side > 0 ? -reach : 0, -tw * .14, reach, tw * .28);
     ctx.restore();
   }
 }
-// Starship stacked on Mechazilla fades onto the beach, launches, separates, the ship flies off the top,
-// and the booster flips, boosts back, and is caught by the chopsticks
+function starlink(s, glint, open = 1) {   // a V3 satellite: a flat body with two big solar wings (open: 0 folded .. 1 spread), centred on 0,0
+  if (open > 0) for (const d of [-1, 1]) {
+    const L = s * 1.6 * open, x = d > 0 ? s * .5 + s * .3 * open : -s * .5 - s * .3 * open - L;
+    ctx.fillStyle = "#6d747c"; ctx.fillRect(d > 0 ? s * .5 : x + L, -s * .04, s * .3 * open, s * .08);   // boom
+    ctx.fillStyle = "#1b2b5e"; ctx.fillRect(x, -s * .32, L, s * .64);
+    ctx.strokeStyle = "rgba(150,180,240,.6)"; ctx.lineWidth = Math.max(.5, s * .05); ctx.beginPath();
+    for (let i = 1; i < 6; i++) { ctx.moveTo(x + L * i / 6, -s * .32); ctx.lineTo(x + L * i / 6, s * .32); }
+    ctx.moveTo(x, 0); ctx.lineTo(x + L, 0); ctx.stroke();
+  }
+  ctx.fillStyle = "#d3d8dd"; ctx.fillRect(-s * .5, -s * .2, s, s * .4);
+  ctx.fillStyle = "#8d949c"; ctx.fillRect(-s * .5, s * .08, s, s * .12);
+  if (glint > .02) {   // sun catching the panels
+    dot(s * 1.4, 0, s * .7 * glint, [1, 1, 1, .5 * glint]);
+    line([s * 1.4 - s * 2 * glint, 0, s * 1.4 + s * 2 * glint, 0], [1, 1, 1, glint], Math.max(1, s * .1));
+    line([s * 1.4, -s * 1.2 * glint, s * 1.4, s * 1.2 * glint], [1, 1, 1, glint], Math.max(1, s * .1));
+  }
+}
+function satSlab(s) {   // a V3 satellite still folded flat, the way they come out of the dispenser; thrusters glowing at the right end (0,0)
+  ctx.fillStyle = "#3a3f47"; ctx.fillRect(-s * 1.3, -s * .16, s * 1.3, s * .32);
+  ctx.fillStyle = "#6b727c"; for (let i = 0; i < 5; i++) ctx.fillRect(-s * 1.25 + i * s * .26, -s * .12, s * .2, s * .24);
+  for (const dy of [-.08, .08]) {
+    const g = ctx.createRadialGradient(0, dy * s, 0, 0, dy * s, s * .3);
+    g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(.4, "rgba(170,210,255,.6)"); g.addColorStop(1, "rgba(120,170,255,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, dy * s, s * .3, 0, 7); ctx.fill();
+  }
+}
+// the ship's 7 laps (counted as 14 orbits): each one a slow pass across the screen from left to right, in a gentle arc. For the deploy it turns
+// nose-up, opens the payload door, and the V3 satellites slide out of the stack one at a time, thrusters glowing; once clear
+// they spread their wings, drift back into a train and creep up the screen lap by lap until they're off the top.
+// t0 = start of lap 1, O = { y: middle of the passes, A: height of the arc, W, H }
+function f15Orbits(e, t, O, t0, w, Ls) {
+  const { P, N } = F15, end = t0 + P * N, m = Ls * 1.2, span = O.W + 2 * m, V = span / P, EJ = 2, k = Math.min(1.1, O.W * .28 / Ls);   // smaller on a narrow phone
+  const wrap = X => ((X + m) % span + span) % span - m;
+  const arcY = x => O.y - O.A * Math.sin(Math.PI * clamp((x + m) / span, 0, 1));
+  const tilt = x => Math.atan(-O.A * Math.PI / span * Math.cos(Math.PI * clamp((x + m) / span, 0, 1)));
+  const shipX = tt => -m + V * (tt - t0);   // not wrapped
+  const kd = k * 1.5, out = w * 1.3 * kd;   // how far they slide out to the left of the door
+  if (!e.sats) {   // when each one goes out: from lap 2, only while the ship's well on screen
+    e.sats = [];
+    for (let td = t0 + P; e.sats.length < F15.sats; td += F15.satGap) {
+      const f = ((td - t0) / P) % 1;
+      if (f > .08 && f < .78) e.sats.push({ td, sp: .86 - e.sats.length * .004 + rnd(-.01, .01), ph: rnd(0, 6) });
+    }
+  }
+  const S0 = e.sats[0].td, S1 = e.sats[e.sats.length - 1].td + EJ;
+  const vert = ease(clamp((t - S0 + 2.6) / 1.4, 0, 1)) * (1 - ease(clamp((t - S1 - .6) / 1.4, 0, 1)));   // turned nose-up for the deploy
+  let sx = 0, sy = 0;
+  if (t > t0 && t < end) {
+    const x = wrap(shipX(t)), y = arcY(x), left = e.sats.filter(s => s.td > t).length;
+    ctx.save(); ctx.translate(x, y); ctx.rotate((1 - vert) * (Math.PI / 2 + tilt(x))); ctx.scale(k * (1 + .5 * vert), k * (1 + .5 * vert)); ctx.translate(0, Ls / 2);   // a bit bigger for the deploy
+    ship(w, Ls, vert > .9 ? Math.max(.001, left / F15.sats) : 0); ctx.restore(); sx = x; sy = y;
+  }
+  for (const [i, s] of e.sats.entries()) {
+    const q = t - s.td; if (q < 0) continue;
+    const dy = (-.2 + .26 * i / F15.sats + .012) * Ls * kd;   // comes off the top of the stack
+    const r = Math.max(0, q - EJ), X = shipX(s.td) + w * .44 * kd + V * Math.min(q, EJ) - out * ease(Math.min(1, q / EJ)) + V * s.sp * r, x = wrap(X);
+    const y = arcY(x) + dy - O.H * (.012 * r + .0011 * r * r);
+    if (y < -w * 3) continue;
+    ctx.save(); ctx.translate(x, y);
+    if (q < EJ) {   // still sliding out: only seen through the open door, or once it's past the side of the ship
+      ctx.beginPath(); ctx.rect(-x - O.W, -y - O.H, x + O.W + sx - x - w * .5 * kd, O.H * 3);
+      ctx.rect(sx - x - w * .08 * kd, sy - y - Ls * .2 * kd, w * .54 * kd, Ls * .26 * kd); ctx.clip();
+      satSlab(w * .75 * kd);
+    }
+    else {
+      const open = clamp(r / .8, 0, 1), gl = Math.max(0, Math.sin(t * 1.1 + s.ph)) ** 40 * open;
+      ctx.rotate(.25 * open * Math.sin(r * .7 + s.ph)); starlink(w * .6, gl, open);
+      dot(w * .25, 0, w * .09 * (1.2 - open * .5), [.8, .9, 1, .9]);   // its thruster, still glowing
+    }
+    ctx.restore();
+  }
+}
+// coming home: in from A belly first and glowing, levels off over B, flips upright with the landing burn, and settles to C (centres)
+function f15Return(r, A, B, C, w, Ls) {
+  const T1 = 4.2, T2 = 1.2, T3 = 2, dir = Math.sign(B[0] - A[0]) || 1;
+  let x, y, rot, burn = 0, heat = 0;
+  if (r < T1) { const q = r / T1; x = A[0] + (B[0] - A[0]) * ease(q); y = A[1] + (B[1] - A[1]) * (1 - (1 - q) ** 1.6); rot = -Math.PI / 2; heat = Math.max(0, 1 - q * 1.25); }
+  else if (r < T1 + T2) { const q = (r - T1) / T2; x = B[0]; y = B[1] + Ls * .25 * q; rot = -Math.PI / 2 * (1 - ease(q)); burn = q > .3 ? (q - .3) / .7 : 0; }
+  else { const q = Math.min(1, (r - T1 - T2) / T3); x = B[0] + (C[0] - B[0]) * q; y = B[1] + Ls * .25 + (C[1] - B[1] - Ls * .25) * (1 - (1 - q) ** 2); rot = 0; burn = q < 1 ? 1 - q * .5 : 0; }
+  ctx.save(); ctx.translate(x, y);
+  if (heat > 0) {   // reentry: hot pink plasma under the belly, streaming off behind
+    ctx.save(); ctx.scale(1, .35);
+    const g = ctx.createRadialGradient(0, w * 2.2, 0, 0, w * 2.2, Ls * .75);
+    g.addColorStop(0, `rgba(255,240,250,${.9 * heat})`); g.addColorStop(.3, `rgba(255,110,200,${.7 * heat})`); g.addColorStop(.7, `rgba(255,120,40,${.35 * heat})`); g.addColorStop(1, "rgba(255,80,20,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, w * 2.2, Ls * .75, 0, 7); ctx.fill(); ctx.restore();
+    for (let i = 0; i < 6; i++) {
+      const sx = (i / 5 - .5) * Ls * .8, j = Math.random() * .3;
+      line([sx, w * .6, sx - dir * Ls * (.25 + j), -Ls * (.5 + j) * heat], [1, .5 + j, .8, .35 * heat], w * .25);
+    }
+  }
+  ctx.scale(-dir, 1); ctx.rotate(rot); ctx.translate(0, Ls / 2);
+  if (burn > 0) plume(0, 0, 0, w * 5 * burn, w * .9, Math.min(1, burn * 1.5));
+  ship(w, Ls); ctx.restore();
+  return r > T1 + T2 + T3;
+}
+function f15Clock(t, orb0, H, y) {   // mission readout in the corner: FLIGHT 15 · T+00:23 · ORBIT 4 OF 14
+  const f = G ? G.f : H / 46, s = f * .9, T = Math.abs(t), mm = String(Math.floor(T / 60)).padStart(2, "0"), ss = String(Math.floor(T % 60)).padStart(2, "0");
+  let txt = `FLIGHT 15 · T${t < 0 ? "−" : "+"}${mm}:${ss}`;
+  if (t >= orb0 && t < orb0 + F15.P * F15.N) txt += ` · ORBIT ${2 * Math.min(F15.N, Math.floor((t - orb0) / F15.P) + 1)} OF ${2 * F15.N}`;   // each pass counts as two orbits
+  setFont(s, true); const tw = ctx.measureText(txt).width;
+  ctx.fillStyle = "rgba(10,14,20,.6)"; ctx.beginPath(); ctx.roundRect(f * .6, y - s * .8, tw + s * 1.2, s * 1.6, s * .4); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.fillText(txt, f * .6 + s * .6, y);
+}
+function spmt(Lt, w) {   // the transporter: a long low deck on lots of little wheels, with a stand on top; deck bottom at y = 0 (ground)
+  const dh = w * .5;
+  ctx.fillStyle = "#2a2d31"; for (let i = 0; i < 9; i++) { const x = -Lt / 2 + Lt * (i + .5) / 9; ctx.beginPath(); ctx.arc(x, -w * .12, w * .12, 0, 7); ctx.fill(); }
+  ctx.fillStyle = "#d9a521"; ctx.fillRect(-Lt / 2, -dh, Lt, dh * .7);
+  ctx.fillStyle = "#3a3d42"; ctx.fillRect(-Lt / 2, -dh * .38, Lt, dh * .12);
+  ctx.fillStyle = "#e9b93a"; ctx.fillRect(-Lt / 2 - w * .35, -dh * 1.25, w * .4, dh * .95);   // power pack at one end
+  ctx.fillStyle = "#6c737b"; ctx.beginPath();   // the booster stand
+  ctx.moveTo(-w * .75, -dh); ctx.lineTo(-w * .5, -dh - w * .32); ctx.lineTo(w * .5, -dh - w * .32); ctx.lineTo(w * .75, -dh); ctx.fill();
+}
+function tech(h, ph, moving, look, wave) {   // a SpaceX tech in coveralls, hi-vis vest and hard hat; feet at y = 0
+  const sw = moving ? Math.sin(ph) * h * .14 : 0, skin = look.skin, c = [.12, .16, .26, 1];
+  ctx.lineCap = "round";
+  line([0, -h * .45, -sw, 0], c, h * .13); line([0, -h * .45, sw, 0], c, h * .13);   // legs
+  ctx.fillStyle = "#1f2a44"; ctx.fillRect(-h * .11, -h * .78, h * .22, h * .36);   // body
+  ctx.fillStyle = "#c6f03a"; ctx.fillRect(-h * .11, -h * .76, h * .22, h * .22);   // vest
+  ctx.fillStyle = "#e8eef2"; ctx.fillRect(-h * .11, -h * .66, h * .22, h * .035);
+  line([0, -h * .72, h * .14, wave ? -h * (1.05 + .08 * Math.sin(ph * 2)) : -h * .48 + sw * .3], c, h * .09);   // arms (one waving when the booster's down)
+  line([0, -h * .72, -h * .12, -h * .48 - sw * .3], c, h * .09);
+  if (look.wands) { line([-h * .12, -h * .48 - sw * .3, -h * .3, -h * .62], [1, .45, .1, 1], h * .07); line([h * .14, -h * .48 + sw * .3, h * .32, -h * .6], [1, .45, .1, 1], h * .07); }
+  dot(0, -h * .87, h * .1, skin);
+  ctx.fillStyle = look.hat; ctx.beginPath(); ctx.arc(0, -h * .9, h * .12, Math.PI, 0); ctx.fill(); ctx.fillRect(-h * .15, -h * .91, h * .3, h * .03);
+}
+// on the beach: stacked on the tower, launch, the booster caught right away and carted off, 14 laps, the ship caught
 function starship(e, now, g) {
-  const { W, H, yb, hb } = g, t = g.t, FADE = 1.4, LIFT = 3.2, TS = 2.8, CATCH = 6.4, HOLD = 1.6;
+  const { W, H, yb, hb } = g, t = g.t, FADE = 1.4, { lift: LIFT, ts: TS, catchB: CATCH } = F15;
   const Lb = H * .21, Ls = H * .16, w = Lb * .12, x0 = e.x0 * W, side = e.side;
-  const pad = yb + hb * .8, legs = w * 1.3, tw = w * 1.4, tx = x0 + side * (w * .5 + tw * .5 + w * 1.1);
-  const caughtY = pad - w * .8, armY = caughtY - Lb + w * .7, reach = w * 1.1 + tw * .5 + w * .55;
+  const pad = yb + hb * .8, legs = w * 1.3, ground = pad + legs, tw = w * 1.4, tx = x0 + side * (w * .5 + tw * .5 + w * 1.1);
+  const caughtY = pad - w * .8, armB = caughtY - Lb + w * .7, armS = caughtY - Ls * .72, reach0 = w * 1.1 + tw * .5 + w * .55;
+  const ORB0 = LIFT + TS + 2, ORB_END = ORB0 + F15.P * F15.N, RE0 = ORB_END + 1, SC = RE0 + F15.back;   // laps start, end; ship comes back, is caught
+  const BC = LIFT + TS + CATCH, REL = BC + 4.2, UP0 = REL + 1, UP1 = UP0 + 2.4;   // booster caught, let go on the transporter; arms back up for the ship
+  const op = (a, b) => ease(clamp((t - a) / (b - a), 0, 1));
+  const SL = w * 2.9, DROP = w * 1.28, sl = SL * op(BC + 1, BC + 3), dr = DROP * op(BC + 3, BC + 4.2);   // slid out along the arms, then set down
   if (t < 0) return false;
   if (!e.smoke) e.smoke = [];
-  const fade = Math.min(1, t / FADE);
-  ctx.globalAlpha = fade;
-  const u = t - LIFT - TS;   // time since stage separation
-  const armOpen = u > CATCH - .8 ? .9 * (1 - ease(Math.min(1, (u - CATCH + .8) / .8))) : t > LIFT - .6 ? .9 * ease(Math.min(1, (t - LIFT + .6) / .6)) : 0;
-  mechazilla(tx, armY - Lb * .25 - Ls * .45, pad + legs, tw, side, armY, armOpen, reach);
+  ctx.globalAlpha = Math.min(1, t / FADE);
+  const armOpen = t < BC - .8 ? .9 * op(LIFT - .6, LIFT) : t < REL ? .9 * (1 - op(BC - .8, BC)) : t < SC - .8 ? .9 * op(REL, REL + .6) : .9 * (1 - op(SC - .8, SC));
+  const armY = t < UP0 ? armB + dr : armB + DROP + (armS - armB - DROP) * op(UP0, UP1), reach = reach0 + sl * (1 - op(REL + .6, UP0 + .5));
+  mechazilla(tx, armB - Lb * .25 - Ls * .45, ground, tw, side, armY, armOpen, reach);
   ctx.fillStyle = "#4a4e55"; ctx.fillRect(x0 - w * 1.1, pad, w * 2.2, w * .3);   // launch mount
   for (const lx of [-1, 1]) ctx.fillRect(x0 + lx * w * .9 - w * .1, pad, w * .2, legs);
+  // the transporter rolls in, the booster goes on it, and the techs walk it off the beach
+  const Lt = w * 3.4, px = x0 - side * SL, off = side > 0 ? -Lt * 1.5 : W + Lt * 1.5;
+  const inQ = clamp((t - (BC - 2)) / 3, 0, 1), outQ = clamp((t - REL - 1) / 6, 0, 1);
+  const vx = t < BC + 1 ? off + (px - off) * (1 - (1 - inQ) ** 2) : px + (off - px) * outQ ** 1.6, moving = inQ > 0 && inQ < 1 || outQ > 0 && outQ < 1;
+  const crew = t > BC - 2 && outQ < 1;
+  if (crew) { ctx.save(); ctx.translate(vx, ground); spmt(Lt, w); ctx.restore(); }
   if (t < LIFT + TS) {   // on the pad, then the whole stack climbing
     const q = Math.max(0, t - LIFT), a = 2 * H * .36 / (TS * TS), y = pad - a * q * q / 2;
     if (t > LIFT - .8) {
@@ -3602,30 +3746,47 @@ function starship(e, now, g) {
     }
     ctx.save(); ctx.translate(x0, y); booster(w, Lb, false); ctx.translate(0, -Lb); ship(w, Ls); ctx.restore();
   } else {
-    const a = 2 * H * .36 / (TS * TS), sepY = pad - H * .36, vSep = a * TS;
+    const u = t - LIFT - TS, a = 2 * H * .36 / (TS * TS), sepY = pad - H * .36, vSep = a * TS;
     if (u < .3) { ctx.fillStyle = `rgba(255,210,140,${(.3 - u) * 2})`; ctx.beginPath(); ctx.arc(x0, sepY - Lb, w * 3 * (1 + u * 6), 0, 7); ctx.fill(); }   // hot-staging flash
-    const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster
+    const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster, off the top
     if (sy > -Ls * 1.5) { plume(x0, sy, 0, w * 6, w * 1.1); ctx.save(); ctx.translate(x0, sy); ship(w, Ls); ctx.restore(); }
-    // booster: coasts up and back down to where it separated, flipping for the boostback and upright again, then a landing burn into the arms
-    const gv = vSep / 1.6, drift = W * .1 * side * Math.sin(Math.PI * Math.min(1, u / CATCH));
-    const by = u < 3.2 ? sepY - vSep * u + gv * u * u / 2 : u < CATCH ? sepY + (caughtY - sepY) * (1 - (1 - (u - 3.2) / (CATCH - 3.2)) ** 2) : caughtY;
-    const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
-    ctx.save(); ctx.translate(x0 - drift, by - Lb / 2); ctx.rotate(rot * side); ctx.translate(0, Lb / 2);
-    if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
-    if (u > 3.3 && u < CATCH) plume(0, 0, 0, w * 5 * (1 - (u - 3.3) / (CATCH - 3.3) * .6), w * .8);   // landing burn
-    booster(w, Lb, u > .5); ctx.restore();
+    if (u < CATCH) {   // booster: coasts up, flips for the boostback, upright again, landing burn into the arms
+      const gv = vSep / 1.6, drift = W * .1 * side * Math.sin(Math.PI * Math.min(1, u / CATCH));
+      const by = u < 3.2 ? sepY - vSep * u + gv * u * u / 2 : sepY + (caughtY - sepY) * (1 - (1 - (u - 3.2) / (CATCH - 3.2)) ** 2);
+      const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
+      ctx.save(); ctx.translate(x0 - drift, by - Lb / 2); ctx.rotate(rot * side); ctx.translate(0, Lb / 2);
+      if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
+      if (u > 3.3) plume(0, 0, 0, w * 5 * (1 - (u - 3.3) / (CATCH - 3.3) * .6), w * .8);   // landing burn
+      booster(w, Lb, u > .5); ctx.restore();
+    } else if (t < REL || crew) {   // caught: slid out along the arms, set on the stand, and driven away
+      ctx.save(); ctx.translate(t < REL ? x0 - side * sl : vx, caughtY + dr); booster(w, Lb, true); ctx.restore();
+    }
   }
+  if (crew) {   // four techs: a spotter out front with orange wands, the rest walking alongside
+    const h = w * 1.05, ph = t * 7, dirOut = side > 0 ? -1 : 1, ahead = t < BC + 1 ? -dirOut : dirOut;
+    e.crew = e.crew || [{ dx: 2.6, wands: true }, { dx: 1.3 }, { dx: -1.35 }, { dx: -2.4 }].map((c, i) => ({ ...c, skin: [[.93, .76, .62, 1], [.55, .38, .26, 1], [.8, .6, .45, 1], [.35, .24, .17, 1]][i], hat: ["#f4f4f4", "#ffd23f", "#f4f4f4", "#3a7bd5"][i] }));
+    for (const [i, c] of e.crew.entries()) {
+      ctx.save(); ctx.translate(vx + ahead * c.dx * w, ground + w * .02);
+      ctx.scale(c.wands ? -ahead : ahead, 1);   // the spotter walks backwards, facing the load
+      tech(h, ph + i * 1.7, moving, c, !moving && i === 2 && t > REL - .5 && t < REL + 1);
+      ctx.restore();
+    }
+  }
+  const O = { y: yb * .55, A: yb * .12, W, H };   // passes across the scrunched-up screen
+  f15Orbits(e, t, O, ORB0, w, Ls);
+  if (t > RE0) f15Return(t - RE0, [x0 - side * W * .55, -Ls], [x0, caughtY - Ls * .5 - H * .2], [x0, caughtY - Ls * .5], w, Ls);
   ctx.globalAlpha = 1;
   e.smoke = e.smoke.filter(s => now - s.t0 < 2600);
   for (const s of e.smoke) {   // launch smoke billowing across the beach
     const q = (now - s.t0) / 2600;
     dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.88, .86, .82, .32 * (1 - q)]);
   }
-  return u > CATCH + HOLD;
+  f15Clock(t - LIFT, ORB0 - LIFT, H, H - (G ? G.f : H / 46) * 1.3);
+  return t > SC + 2;
 }
-function starshipFly(e, now) {   // the original fly-through, for when the beach scene is off
+function starshipFly(e, now) {   // with the beach scene off: no tower, so the booster and the ship land off the bottom; true when done
   const W = innerWidth, H = innerHeight, t = (now - e.t0) / 1000;
-  const Lb = H * .24, Ls = H * .18, w = Lb * .12, x0 = e.x0 * W, TS = 2.8;   // separation at TS
+  const Lb = H * .24, Ls = H * .18, w = Lb * .12, x0 = e.x0 * W, TS = 2.8, ORB0 = TS + 1.8, RE0 = ORB0 + F15.P * F15.N + 1;
   if (!e.smoke) e.smoke = [];
   const sepY = H * .78, a = 2 * (H + Lb + Ls * .2 - sepY) / (TS * TS);   // the stack's engines reach sepY at TS
   const baseY = tt => H + Lb + Ls * .2 - a * tt * tt / 2, vSep = a * TS;
@@ -3639,19 +3800,26 @@ function starshipFly(e, now) {   // the original fly-through, for when the beach
     if (u < .3) { ctx.fillStyle = `rgba(255,210,140,${(.3 - u) * 2})`; ctx.beginPath(); ctx.arc(x0, sepY - Lb, w * 3 * (1 + u * 6), 0, 7); ctx.fill(); }   // hot-staging flash
     const sy = sepY - Lb - vSep * u - a * 1.4 * u * u / 2 - w * .3;   // ship keeps going, faster
     if (sy > -Ls * 1.5) { plume(x0, sy, 0, w * 6, w * 1.1); ctx.save(); ctx.translate(x0, sy); ship(w, Ls); ctx.restore(); }
-    // booster: coasts up and slows, then falls back; flips over for the boostback, then upright for landing
-    const g = vSep / 1.6, by = u < 3.2 ? sepY - vSep * u + g * u * u / 2 : sepY + (H + Lb * 1.2 - sepY) * ((u - 3.2) / 3.4) ** 1.4, bx = x0 + e.side * W * .08 * Math.min(1, u / 2);
-    const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
-    ctx.save(); ctx.translate(bx, by - Lb / 2); ctx.rotate(rot * e.side); ctx.translate(0, Lb / 2);
-    if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
-    if (u > 3.3) plume(0, 0, 0, w * 5, w * .8);                     // landing burn on the way down
-    booster(w, Lb, u > .5); ctx.restore();
+    if (u < 7) {   // booster: coasts up and slows, then falls back; flips over for the boostback, then upright for landing
+      const g = vSep / 1.6, by = u < 3.2 ? sepY - vSep * u + g * u * u / 2 : sepY + (H + Lb * 1.2 - sepY) * ((u - 3.2) / 3.4) ** 1.4, bx = x0 + e.side * W * .08 * Math.min(1, u / 2);
+      const rot = u < 1 ? Math.PI * ease(u) : u < 2 ? Math.PI : u < 3.2 ? Math.PI + Math.PI * ease((u - 2) / 1.2) : 0;
+      ctx.save(); ctx.translate(bx, by - Lb / 2); ctx.rotate(rot * e.side); ctx.translate(0, Lb / 2);
+      if (u > .9 && u < 2.1) plume(0, 0, 0, w * 3.5, w * .7, .9);   // boostback burn
+      if (u > 3.3) plume(0, 0, 0, w * 5, w * .8);                     // landing burn on the way down
+      booster(w, Lb, u > .5); ctx.restore();
+    }
   }
+  f15Orbits(e, t, { y: H * .5, A: H * .12, W, H }, ORB0, w, Ls);
+  let done = false;
+  if (t > RE0) done = f15Return(t - RE0, [x0 - e.side * W * .55, -Ls], [x0, H * .45], [x0, H + Ls], w, Ls);
   e.smoke = e.smoke.filter(s => now - s.t0 < 2600);
   for (const s of e.smoke) {   // launch smoke billowing out
     const q = (now - s.t0) / 2600;
     dot(s.x + s.vx * q * 2.6, s.y - q * 30, s.r * (1 + q * 2), [.85, .85, .85, .28 * (1 - q)]);
   }
+  const bar = document.getElementById("bar").getBoundingClientRect();
+  f15Clock(t, ORB0, H, bar.top - (G ? G.f : H / 46) * 2.8);   // just above the time labels
+  return done;
 }
 function splashes(now) {
   FX.splash = FX.splash.filter(s => now - s.t0 < 800);
@@ -6387,7 +6555,7 @@ function pctList() {
   return [["kite", "Kiteboarder"], ...(LIFE[state.loc] || LIFE.spi).map(sp => ["life:" + sp, LIFE_LABEL[sp]]),
     [cold ? "freeze" : "melt", "Melt or freeze"], ["wipe", "Wave wipe"], ["ren", "Ren and the sanderlings"],
     ...(lake ? [["queen", "Queen II"], ["coaster", "The Legend coaster"]] : []), ["ship", "Big boats"],
-    ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, , n]) => [k, n]), ...AIR_LIST.map(([k, , n]) => [k, n]), ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship launch"],
+    ...CRAFT_LIST.filter(([k]) => tame(k)).map(([k, , n]) => [k, n]), ...AIR_LIST.map(([k, , n]) => [k, n]), ["truck", "Cybertruck"], ["mariachi", "Mariachi band"], ["slot", "Slot machine"], ["rocket", "Starship Flight 15"],
     ["bite", lake ? "Muskie bite" : "Shark bite"], ...PAGE_LIST.map(([k, , n]) => [k, n])];
 }
 const LIFE_LABEL = { dolphin: "Dolphin", redfish: "Redfish", seaturtle: "Sea turtle", stingray: "Stingray", pelican: "Pelican dive", manowar: "Man o' war",

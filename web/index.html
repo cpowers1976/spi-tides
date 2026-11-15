@@ -1432,7 +1432,7 @@ function play(kind, opt = {}) {
   FX.events = FX.events.filter(e => e.kind !== kind);
   if (kind === "ship") FX.boatArt = null;
   if (beachy(kind)) FX.events = FX.events.filter(e => e.kind !== "ship");   // tapped a beach scene while a boat was going by: the boat goes
-  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 76000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
+  FX.events.push({ kind, t0: now, dur: { kite: 8500, life: 2400, melt: 7500, freeze: 10000, wipe: 1700, chaos: 43600, bite: 16300, ren: 30000, sub: 15000, truck: 30000, rocket: 96000, mariachi: 40000, queen: 20000, coaster: 30000, ship: 60000, spin: 9000, crumple: 8100, dust: 13300, rock: 21400, bat: 32400, flip: 15000, drivein: 16000, burn: 14000, rain: 21000, party: 26000, jetski: 17000, surf: 22000, bass: 24000, fab: 24000, dolphin: 28000, cg: 26000, pirate: 26000, troller: 30000, dhow: 30000, galleon: 30000, liner: 23600, para: 24000, helo: 13000, r44: 22000 }[kind], ...opt });
   fxKick();
 }
 // a beach scene that scrunches the screen (not when the Beach scene switch, if there is one, is off): no boats during those
@@ -2187,7 +2187,7 @@ const BEACH = { move: 2.2, h: .42 };   // seconds to rise or sink, share of the 
 const BEACH_KIND = {
   ren: { pre: 5, max: 13, draw: (e, now, dt, sec, g) => { ren(e, now, dt, sec, g.gy, g.t, g.hb * .22); return g.t > 3 && e.renOff && e.birdsOff; } },
   truck: { pre: 3, max: 12, draw: (e, now, dt, sec, g) => truckOnBeach(e, now, sec, g) },
-  rocket: { pre: 2.4, max: 66, draw: (e, now, dt, sec, g) => starship(e, now, g) },
+  rocket: { pre: 2.4, max: 86, draw: (e, now, dt, sec, g) => starship(e, now, g) },
   mariachi: { pre: 3, max: 22, draw: (e, now, dt, sec, g) => mariachiBand(e, now, sec, g) },
 };
 const beachCv = document.getElementById("beach"), beachCtx = beachCv.getContext("2d");
@@ -3531,9 +3531,9 @@ function cybertruck(u, sec, wave) {   // facing +x, wheels on y = 0; u = size un
 }
 
 // ---- Starship Flight 15: the full stack blasts off, the booster comes straight back and is caught, then set on a
-// transporter and driven off by the techs; the ship crosses the screen 14 times pushing a train of V3 satellites out of its side that
+// transporter and driven off by the techs; the ship crosses the screen 14 times, turning nose-up to let a train of V3 satellites out of its door that
 // spiral up off the top, then comes back in belly first, flips, and is caught by the same tower ----
-const F15 = { lift: 3.2, ts: 2.8, catchB: 6.4, P: 3.2, N: 14, sats: 22, satGap: .55, back: 7.4 };   // P: seconds a lap
+const F15 = { lift: 3.2, ts: 2.8, catchB: 6.4, P: 4.5, N: 14, sats: 22, satGap: .75, back: 7.4 };   // P: seconds a lap
 function plume(x, y, ang, len, w, a = 1) {   // flame out of the engines, pointing along ang (0 = straight down)
   ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
   const L = len * (.85 + Math.random() * .3), g = ctx.createLinearGradient(0, 0, 0, L);
@@ -3556,12 +3556,19 @@ function booster(w, L, finsOut) {   // engines at y = 0, pointing down; body goe
   const fy = -L + w * .5, fw = finsOut ? w * .55 : w * .3;
   ctx.fillRect(-w / 2 - fw, fy, fw, w * .45); ctx.fillRect(w / 2, fy, fw, w * .45);
 }
-function ship(w, L, slot) {   // engines at y = 0, nose at -L; slot: the payload door is open
+function ship(w, L, slot) {   // engines at y = 0, nose at -L; slot: payload door open, with this much of the satellite stack left (0 = shut)
   steelBody(-w / 2, -L * .82, w, L * .82);
   ctx.fillStyle = "#e9edf0"; ctx.beginPath(); ctx.moveTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L, 0, -L); ctx.quadraticCurveTo(w / 2, -L, w / 2, -L * .82); ctx.fill();   // nose
   ctx.fillStyle = "#1d1f23"; ctx.beginPath();   // black heat-shield side
   ctx.moveTo(-w / 2, 0); ctx.lineTo(-w / 2, -L * .82); ctx.quadraticCurveTo(-w / 2, -L * .99, -w * .1, -L * .99); ctx.lineTo(-w * .1, 0); ctx.fill();
-  if (slot) { ctx.fillStyle = "#0d0e10"; ctx.fillRect(0, -L * .66, w * .48, L * .18); ctx.fillStyle = "rgba(255,207,122,.8)"; ctx.fillRect(w * .02, -L * .66, w * .06, L * .18); }   // the satellite slot, lit inside
+  if (slot) {   // the open payload door with the stack of flat satellites inside, shrinking as they go out
+    const top = -L * .7, h = L * .26, sh = h * Math.min(1, slot);
+    ctx.fillStyle = "#0d0e10"; ctx.fillRect(-w * .08, top, w * .54, h);
+    ctx.fillStyle = "#4a5059"; ctx.fillRect(-w * .05, top + h - sh, w * .48, sh);
+    ctx.strokeStyle = "rgba(200,210,225,.55)"; ctx.lineWidth = Math.max(.5, L * .004); ctx.beginPath();
+    for (let y = top + h - L * .02; y > top + h - sh; y -= L * .02) { ctx.moveTo(-w * .05, y); ctx.lineTo(w * .43, y); }
+    ctx.stroke(); ctx.fillStyle = "rgba(255,207,122,.7)"; ctx.fillRect(-w * .08, top, w * .54, L * .01);
+  }   // the satellite slot, lit inside
   ctx.fillStyle = "#26292e";   // flaps
   ctx.beginPath(); ctx.moveTo(-w / 2, -L * .18); ctx.lineTo(-w * .95, -L * .08); ctx.lineTo(-w / 2, -L * .04); ctx.fill();
   ctx.beginPath(); ctx.moveTo(w / 2, -L * .18); ctx.lineTo(w * .95, -L * .08); ctx.lineTo(w / 2, -L * .04); ctx.fill();
@@ -3599,36 +3606,59 @@ function starlink(s, glint, open = 1) {   // a V3 satellite: a flat body with tw
     line([s * 1.4, -s * 1.2 * glint, s * 1.4, s * 1.2 * glint], [1, 1, 1, glint], Math.max(1, s * .1));
   }
 }
-// the ship's 14 laps: each one a slow pass across the screen from left to right, in a gentle arc. On laps 2 on it pushes
-// V3 satellites out of the slot in its side one at a time; they drift back into a train and creep up the screen lap by lap
-// until they're off the top. t0 = start of lap 1, O = { y: middle of the passes, A: height of the arc, W, H }
+function satSlab(s) {   // a V3 satellite still folded flat, the way they come out of the dispenser; thrusters glowing at the right end (0,0)
+  ctx.fillStyle = "#3a3f47"; ctx.fillRect(-s * 1.3, -s * .16, s * 1.3, s * .32);
+  ctx.fillStyle = "#6b727c"; for (let i = 0; i < 5; i++) ctx.fillRect(-s * 1.25 + i * s * .26, -s * .12, s * .2, s * .24);
+  for (const dy of [-.08, .08]) {
+    const g = ctx.createRadialGradient(0, dy * s, 0, 0, dy * s, s * .3);
+    g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(.4, "rgba(170,210,255,.6)"); g.addColorStop(1, "rgba(120,170,255,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, dy * s, s * .3, 0, 7); ctx.fill();
+  }
+}
+// the ship's 14 laps: each one a slow pass across the screen from left to right, in a gentle arc. For the deploy it turns
+// nose-up, opens the payload door, and the V3 satellites slide out of the stack one at a time, thrusters glowing; once clear
+// they spread their wings, drift back into a train and creep up the screen lap by lap until they're off the top.
+// t0 = start of lap 1, O = { y: middle of the passes, A: height of the arc, W, H }
 function f15Orbits(e, t, O, t0, w, Ls) {
-  const { P, N } = F15, end = t0 + P * N, m = Ls * 1.2, span = O.W + 2 * m, V = span / P, EJ = 1.4, k = Math.min(1.1, O.W * .28 / Ls);   // smaller on a narrow phone
+  const { P, N } = F15, end = t0 + P * N, m = Ls * 1.2, span = O.W + 2 * m, V = span / P, EJ = 2, k = Math.min(1.1, O.W * .28 / Ls);   // smaller on a narrow phone
   const wrap = X => ((X + m) % span + span) % span - m;
   const arcY = x => O.y - O.A * Math.sin(Math.PI * clamp((x + m) / span, 0, 1));
   const tilt = x => Math.atan(-O.A * Math.PI / span * Math.cos(Math.PI * clamp((x + m) / span, 0, 1)));
   const shipX = tt => -m + V * (tt - t0);   // not wrapped
-  const slot = [Ls * .07 * k, w * .24 * k];   // the slot, from the ship's middle (nose to the right, slot on the side facing down)
+  const kd = k * 1.5, out = w * 1.3 * kd;   // how far they slide out to the left of the door
   if (!e.sats) {   // when each one goes out: from lap 2, only while the ship's well on screen
     e.sats = [];
     for (let td = t0 + P; e.sats.length < F15.sats; td += F15.satGap) {
       const f = ((td - t0) / P) % 1;
-      if (f > .08 && f < .7) e.sats.push({ td, sp: .86 - e.sats.length * .004 + rnd(-.01, .01), ph: rnd(0, 6) });
+      if (f > .08 && f < .72) e.sats.push({ td, sp: .86 - e.sats.length * .004 + rnd(-.01, .01), ph: rnd(0, 6) });
     }
   }
-  const on = t > t0 && t < end;
-  if (on) {
-    const x = wrap(shipX(t)), y = arcY(x), out = e.sats.some(s => t > s.td - .7 && t < s.td + EJ);
-    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI / 2 + tilt(x)); ctx.scale(k, k); ctx.translate(0, Ls / 2);
-    ship(w, Ls, out || t > e.sats[0].td - 1 && t < e.sats[e.sats.length - 1].td + 1); ctx.restore();
+  const S0 = e.sats[0].td, S1 = e.sats[e.sats.length - 1].td + EJ;
+  const vert = ease(clamp((t - S0 + 2.6) / 1.4, 0, 1)) * (1 - ease(clamp((t - S1 - .6) / 1.4, 0, 1)));   // turned nose-up for the deploy
+  let sx = 0, sy = 0;
+  if (t > t0 && t < end) {
+    const x = wrap(shipX(t)), y = arcY(x), left = e.sats.filter(s => s.td > t).length;
+    ctx.save(); ctx.translate(x, y); ctx.rotate((1 - vert) * (Math.PI / 2 + tilt(x))); ctx.scale(k * (1 + .5 * vert), k * (1 + .5 * vert)); ctx.translate(0, Ls / 2);   // a bit bigger for the deploy
+    ship(w, Ls, vert > .9 ? Math.max(.001, left / F15.sats) : 0); ctx.restore(); sx = x; sy = y;
   }
-  for (const s of e.sats) {
+  for (const [i, s] of e.sats.entries()) {
     const q = t - s.td; if (q < 0) continue;
-    const X = shipX(s.td) + slot[0] + V * Math.min(q, EJ) + V * s.sp * Math.max(0, q - EJ), x = wrap(X), r = Math.max(0, q - EJ);
-    const y = arcY(x) + slot[1] + w * 1.4 * ease(Math.min(1, q / EJ)) - O.H * (.012 * r + .0011 * r * r);
+    const dy = (-.2 + .26 * i / F15.sats + .012) * Ls * kd;   // comes off the top of the stack
+    const r = Math.max(0, q - EJ), X = shipX(s.td) + w * .44 * kd + V * Math.min(q, EJ) - out * ease(Math.min(1, q / EJ)) + V * s.sp * r, x = wrap(X);
+    const y = arcY(x) + dy - O.H * (.012 * r + .0011 * r * r);
     if (y < -w * 3) continue;
-    const open = clamp((q - EJ) / .7, 0, 1), gl = Math.max(0, Math.sin(t * 1.1 + s.ph)) ** 40 * open;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(tilt(x) + .25 * open * Math.sin(r * .7 + s.ph)); starlink(w * .5, gl, open); ctx.restore();
+    ctx.save(); ctx.translate(x, y);
+    if (q < EJ) {   // still sliding out: only seen through the open door, or once it's past the side of the ship
+      ctx.beginPath(); ctx.rect(-x - O.W, -y - O.H, x + O.W + sx - x - w * .5 * kd, O.H * 3);
+      ctx.rect(sx - x - w * .08 * kd, sy - y - Ls * .2 * kd, w * .54 * kd, Ls * .26 * kd); ctx.clip();
+      satSlab(w * .75 * kd);
+    }
+    else {
+      const open = clamp(r / .8, 0, 1), gl = Math.max(0, Math.sin(t * 1.1 + s.ph)) ** 40 * open;
+      ctx.rotate(.25 * open * Math.sin(r * .7 + s.ph)); starlink(w * .6, gl, open);
+      dot(w * .25, 0, w * .09 * (1.2 - open * .5), [.8, .9, 1, .9]);   // its thruster, still glowing
+    }
+    ctx.restore();
   }
 }
 // coming home: in from A belly first and glowing, levels off over B, flips upright with the landing burn, and settles to C (centres)

@@ -237,7 +237,8 @@ const LOCS = {
   spi: { name: "South Padre Island, Texas", short: "South Padre Island", sub: "Tides, waves and water temp",
          flag: "texas", lat: 26.07, lon: -97.17,
          sea: [26.07, -97.05],             // a few miles offshore, for waves
-         station: "8779749", cold: 60 },             // NOAA South Padre Island (Port Isabel 8779770 runs ~30 min later)
+         station: "8779749", cold: 60,               // NOAA SPI Brazos Santiago, at the jetties ("Jetties" line)
+         bay: "8779770" },                          // NOAA Port Isabel, closest live bay station to Access 5 ("Bay" line)
   spirit: { name: "Big Spirit Lake, Iowa", short: "Big Spirit Lake", sub: "Lake buoy waves and water temp",
             flag: "iowa", lat: 43.467, lon: -95.10,
             buoy: 2118, cold: 32,
@@ -255,7 +256,7 @@ const OBS_MIN = 30;                       // live wind older than this (airport:
 const DARK = {
   bg: [.06,.08,.12,1], text: [1,1,1,1], gray: [.6,.68,.78,1], grid: [.2,.25,.32,1], sep: [.25,.3,.4,1],
   day: [.55,.7,.95,.16], night: [0,0,0,.45], past: [0,0,0,.3], gust: [1,1,1,.5], now: [1,1,1,.85],
-  dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1],
+  dot: [1,1,1,1], red: [.97,.4,.35,1], tide_fill: [.23,.55,.95,.3], tide: [.45,.72,1,1], bay: [.98,.8,.35,1],
   wave_fill: [.2,.8,.75,.3], wave: [.35,.9,.85,1], period: [.95,.6,.95,1], rain: [.45,.72,1,1],
   water: [1,.62,.3,1], air: [1,.42,.55,1],
   moon: [.96,.94,.82,1], moon_dark: [.22,.25,.32,1],
@@ -264,7 +265,7 @@ const DARK = {
 const LIGHT = {
   bg: [.97,.97,.95,1], text: [.1,.12,.16,1], gray: [.38,.43,.5,1], grid: [.84,.86,.89,1], sep: [.68,.72,.78,1],
   day: [1,.9,.5,.3], night: [.25,.3,.45,.18], past: [1,1,1,.45], gust: [0,0,0,.45], now: [.1,.1,.1,.8],
-  dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1],
+  dot: [.1,.1,.1,1], red: [.85,.2,.15,1], tide_fill: [.2,.5,.9,.25], tide: [.1,.4,.8,1], bay: [.7,.45,0,1],
   wave_fill: [.1,.6,.55,.25], wave: [.05,.5,.45,1], period: [.6,.2,.6,1], rain: [.1,.4,.8,1],
   water: [.85,.4,.05,1], air: [.8,.12,.3,1],
   moon: [.98,.82,.3,1], moon_dark: [.3,.33,.4,1],
@@ -363,12 +364,18 @@ async function load() {
       });
     } catch (e) {}
     let buoy = null;
+    let bay = { curve: [], hilo: [] };   // second tide line for the bay; the chart still works without it
+    if (L.bay) try {
+      const [bc, bh] = await Promise.all([getJSON(noaa, { ...q, station: L.bay, interval: "30" }), getJSON(noaa, { ...q, station: L.bay, interval: "hilo" })]);
+      bay = { curve: bc.predictions.map(p => [parse(p.t), +p.v]), hilo: bh.predictions.map(p => [parse(p.t), +p.v, p.type]) };
+    } catch (e) {}
     if (L.buoy) try { buoy = readBuoy(await getJSON(BUOY_API, { site: L.buoy, v: 2 })   /* v: skip responses cached before the water temp backup */); } catch (e) { buoy = { error: true }; }
     const obs = await getObs(L, buoy);
     if (my !== loading) return;
     state.data = {
       curve: curve.predictions.map(p => [parse(p.t), +p.v]),
       hilo: hilo.predictions.map(p => [parse(p.t), +p.v, p.type]),
+      bayCurve: bay.curve, bayHilo: bay.hilo,
       w, waves, water, buoy, obs };
     state.updated = new Date();
     state.error = "";
@@ -740,7 +747,7 @@ function draw() {
 }
 
 function chart(W, H, f, now, top, placeEnd) {
-  const { curve, hilo, w, waves, water, buoy } = state.data, hr = w.hourly, dy = w.daily;
+  const { curve, hilo, w, waves, water, buoy } = state.data, bayCurve = state.data.bayCurve || [], bayHilo = state.data.bayHilo || [], hr = w.hourly, dy = w.daily;
   const times = hr.time.map(parse);
   const t0 = new Date(now); t0.setMinutes(0, 0, 0);
   const ts = past() ? new Date(t0 - 24 * 3600e3) : t0;   // chart start
@@ -933,9 +940,17 @@ function chart(W, H, f, now, top, placeEnd) {
     const [tt, tb] = box.tide;
     title("tide ft", L, tt, T.tide);
     const pts = curve.filter(([t]) => t >= ts && t <= t1);
+    const bpts = bayCurve.filter(([t]) => t >= ts && t <= t1), two = bpts.length > 1;
+    if (two) {   // legend: which line is which, at the right end of the title row
+      const sw = f * 1.8, sg = f * .45, ly = tt - f * 1.0, lsz = f * 1.05;
+      setFont(lsz);
+      const items = [["Jetties", T.tide], ["Bay", T.bay]];
+      let x = R - items.reduce((a, [s]) => a + sw + sg + ctx.measureText(s).width, 0) - f * 1.5;
+      for (const [s, c] of items) { line([x, ly, x + sw, ly], c, 2.5); x += sw + sg + text(s, x + sw + sg, ly, lsz, c, 0) + f * 1.5; }
+    }
     if (pts.length) {
-      const vs = pts.map(p => p[1]);
-      const lo = Math.floor(Math.min(...vs) * 2) / 2 - .5, hi = Math.ceil(Math.max(...vs) * 2) / 2 + .6;
+      const vs = pts.map(p => p[1]).concat(bpts.map(p => p[1]));
+      const lo = Math.floor(Math.min(...vs) * 2) / 2 - (two && !PHONE ? 1 : .5), hi = Math.ceil(Math.max(...vs) * 2) / 2 + (two && !PHONE ? 1.1 : .6);
       const ty = v => tb - (v - lo) / (hi - lo) * (tb - tt);
       for (let v = Math.ceil(lo); v <= Math.floor(hi); v++) {
         line([L, ty(v), R, ty(v)], T.grid, 1);
@@ -945,6 +960,7 @@ function chart(W, H, f, now, top, placeEnd) {
       const tl = pts.flatMap(([t, v]) => [xt(t), ty(v)]);
       area(tl, tb, T.tide_fill);
       line(tl, T.tide, 2.5);
+      if (two) line(bpts.flatMap(([t, v]) => [xt(t), ty(v)]), T.bay, 2.5);
       const k = curve.findIndex(([t]) => t > now);   // current tide level, for the shimmer animation
       if (k > 0) {
         const [ta, va] = curve[k - 1], [tb2, vb] = curve[k], v = va + (vb - va) * (now - ta) / (tb2 - ta);
@@ -962,6 +978,14 @@ function chart(W, H, f, now, top, placeEnd) {
         }
         const lbl = n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1);
         text(lbl, xx, yy + up * f * .95, f * (n <= 170 ? .95 : 1));
+      }
+      if (two) for (const [t, v, typ] of bayHilo) {   // bay highs and lows: a dot in the bay color, label stacked past the jetty label
+        if (t < ts || t > t1) continue;
+        const xx = xt(t), yy = ty(v);
+        dot(xx, yy, Math.max(3.5, f * .26), T.bay);
+        if (PHONE) continue;
+        const up = typ === "H" ? -1 : 1;
+        text(n <= 170 ? `${short(t)}  ${v.toFixed(1)}` : v.toFixed(1), xx, yy + up * f * 2.05, f * (n <= 170 ? .95 : 1), T.bay);
       }
     }
   }
@@ -3974,6 +3998,8 @@ function haywire(d, k, seed) {   // a wild copy of the data; k goes 0 -> 1. The 
   return {
     curve: d.curve.map(([t, v]) => [t, tide(t, v)]),
     hilo: d.hilo.map(([t, v, typ]) => [t, tide(t, v), typ]),
+    bayCurve: (d.bayCurve || []).map(([t, v]) => [t, tide(t, v) * .9]),
+    bayHilo: (d.bayHilo || []).map(([t, v, typ]) => [t, tide(t, v) * .9, typ]),
     w: { hourly: { ...hr,
            wind_speed_10m: spd,
            wind_gusts_10m: hr.wind_gusts_10m.map((g, i) => spd[i] + Math.max(0, g - hr.wind_speed_10m[i]) * (1 + 10 * k) + h(i + 7) * k * 120),

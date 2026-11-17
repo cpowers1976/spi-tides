@@ -74,6 +74,47 @@
   .back { font-size: 17px; padding: 8px 12px; }
   .done { width: 100%; margin-top: 18px; font-size: 20px; padding: 12px; }
 
+  /* session log window */
+  #logwin { position: fixed; inset: 0; z-index: 6; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
+  #logwin[hidden], #logbtn[hidden] { display: none; }
+  #logbtn { padding: 8px 12px; display: flex; align-items: center; }
+  #logbtn svg { width: 26px; height: 26px; }
+  #logwin .panel { width: min(560px, calc(100vw - 32px)); }
+  #logwin .lhead { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  #logwin .lhead h2 { margin: 0; flex: 1; }
+  #logwin .who { font-size: 15px; color: var(--gray); }
+  #logwin .note { font-size: 16px; color: var(--gray); margin: 6px 0 12px; line-height: 1.35; }
+  #logwin .err { color: var(--red); font-size: 16px; min-height: 1.2em; margin: 8px 0 0; }
+  #logwin .err:empty { min-height: 0; margin: 0; }
+  #logwin .big { width: 100%; font-size: 20px; padding: 12px; margin-top: 12px; background: var(--on); color: #fff; font-weight: 600; }
+  #logwin .fld { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; font-size: 17px; }
+  #logwin .fld > span { color: var(--gray); font-size: 15px; }
+  #logwin .two { display: flex; gap: 12px; } #logwin .two > .fld { flex: 1; min-width: 0; }
+  #logwin input, #logwin select, #logwin textarea { font: inherit; font-size: 18px; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--btn); background: var(--btn); color: var(--btntext); box-sizing: border-box; width: 100%; min-width: 0; }
+  #logwin textarea { min-height: 110px; resize: vertical; line-height: 1.35; }
+  #logwin input::placeholder, #logwin textarea::placeholder { color: var(--gray); }
+  #logwin .stars { display: flex; gap: 4px; }
+  #logwin .stars button { font-size: 30px; padding: 2px 5px; background: none; color: var(--gray); line-height: 1; }
+  #logwin .stars button.lit { color: #fbbf24; }
+  #logwin .cond { border: 1px solid var(--btn); border-radius: 10px; padding: 10px 12px; font-size: 16px; line-height: 1.45; }
+  #logwin .month { margin: 18px 0 4px; font-size: 15px; color: var(--gray); text-transform: uppercase; letter-spacing: .06em; }
+  #logwin .card { display: block; width: 100%; text-align: left; background: none; border-radius: 0; padding: 12px 0;
+                  border-bottom: 1px solid var(--btn); font-size: 17px; line-height: 1.4; }
+  #logwin .card .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-size: 19px; }
+  #logwin .s { color: var(--gray); font-size: 15px; }
+  #logwin .card .st { color: #fbbf24; font-weight: normal; letter-spacing: 1px; flex: none; }
+  #logwin .card .n { margin-top: 4px; white-space: pre-wrap; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  #logwin .sum { font-size: 16px; color: var(--gray); margin: 10px 0 0; }
+  #logwin .rowbtns { display: flex; gap: 10px; margin-top: 18px; } #logwin .rowbtns button { flex: 1; font-size: 18px; padding: 12px; }
+  #logwin .del { background: none; color: var(--red); }
+  #logwin .del.sure { background: var(--red); color: #fff; }
+  @media (max-width: 640px) and (orientation: portrait) {
+    #bar #logbtn { flex: 0 0 52px; }
+    #logwin .two { flex-direction: column; gap: 0; }
+  }
+  @media (max-width: 380px) and (orientation: portrait) { #bar #logbtn { flex-basis: 44px; } }
+
   /* location picker (opened by tapping the place name) */
   #locmenu { position: fixed; z-index: 5; background: var(--bg); color: var(--btntext); border: 1px solid var(--btn);
              border-radius: 12px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.4); min-width: 280px; }
@@ -144,6 +185,9 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M19 2v4.2h-4.2"/><path d="M5 22v-4.2h4.2"/></svg>
     <span class="lbl"></span>
   </button>
+  <button id="logbtn" hidden aria-label="Session log" title="Session log">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v17H7.5A2.5 2.5 0 0 0 5 21.5z"/><path d="M5 21.5A2.5 2.5 0 0 0 7.5 24H19"/><path d="M9 7h6"/><path d="M9 11h6"/></svg>
+  </button>
   <button id="gear" aria-label="Settings" title="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
@@ -167,6 +211,7 @@
     <label class="row"><span>Rotate forecast range<small>Cycles 24 hours, 3 days, 5 days, 10 days and hides the range buttons. The spin button at the bottom turns it on and off too</small></span><input type="checkbox" class="sw" data-set="rotate"></label>
     <label class="row ind" id="rotrow"><span>Time on each range</span><select class="pick" data-rot="rotSec"><option value="10">10 sec</option><option value="15">15 sec</option><option value="20">20 sec</option><option value="30">30 sec</option><option value="60">1 min</option><option value="120">2 min</option><option value="300">5 min</option></select></label>
     <button class="row navrow" data-page="anim"><span>Animations<small id="animsum">On</small></span><span class="chev">›</span></button>
+    <button class="row navrow" id="logrow"><span>Session log<small id="logsum">Private. Sign in to log when you went out and the conditions</small></span><span class="chev">›</span></button>
     <button class="done">Done</button>
   </div>
   <div class="panel" role="dialog" aria-label="Animations" data-pg="anim" hidden>
@@ -231,6 +276,7 @@
     <button class="done">Done</button>
   </div>
 </div>
+<div id="logwin" hidden><div class="panel" role="dialog" aria-label="Session log"></div></div>
 <script>
 // Each location: where to get wind/weather, and where tides/waves/water temp come from.
 const LOCS = {
@@ -5007,7 +5053,7 @@ function pageSnap(scale) {   // the whole screen as it looks now: background, wa
       x.fillStyle = st.backgroundColor; x.beginPath();
       x.roundRect ? x.roundRect(b.left, b.top, b.width, b.height, 8) : x.rect(b.left, b.top, b.width, b.height); x.fill();
     }
-    const txt = (el.id === "gear" ? "⚙" : el.id === "spin" ? "⟳ " + el.innerText : el.innerText).trim(), mid = el.tagName === "BUTTON" || st.textAlign === "center";
+    const txt = (el.id === "gear" ? "⚙" : el.id === "logbtn" ? "✎" : el.id === "spin" ? "⟳ " + el.innerText : el.innerText).trim(), mid = el.tagName === "BUTTON" || st.textAlign === "center";
     x.fillStyle = st.color; x.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`; x.textBaseline = "middle"; x.textAlign = mid ? "center" : "left";
     x.fillText(txt, mid ? b.left + b.width / 2 : b.left, b.top + b.height / 2, b.width);
   }
@@ -6623,6 +6669,7 @@ menu.addEventListener("click", e => { const b = e.target.closest("[data-loc]"); 
 bar.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.id === "gear") { dlg.hidden = false; return; }
+  if (b.id === "logbtn") { openLog(); return; }
   if (b.id === "spin") { setRotate(!state.rotate); return; }
   if (b.id === "past") { state.past = !state.past; changed(); return; }
   setRange(+b.dataset.days);
@@ -6650,7 +6697,264 @@ dlg.addEventListener("click", e => {
   const l = e.target.closest("[data-loc]");
   if (l) setLoc(l.dataset.loc);
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") dlg.hidden = menu.hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") dlg.hidden = menu.hidden = logwin.hidden = true; });
+
+// ---------- private session log ----------
+// Sign in with a name and passcode (accounts are set on the server), then log when you went out with notes.
+// The conditions at that time (wind, gusts, direction, air and water temp, waves, tide) are saved with each session.
+// Each person only sees their own sessions. Server side: functions/api/log.js
+const LOG_API = RELAY + "/api/log";
+const logwin = document.getElementById("logwin"), logPanel = logwin.querySelector(".panel");
+const LOGK = "spi-tides-log";
+const LG = { auth: null, list: null, view: "list", edit: null, cond: null, condFor: "", err: "", busy: false };
+try { LG.auth = JSON.parse(localStorage.getItem(LOGK) || "null"); } catch (e) {}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const DUR = [[0, "Not sure"], [30, "30 min"], [45, "45 min"], [60, "1 hour"], [90, "1½ hours"], [120, "2 hours"], [150, "2½ hours"],
+             [180, "3 hours"], [240, "4 hours"], [300, "5 hours"], [360, "6+ hours"]];
+const durTxt = m => m >= 60 ? `${+(m / 60).toFixed(1)} h` : `${m} min`;
+const nameCase = n => String(n || "").replace(/(^|[\s-])(\S)/g, (m, a, b) => a + b.toUpperCase());   // casey -> Casey
+const localInput = d => `${isoDate(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+function logAuth(a) {
+  LG.auth = a;
+  try { a ? localStorage.setItem(LOGK, JSON.stringify(a)) : localStorage.removeItem(LOGK); } catch (e) {}
+  document.getElementById("logbtn").hidden = !a;   // the notebook button only shows once you've signed in on this device
+  document.getElementById("logsum").textContent = a ? `Signed in as ${nameCase(a.name)}` : "Private. Sign in to log when you went out and the conditions";
+}
+async function logCall(method, body, q = "") {
+  const headers = { "content-type": "application/json" };
+  if (LG.auth) headers.authorization = "Bearer " + LG.auth.token;
+  let r;
+  try { r = await fetch(LOG_API + q, { method, headers, body: body ? JSON.stringify(body) : undefined }); }
+  catch (e) { throw new Error("Can't reach the server. Check the connection and try again"); }
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && j.error === "signin") { logAuth(null); LG.view = "signin"; throw new Error("Please sign in again"); }
+  if (r.status === 503 && j.error === "setup") { LG.view = "setup"; throw new Error(""); }
+  if (!r.ok) throw new Error(j.error || `Server error (${r.status})`);
+  return j;
+}
+async function openLog() {
+  logwin.hidden = false; dlg.hidden = true; showPage("main");
+  LG.err = "";
+  if (!LG.auth) { LG.view = "signin"; return logDraw(); }
+  LG.view = "list"; logDraw();
+  try { LG.list = (await logCall("GET")).sessions; } catch (e) { LG.err = e.message; }
+  logDraw();
+}
+
+// ---- conditions at a time and place ----
+// From what's already on screen when it's the same place and within the loaded hours (past 24 h onward),
+// with the live wind and buoy when it's about now; otherwise fetched for that day.
+async function condAt(k, t) {
+  const L = LOCS[k], h = new Date(t); h.setMinutes(0, 0, 0);
+  const hk = hourKey(h), nowish = Math.abs(Date.now() - t) < 45 * 60e3, d = state.data;
+  let hr, waves = new Map(), water = new Map(), curve = [], hilo = [], buoy = null, obs = null;
+  if (k === state.loc && d && d.w.hourly.time.includes(hk)) {
+    ({ waves, water, curve, hilo } = d); hr = d.w.hourly;
+    if (nowish) { buoy = d.buoy; obs = d.obs; }
+  } else {
+    const day = isoDate(h), vars = "temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m";
+    const q = { latitude: L.lat, longitude: L.lon, hourly: vars, wind_speed_unit: "mph", temperature_unit: "fahrenheit",
+                timezone: "America/Chicago", start_date: day, end_date: day };
+    const noaa = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter";
+    const tq = { product: "predictions", station: L.station, begin_date: ymd(h), range: 48, datum: "MLLW", units: "english",
+                 time_zone: "lst_ldt", format: "json", application: "casey_app" };
+    const [w, m, tc, th] = await Promise.all([
+      getJSON("https://api.open-meteo.com/v1/forecast", q).catch(() => getJSON("https://archive-api.open-meteo.com/v1/archive", q)).catch(() => null),
+      L.sea ? getJSON("https://marine-api.open-meteo.com/v1/marine", { latitude: L.sea[0], longitude: L.sea[1],
+        hourly: "wave_height,wave_period,sea_surface_temperature", timezone: "America/Chicago", start_date: day, end_date: day }).catch(() => null) : null,
+      L.station ? getJSON(noaa, { ...tq, interval: "30" }).catch(() => null) : null,
+      L.station ? getJSON(noaa, { ...tq, interval: "hilo" }).catch(() => null) : null]);
+    hr = w && w.hourly;
+    if (m && m.hourly) m.hourly.time.forEach((tt, i) => {
+      const a = m.hourly.wave_height[i], p = m.hourly.wave_period[i], c = (m.hourly.sea_surface_temperature || [])[i];
+      if (a != null && p != null) waves.set(tt, [a * 3.281, p]);
+      if (c != null) water.set(tt, c * 9 / 5 + 32);
+    });
+    if (tc) curve = (tc.predictions || []).map(p => [parse(p.t), +p.v]);
+    if (th) hilo = (th.predictions || []).map(p => [parse(p.t), +p.v, p.type]);
+    if (k === "spirit" && nowish && d && d.buoy) buoy = d.buoy;
+  }
+  const c = { src: t > Date.now() + 45 * 60e3 ? "forecast" : "model" };
+  const i = hr ? hr.time.indexOf(hk) : -1;
+  if (i >= 0) {
+    c.spd = hr.wind_speed_10m[i]; c.gst = hr.wind_gusts_10m[i]; c.dir = hr.wind_direction_10m[i];
+    c.air = hr.temperature_2m[i]; c.wx = hr.weather_code[i];
+  }
+  if (obs && Date.now() - obs.time < obs.maxMin * 60e3) {
+    c.src = "live"; c.where = obs.where; c.spd = obs.spd; c.gst = obs.gst ?? obs.spd; if (obs.dir != null) c.dir = obs.dir;
+  }
+  const wv = waves.get(hk); if (wv) { c.wave = wv[0]; c.per = wv[1]; }
+  c.water = water.get(hk);
+  if (buoy && buoy.live) {
+    if (buoy.waveFt != null) c.wave = buoy.waveFt;
+    if (buoy.period != null) c.per = buoy.period;
+    if (buoy.waterF != null) c.water = buoy.waterF;
+  }
+  if (c.water == null && buoy && buoy.lake && nowish) c.water = buoy.lake.waterF;
+  const j = curve.findIndex(p => p[0] > t);   // tide: in between the two nearest half-hour points
+  if (j > 0) {
+    const [a, b] = [curve[j - 1], curve[j]];
+    c.tide = a[1] + (b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]);
+    c.tdir = b[1] >= a[1] ? "rising" : "falling";
+    const nx = hilo.find(p => p[0] > t);
+    if (nx) c.next = [nx[2], +nx[0], nx[1]];
+  }
+  for (const key of ["spd", "gst", "dir", "air", "wave", "per", "water", "tide"]) {
+    if (c[key] == null || isNaN(c[key])) delete c[key];
+    else c[key] = Math.round(c[key] * (key === "wave" || key === "tide" ? 10 : 1)) / (key === "wave" || key === "tide" ? 10 : 1);
+  }
+  if (c.next) c.next[2] = Math.round(c.next[2] * 10) / 10;
+  return c;
+}
+function condHTML(c, k) {   // the saved conditions, as a few short lines
+  if (!c || c.spd == null && c.wave == null && c.tide == null) return `<span class="s">No conditions saved</span>`;
+  const out = [];
+  if (c.spd != null) out.push(`<b style="display:inline;color:${rgba(windColor(c.spd))};font-weight:600;font-size:inherit">${Math.round(c.spd)} mph</b>` +
+    `${c.gst != null ? ` gusts ${Math.round(c.gst)}` : ""}${c.dir != null ? ` ${compass(c.dir)}` : ""}` +
+    `${c.src === "live" ? ` <span class="s">(live ${esc(c.where || "")})</span>` : ""}`);
+  const temps = [];
+  if (c.air != null) temps.push(`air ${Math.round(c.air)}°F`);
+  if (c.water != null) temps.push(`water ${Math.round(c.water)}°F`);
+  if (c.wx != null && WMO[c.wx]) temps.push(WMO[c.wx].toLowerCase());
+  if (temps.length) out.push(temps.join(" · "));
+  const sea = [];
+  if (c.wave != null) sea.push(`waves ${c.wave.toFixed(1)} ft${c.per != null ? ` @ ${Math.round(c.per)}s` : ""}`);
+  if (c.tide != null) sea.push(`tide ${c.tide.toFixed(1)} ft ${c.tdir}${c.next ? `, ${c.next[0] === "H" ? "high" : "low"} ${short(new Date(c.next[1]))}` : ""}`);
+  if (sea.length) out.push(sea.join(" · "));
+  return out.join("<br>");
+}
+
+// ---- drawing the window ----
+function logDraw() {
+  const v = LG.view, a = LG.auth, err = `<p class="err">${esc(LG.err)}</p>`;
+  const head = (title, back) => `<div class="lhead">${back ? `<button class="back" data-lg="list">‹ Log</button>` : ""}<h2>${title}</h2>` +
+    `${a && !back ? `<span class="who">${esc(nameCase(a.name))}</span>` : ""}</div>`;
+  let h = "";
+  if (v === "setup") {
+    h = head("Session log") + `<p class="note">The session log isn't switched on for this site yet. Once the database and accounts are added in Cloudflare it'll work here.</p>` +
+        `<button class="done" data-lg="close">Done</button>`;
+  } else if (v === "signin") {
+    h = head("Session log") + `<p class="note">Your private log of when you went out, with your notes and the conditions at the time. Only people with an account can use it, and each person only sees their own sessions.</p>
+      <label class="fld"><span>Name</span><input id="lgname" autocomplete="username" autocapitalize="none" spellcheck="false" value="${esc(LG.lastName || "")}"></label>
+      <label class="fld"><span>Passcode</span><input id="lgpass" type="password" autocomplete="current-password"></label>
+      ${err}<button class="big" data-lg="signin"${LG.busy ? " disabled" : ""}>${LG.busy ? "Signing in..." : "Sign in"}</button>
+      <button class="done" data-lg="close">Cancel</button>`;
+  } else if (v === "list") {
+    const list = LG.list;
+    h = head("Session log") + `<button class="big" data-lg="new">＋ Log a session</button>`;
+    if (!list) h += LG.err ? err : `<p class="note">Loading...</p>`;
+    else if (!list.length) h += `<p class="note">No sessions yet. Tap <b>Log a session</b> after you've been out and the conditions are saved with your notes.</p>`;
+    else {
+      const yr = new Date().getFullYear(), mine = list.filter(s => new Date(s.start).getFullYear() === yr);
+      const hrs = mine.reduce((n, s) => n + (s.mins || 0), 0) / 60;
+      h += `<div class="sum">${yr}: ${mine.length} session${mine.length === 1 ? "" : "s"}${hrs ? `, ${+hrs.toFixed(1)} hours on the water` : ""} · ${list.length} in all</div>`;
+      let month = "";
+      for (const s of list) {
+        const d = new Date(s.start), m = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        if (m !== month) { month = m; h += `<div class="month">${m}</div>`; }
+        const bits = [LOCS[s.loc] ? LOCS[s.loc].short : s.loc, s.mins ? durTxt(s.mins) : "", s.kite ? `${esc(s.kite)} kite` : "", esc(s.board)].filter(Boolean);
+        h += `<button class="card" data-lg="edit" data-id="${s.id}"><span class="t"><span>${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · ${hm(d)}</span>` +
+             `<span class="st">${s.rating ? "★".repeat(s.rating) + "☆".repeat(5 - s.rating) : ""}</span></span>` +
+             `<span class="s" style="display:block">${bits.join(" · ")}</span><span style="display:block">${condHTML(s.cond, s.loc)}</span>` +
+             `${s.notes ? `<span class="n" style="display:-webkit-box">${esc(s.notes)}</span>` : ""}</button>`;
+      }
+      if (LG.err) h += err;
+    }
+    h += `<div class="rowbtns"><button data-lg="signout">Sign out</button><button data-lg="close">Done</button></div>`;
+  } else if (v === "form") {
+    const e = LG.edit;
+    h = head(e.id ? "Edit session" : "New session", true) + `
+      <label class="fld"><span>When you went out</span><input id="lgwhen" type="datetime-local" value="${localInput(new Date(e.start))}" max="${localInput(new Date(Date.now() + 864e5))}"></label>
+      <div class="fld"><span>Where</span><div class="seg">${Object.entries(LOCS).map(([k, l]) => `<button data-lg="loc" data-k="${k}" class="${k === e.loc ? "on" : ""}">${l.short}</button>`).join("")}</div></div>
+      <div class="two"><label class="fld"><span>How long</span><select id="lgmins">${DUR.map(([m, t]) => `<option value="${m}"${m === (e.mins || 0) ? " selected" : ""}>${t}</option>`).join("")}</select></label>
+        <div class="fld"><span>How was it?</span><div class="stars">${[1, 2, 3, 4, 5].map(n => `<button data-lg="star" data-n="${n}" class="${n <= (e.rating || 0) ? "lit" : ""}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}</div></div></div>
+      <div class="two"><label class="fld"><span>Kite</span><input id="lgkite" placeholder="e.g. 9m Rebel" maxlength="40" value="${esc(e.kite)}"></label>
+        <label class="fld"><span>Board</span><input id="lgboard" placeholder="e.g. twin tip, foil" maxlength="40" value="${esc(e.board)}"></label></div>
+      <label class="fld"><span>Notes</span><textarea id="lgnotes" maxlength="4000" placeholder="Where you launched, how the wind felt, who was out, anything to remember...">${esc(e.notes)}</textarea></label>
+      <div class="fld"><span id="lgcondh"></span><div class="cond" id="lgcond"></div></div>
+      ${err}<button class="big" data-lg="save"${LG.busy ? " disabled" : ""}>${LG.busy ? "Saving..." : "Save session"}</button>
+      ${e.id ? `<div class="rowbtns"><button class="del${LG.sure ? " sure" : ""}" data-lg="del">${LG.sure ? "Tap again to delete" : "Delete session"}</button></div>` : ""}`;
+  }
+  const keep = logPanel.scrollTop;
+  logPanel.innerHTML = h;
+  logPanel.dataset.k = v === "form" ? LG.edit._k : "";
+  logPanel.style.colorScheme = state.light ? "light" : "dark";   // date picker and scroll bars match the theme
+  if (v === "form") condBox();
+  logPanel.scrollTop = v === LG.lastView ? keep : 0;
+  LG.lastView = v;
+}
+function formRead() {   // copy what's typed into the form into LG.edit
+  const e = LG.edit, $ = id => document.getElementById(id);
+  if (!e || logPanel.dataset.k !== e._k || !$("lgwhen")) return;
+  const w = $("lgwhen").value; if (w) e.start = +parse(w);
+  e.mins = +$("lgmins").value; e.kite = $("lgkite").value; e.board = $("lgboard").value; e.notes = $("lgnotes").value;
+}
+function condBox() {   // fill in just the conditions part of the form, so typing elsewhere isn't interrupted
+  const el = document.getElementById("lgcond"); if (!el) return;
+  el.innerHTML = LG.cond === "..." ? `<span class="s">Getting the conditions...</span>` : condHTML(LG.cond, LG.edit.loc);
+  document.getElementById("lgcondh").textContent = LG.edit.id && !LG.recap ? "Conditions saved with this session" : "Conditions that will be saved";
+}
+async function recapture() {   // conditions for the time and place in the form
+  const e = LG.edit, key = `${e.loc}|${Math.floor(e.start / 60e3)}`;
+  if (key === LG.condFor) return;
+  LG.condFor = key; LG.cond = "..."; LG.recap = true; condBox();
+  let c = null; try { c = await condAt(e.loc, e.start); } catch (err) {}
+  if (LG.condFor === key) { LG.cond = c; if (LG.view === "form") condBox(); }
+}
+function editSession(s) {
+  LG.view = "form"; LG.err = ""; LG.sure = false;
+  LG.edit = s ? { ...s } : { start: Date.now(), loc: state.loc, mins: 0, kite: "", board: "", rating: 0, notes: "" };
+  LG.edit._k = String(Math.random());
+  if (s) { LG.cond = s.cond; LG.condFor = `${s.loc}|${Math.floor(s.start / 60e3)}`; LG.recap = false; logDraw(); }
+  else { LG.condFor = ""; LG.cond = "..."; logDraw(); recapture(); }
+}
+
+logPanel.addEventListener("click", async e => {
+  const b = e.target.closest("[data-lg]"); if (!b) return;
+  const act = b.dataset.lg;
+  if (act === "close") { formRead(); logwin.hidden = true; return; }
+  if (act === "list") { LG.view = "list"; LG.err = ""; logDraw(); return; }
+  if (act === "new") return editSession(null);
+  if (act === "edit") return editSession(LG.list.find(s => String(s.id) === b.dataset.id));
+  if (act === "signout") { logAuth(null); LG.list = null; LG.view = "signin"; LG.err = ""; logDraw(); return; }
+  if (act === "loc") { formRead(); LG.edit.loc = b.dataset.k; logDraw(); recapture(); return; }
+  if (act === "star") { formRead(); const n = +b.dataset.n; LG.edit.rating = LG.edit.rating === n ? 0 : n; logDraw(); return; }
+  if (act === "signin" && !LG.busy) {
+    const name = document.getElementById("lgname").value.trim(), pass = document.getElementById("lgpass").value;
+    LG.lastName = name;
+    if (!name || !pass) { LG.err = "Enter your name and passcode"; return logDraw(); }
+    LG.busy = true; LG.err = ""; logDraw();
+    try { const j = await logCall("POST", { action: "login", name, pass }); logAuth({ token: j.token, name: j.name }); LG.busy = false; return openLog(); }
+    catch (err) { LG.err = err.message; }
+    LG.busy = false; logDraw(); return;
+  }
+  if (act === "save" && !LG.busy) {
+    formRead();
+    const s = LG.edit;
+    if (LG.cond === "...") { LG.err = "Still getting the conditions, one moment"; return logDraw(); }
+    const body = { start: s.start, mins: s.mins, loc: s.loc, kite: s.kite, board: s.board, rating: s.rating, notes: s.notes,
+                   cond: s.id && !LG.recap ? null : LG.cond };   // editing only the notes keeps the conditions as they were
+    LG.busy = true; LG.err = ""; logDraw();
+    try {
+      if (s.id) await logCall("PUT", body, `?id=${s.id}`); else await logCall("POST", body);
+      LG.busy = false; return openLog();
+    } catch (err) { LG.err = err.message; }
+    LG.busy = false; logDraw(); return;
+  }
+  if (act === "del") {
+    if (!LG.sure) { formRead(); LG.sure = true; logDraw(); setTimeout(() => { if (LG.sure) { LG.sure = false; if (LG.view === "form") { formRead(); logDraw(); } } }, 4000); return; }
+    LG.sure = false;
+    try { await logCall("DELETE", null, `?id=${LG.edit.id}`); return openLog(); } catch (err) { LG.err = err.message; logDraw(); }
+  }
+});
+logPanel.addEventListener("change", e => {
+  if (e.target.id === "lgwhen" || e.target.id === "lgmins") { formRead(); if (e.target.id === "lgwhen") recapture(); }
+});
+logPanel.addEventListener("keydown", e => { if (e.key === "Enter" && (e.target.id === "lgpass" || e.target.id === "lgname")) logPanel.querySelector('[data-lg="signin"]').click(); });
+logwin.addEventListener("click", e => { if (e.target === logwin) { formRead(); logwin.hidden = true; } });
+document.getElementById("logrow").addEventListener("click", openLog);
+logAuth(LG.auth);
 
 let wakeLock = null;  // keep the screen on while this page is showing
 async function keepAwake() {
